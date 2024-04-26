@@ -1,12 +1,13 @@
 name: Release
 
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: 
       - main
       - test
       - live
-  workflow_dispatch:
 
 jobs:
   build-test-and-release:
