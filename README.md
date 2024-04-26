@@ -51,7 +51,7 @@ registry.RegisterProtocolOperation("AaveV3", pkg.SupplyAction, big.NewInt(1), &p
 To retrieve a protocol operation, you can use the `GetProtocolOperation` function:
 
 ```go
-goCopy codeoperation, err := registry.GetProtocolOperation("AaveV3", pkg.SupplyAction, big.NewInt(1))
+codeoperation, err := registry.GetProtocolOperation("AaveV3", pkg.SupplyAction, big.NewInt(1))
 if err != nil {
     // Handle the error
 }
@@ -62,7 +62,7 @@ if err != nil {
 To generate calldata for a specific operation, you can use the `GenerateCalldata` method of the retrieved operation:
 
 ```go
-goCopy codecalldata, err := operation.GenerateCalldata()
+codecalldata, err := operation.GenerateCalldata()
 if err != nil {
     // Handle the error
 }
