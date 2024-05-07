@@ -69,19 +69,22 @@ func (pr *ProtocolRegistry) GetProtocolOperation(protocol string, action Contrac
 
 // SetupProtocolOperations automatically sets up protocol operations based on the SupportedProtocols map.
 func SetupProtocolOperations(registry *ProtocolRegistry) {
-	for _, protocol := range SupportedProtocols {
-		parsedABI, err := abi.JSON(strings.NewReader(protocol.ABI))
+	for name, details := range SupportedProtocols {
+		parsedABI, err := abi.JSON(strings.NewReader(details.ABI))
 		if err != nil {
-			panic(fmt.Sprintf("failed to parse ABI for %s: %v", protocol.Name, err))
+			panic(fmt.Sprintf("failed to parse ABI for %s: %v", name, err))
 		}
+		updatedProtocol := details
+		updatedProtocol.ParsedABI = parsedABI
+		SupportedProtocols[name] = updatedProtocol
 
 		for _, method := range parsedABI.Methods {
 			action := ContractAction(method.Name)
-			registry.RegisterProtocolOperation(protocol.Name, action, big.NewInt(1), &GenericProtocolOperation{
+			registry.RegisterProtocolOperation(name, action, details.ChainID, &GenericProtocolOperation{
 				DynamicOperation: DynamicOperation{
-					Protocol: protocol.Name,
+					Protocol: name,
 					Action:   action,
-					ChainID:  big.NewInt(1),
+					ChainID:  details.ChainID,
 				},
 			})
 		}
