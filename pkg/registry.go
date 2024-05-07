@@ -12,36 +12,36 @@ import (
 // ProtocolRegistry maintains a registry of supported protocols and their operations.
 type ProtocolRegistry struct {
 	lock      sync.RWMutex
-	protocols map[string]map[ContractAction]map[int64]ProtocolOperation
+	protocols map[ProtocolName]map[ContractAction]map[int64]ProtocolOperation
 }
 
 // NewProtocolRegistry creates a new instance of ProtocolRegistry.
 func NewProtocolRegistry() *ProtocolRegistry {
 	return &ProtocolRegistry{
-		protocols: make(map[string]map[ContractAction]map[int64]ProtocolOperation),
+		protocols: make(map[ProtocolName]map[ContractAction]map[int64]ProtocolOperation),
 	}
 }
 
 // RegisterProtocolOperation registers a new operation for a protocol on a specific chain.
-func (pr *ProtocolRegistry) RegisterProtocolOperation(protocol string, action ContractAction, chainID *big.Int, operation ProtocolOperation) {
+func (pr *ProtocolRegistry) RegisterProtocolOperation(protocol ProtocolName, action ContractAction, chainID *big.Int, operation ProtocolOperation) {
 	pr.lock.Lock()
 	defer pr.lock.Unlock()
-
-	// Validate protocol - it must be supported
-	if _, ok := SupportedProtocols[protocol]; !ok {
-		panic("unsupported protocol: " + protocol)
+	// Check if protocol is supported
+	if !isProtocolSupported(protocol, action) {
+		panic(fmt.Sprintf("unsupported protocol: %s", protocol))
 	}
 
-	// Validate chainID - it should not be nil or negative
+	// Check chainID validity
 	if chainID == nil || chainID.Sign() != 1 {
-		panic("invalid chain ID: " + chainID.String())
+		panic(fmt.Sprintf("invalid chain ID: %s", chainID))
 	}
 
-	// Validate operation - it must not be nil
+	// Check if operation is non-nil
 	if operation == nil {
 		panic("nil operation not allowed")
 	}
 
+	// Initialize maps if necessary
 	if pr.protocols[protocol] == nil {
 		pr.protocols[protocol] = make(map[ContractAction]map[int64]ProtocolOperation)
 	}
@@ -51,8 +51,20 @@ func (pr *ProtocolRegistry) RegisterProtocolOperation(protocol string, action Co
 	pr.protocols[protocol][action][chainID.Int64()] = operation
 }
 
+// isProtocolSupported checks if the protocol and action are defined in SupportedProtocols
+func isProtocolSupported(protocol ProtocolName, action ContractAction) bool {
+	for _, protocols := range SupportedProtocols {
+		for _, proto := range protocols {
+			if proto.Name == protocol && proto.Action == action {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // GetProtocolOperation retrieves an operation for a given protocol and chain.
-func (pr *ProtocolRegistry) GetProtocolOperation(protocol string, action ContractAction, chainID *big.Int) (ProtocolOperation, error) {
+func (pr *ProtocolRegistry) GetProtocolOperation(protocol ProtocolName, action ContractAction, chainID *big.Int) (ProtocolOperation, error) {
 	pr.lock.RLock()
 	defer pr.lock.RUnlock()
 
@@ -69,22 +81,23 @@ func (pr *ProtocolRegistry) GetProtocolOperation(protocol string, action Contrac
 
 // SetupProtocolOperations automatically sets up protocol operations based on the SupportedProtocols map.
 func SetupProtocolOperations(registry *ProtocolRegistry) {
-	for name, details := range SupportedProtocols {
-		parsedABI, err := abi.JSON(strings.NewReader(details.ABI))
-		if err != nil {
-			panic(fmt.Sprintf("failed to parse ABI for %s: %v", name, err))
-		}
-		updatedProtocol := details
-		updatedProtocol.ParsedABI = parsedABI
-		SupportedProtocols[name] = updatedProtocol
+	for assetKind, protocols := range SupportedProtocols {
+		for i, protocol := range protocols {
+			parsedABI, err := abi.JSON(strings.NewReader(protocol.ABI))
+			if err != nil {
+				panic(fmt.Sprintf("Failed to parse ABI for %s: %v", protocol.Name, err))
+			}
 
-		for _, method := range parsedABI.Methods {
-			action := ContractAction(method.Name)
-			registry.RegisterProtocolOperation(name, action, details.ChainID, &GenericProtocolOperation{
+			// Correctly updating the protocol entry with parsed ABI
+			protocol.ParsedABI = parsedABI
+			SupportedProtocols[assetKind][i] = protocol
+
+			// Register each action of the protocol in the registry
+			registry.RegisterProtocolOperation(protocol.Name, protocol.Action, protocol.ChainID, &GenericProtocolOperation{
 				DynamicOperation: DynamicOperation{
-					Protocol: name,
-					Action:   action,
-					ChainID:  details.ChainID,
+					Protocol: protocol.Name,
+					Action:   protocol.Action,
+					ChainID:  protocol.ChainID,
 				},
 			})
 		}
