@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -46,33 +45,76 @@ func TestProtocolRegistry(t *testing.T) {
 	})
 }
 
-func TestGenericProtocolOperation_GenerateCalldata(t *testing.T) {
-	operation := &GenericProtocolOperation{
-		DynamicOperation: DynamicOperation{
-			Protocol: "AaveV3",
-			Action:   SupplyAction,
-			Args: []interface{}{
-				common.HexToAddress("0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"),
-				big.NewInt(1000000000000000000),
-				common.HexToAddress("0x0000000000000000000000000000000000000000"),
-				uint16(0),
+func TestProtocolOperations(t *testing.T) {
+	registry := NewProtocolRegistry()
+	SetupProtocolOperations(registry)
+
+	tests := []struct {
+		name     string
+		protocol string
+		action   ContractAction
+		args     []interface{}
+		expected string
+	}{
+		{
+			name:     "AaveV3 Supply",
+			protocol: "AaveV3",
+			action:   SupplyAction,
+			args: []interface{}{
+				"0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
+				"1000000000000000000",
+				"0x0000000000000000000000000000000000000000",
+				"0",
 			},
-			ChainID: big.NewInt(1),
+			// cast calldata "supply(address,uint256,address,uint16)" 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984 1000000000000000000 0x0000000000000000000000000000000000000000 0
+			// 0x617ba0370000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f9840000000000000000000000000000000000000000000000000de0b6b3a764000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+			expected: "0x617ba0370000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f9840000000000000000000000000000000000000000000000000de0b6b3a764000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+		},
+		{
+			name:     "SparkLend Withdraw",
+			protocol: "SparkLend",
+			action:   WithdrawAction,
+			args: []interface{}{
+				"0xc0ffee254729296a45a3885639AC7E10F9d54979",
+				"500000000000000000",
+				"0x0000000000000000000000000000000000000000",
+			},
+			// cast calldata "withdraw(address,uint256,address)" 0xc0ffee254729296a45a3885639AC7E10F9d54979 500000000000000000 0x0000000000000000000000000000000000000000
+			// 0x69328dec000000000000000000000000c0ffee254729296a45a3885639ac7e10f9d5497900000000000000000000000000000000000000000000000006f05b59d3b200000000000000000000000000000000000000000000000000000000000000000000
+			expected: "0x69328dec000000000000000000000000c0ffee254729296a45a3885639ac7e10f9d5497900000000000000000000000000000000000000000000000006f05b59d3b200000000000000000000000000000000000000000000000000000000000000000000",
+		},
+		{
+			name:     "Lido Stake",
+			protocol: "Lido",
+			action:   StakingAction,
+			args: []interface{}{
+				"0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
+			},
+			// cast calldata "submit(address)" 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6
+			// 0xa1903eab000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6
+			expected: "0xa1903eab000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6",
 		},
 	}
 
-	calldata, err := operation.GenerateCalldata()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			operation, err := registry.GetProtocolOperation(tt.protocol, tt.action, big.NewInt(1))
+			require.NoError(t, err)
+			require.NotNil(t, operation)
 
-	// sample cast generate
-	// cast calldata "supply(address,uint256,address,uint16)" 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984 1000000000000000000 0x0000000000000000000000000000000000000000 0
-	//
-	// 0x617ba0370000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f9840000000000000000000000000000000000000000000000000de0b6b3a764000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-	expectedOutput := "0x617ba0370000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f9840000000000000000000000000000000000000000000000000de0b6b3a764000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-	require.NoError(t, err)
-	require.NotEmpty(t, calldata)
-	require.Equal(t, expectedOutput, calldata)
+			// Cast the operation to *GenericProtocolOperation to access GenerateCalldata
+			genOp, ok := operation.(*GenericProtocolOperation)
+			require.True(t, ok)
+
+			// Set the Args field in the GenericProtocolOperation
+			genOp.Args = tt.args
+
+			calldata, err := genOp.GenerateCalldata()
+			require.NoError(t, err)
+			require.Equal(t, tt.expected, calldata)
+		})
+	}
 }
-
 func TestSetupProtocolOperations(t *testing.T) {
 	registry := NewProtocolRegistry()
 	SetupProtocolOperations(registry)
