@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,14 +15,14 @@ func TestProtocolRegistry(t *testing.T) {
 	SetupProtocolOperations(registry)
 
 	t.Run("GetProtocolOperation_Exists", func(t *testing.T) {
-		operation, err := registry.GetProtocolOperation("AaveV3", SupplyAction, big.NewInt(1))
+		operation, err := registry.GetProtocolOperation(AaveV3, SupplyAction, big.NewInt(1))
 		require.NoError(t, err)
 		require.NotNil(t, operation)
 		require.IsType(t, &GenericProtocolOperation{}, operation)
 	})
 
 	t.Run("GetProtocolOperation_NotExists", func(t *testing.T) {
-		operation, err := registry.GetProtocolOperation("AaveV3", SupplyAction, big.NewInt(2))
+		operation, err := registry.GetProtocolOperation(AaveV3, SupplyAction, big.NewInt(2))
 		require.Error(t, err)
 		require.Nil(t, operation)
 	})
@@ -34,50 +35,51 @@ func TestProtocolRegistry(t *testing.T) {
 
 	t.Run("RegisterProtocolOperation_InvalidChainID", func(t *testing.T) {
 		require.Panics(t, func() {
-			registry.RegisterProtocolOperation("AaveV3", SupplyAction, big.NewInt(-1), &GenericProtocolOperation{})
+			registry.RegisterProtocolOperation(AaveV3, SupplyAction, big.NewInt(-1), &GenericProtocolOperation{})
 		})
 	})
 
 	t.Run("RegisterProtocolOperation_NilOperation", func(t *testing.T) {
 		require.Panics(t, func() {
-			registry.RegisterProtocolOperation("AaveV3", SupplyAction, big.NewInt(1), nil)
+			registry.RegisterProtocolOperation(AaveV3, SupplyAction, big.NewInt(1), nil)
 		})
 	})
 }
-
 func TestProtocolOperations(t *testing.T) {
 	registry := NewProtocolRegistry()
 	SetupProtocolOperations(registry)
-
 	tests := []struct {
 		name     string
-		protocol string
+		protocol ProtocolName
 		action   ContractAction
+		kind     AssetKind
 		args     []interface{}
 		expected string
 	}{
 		{
 			name:     "AaveV3 Supply",
-			protocol: "AaveV3",
+			protocol: AaveV3,
 			action:   SupplyAction,
+			kind:     LoanKind,
 			args: []interface{}{
-				"0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
-				"1000000000000000000",
-				"0x0000000000000000000000000000000000000000",
-				"0",
+				common.HexToAddress("0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"),
+				big.NewInt(1000000000000000000),
+				common.HexToAddress("0x0000000000000000000000000000000000000000"),
+				uint16(10),
 			},
-			// cast calldata "supply(address,uint256,address,uint16)" 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984 1000000000000000000 0x0000000000000000000000000000000000000000 0
-			// 0x617ba0370000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f9840000000000000000000000000000000000000000000000000de0b6b3a764000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-			expected: "0x617ba0370000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f9840000000000000000000000000000000000000000000000000de0b6b3a764000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+			// cast calldata "supply(address,uint256,address,uint16)" 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984 1000000000000000000 0x0000000000000000000000000000000000000000 10
+			// 0x617ba0370000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f9840000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a
+			expected: "0x617ba0370000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f9840000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a",
 		},
 		{
 			name:     "SparkLend Withdraw",
-			protocol: "SparkLend",
+			protocol: SparkLend,
 			action:   WithdrawAction,
+			kind:     LoanKind,
 			args: []interface{}{
-				"0xc0ffee254729296a45a3885639AC7E10F9d54979",
-				"500000000000000000",
-				"0x0000000000000000000000000000000000000000",
+				common.HexToAddress("0xc0ffee254729296a45a3885639AC7E10F9d54979"),
+				big.NewInt(500000000000000000),
+				common.HexToAddress("0x0000000000000000000000000000000000000000"),
 			},
 			// cast calldata "withdraw(address,uint256,address)" 0xc0ffee254729296a45a3885639AC7E10F9d54979 500000000000000000 0x0000000000000000000000000000000000000000
 			// 0x69328dec000000000000000000000000c0ffee254729296a45a3885639ac7e10f9d5497900000000000000000000000000000000000000000000000006f05b59d3b200000000000000000000000000000000000000000000000000000000000000000000
@@ -85,10 +87,11 @@ func TestProtocolOperations(t *testing.T) {
 		},
 		{
 			name:     "Lido Stake",
-			protocol: "Lido",
-			action:   StakingAction,
+			protocol: Lido,
+			action:   SubmitAction,
+			kind:     StakeKind,
 			args: []interface{}{
-				"0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
+				common.HexToAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"),
 			},
 			// cast calldata "submit(address)" 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6
 			// 0xa1903eab000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6
@@ -102,31 +105,33 @@ func TestProtocolOperations(t *testing.T) {
 			require.NoError(t, err)
 			require.NotNil(t, operation)
 
-			// Cast the operation to *GenericProtocolOperation to access GenerateCalldata
-			genOp, ok := operation.(*GenericProtocolOperation)
-			require.True(t, ok)
-
-			// Set the Args field in the GenericProtocolOperation
-			genOp.Args = tt.args
-
-			calldata, err := genOp.GenerateCalldata()
+			calldata, err := operation.GenerateCalldata(tt.kind, tt.args)
 			require.NoError(t, err)
 			require.Equal(t, tt.expected, calldata)
 		})
 	}
 }
+
 func TestSetupProtocolOperations(t *testing.T) {
 	registry := NewProtocolRegistry()
 	SetupProtocolOperations(registry)
 
-	for protocol, protocolDetails := range SupportedProtocols {
-		parsedABI, _ := abi.JSON(strings.NewReader(protocolDetails.ABI))
-		for _, method := range parsedABI.Methods {
-			action := ContractAction(method.Name)
-			operation, err := registry.GetProtocolOperation(protocol, action, big.NewInt(1))
-			require.NoError(t, err)
-			require.NotNil(t, operation)
-			require.IsType(t, &GenericProtocolOperation{}, operation)
+	// Iterate over each asset kind and their associated protocols
+	for _, protocols := range SupportedProtocols {
+		for _, proto := range protocols {
+			// Parse the ABI once per protocol for testing
+			parsedABI, err := abi.JSON(strings.NewReader(proto.ABI))
+			require.NoError(t, err, "ABI should be correctly parsed without error")
+
+			// Test each method in the parsed ABI
+			for _, method := range parsedABI.Methods {
+				action := ContractAction(method.Name)
+				operation, err := registry.GetProtocolOperation(proto.Name, action, big.NewInt(1))
+
+				require.NoError(t, err, "Should not have error retrieving operation for protocol %s and action %s", proto.Name, action)
+				require.NotNil(t, operation, "Operation should not be nil for protocol %s and action %s", proto.Name, action)
+				require.IsType(t, &GenericProtocolOperation{}, operation, "Operation should be of type *GenericProtocolOperation")
+			}
 		}
 	}
 }
