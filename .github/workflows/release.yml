@@ -15,7 +15,7 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0 # fetch all history for all tags and branches
+        fetch-depth: 0 # fetch tags
 
     - name: Set up Go
       uses: actions/setup-go@v4
@@ -25,16 +25,6 @@ jobs:
 
     - name: Run tests
       run: go test ./...
-
-    - name: Install git-chglog
-      run: |
-        curl -sL https://github.com/git-chglog/git-chglog/releases/download/v0.15.0/git-chglog_linux_amd64 -o git-chglog
-        chmod +x ./git-chglog
-        sudo mv ./git-chglog /usr/local/bin/git-chglog
-
-    - name: Generate changelog
-      id: changelog
-      run: git-chglog --next-tag ${{ steps.nextver.outputs.new_tag }} > CHANGELOG.md
 
     - name: Create GitHub App Token
       uses: actions/create-github-app-token@v1
@@ -58,4 +48,3 @@ jobs:
       with:
           tag_name: ${{ steps.nextver.outputs.new_tag }}
           release_name: Release ${{ steps.nextver.outputs.new_tag }}
-          body_path: CHANGELOG.md
