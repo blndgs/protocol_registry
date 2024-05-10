@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 // ProtocolRegistry maintains a registry of supported protocols and their operations.
@@ -92,12 +93,17 @@ func SetupProtocolOperations(registry *ProtocolRegistry) {
 			protocol.ParsedABI = parsedABI
 			SupportedProtocols[assetKind][i] = protocol
 
+			if addr := protocol.Address; !common.IsHexAddress(addr) {
+				panic(fmt.Sprintf("provided address is not a valid EVM address.. %v", addr))
+			}
+
 			// Register each action of the protocol in the registry
 			registry.RegisterProtocolOperation(protocol.Name, protocol.Action, protocol.ChainID, &GenericProtocolOperation{
 				DynamicOperation: DynamicOperation{
 					Protocol: protocol.Name,
 					Action:   protocol.Action,
 					ChainID:  protocol.ChainID,
+					Address:  common.HexToAddress(protocol.Address),
 				},
 			})
 		}

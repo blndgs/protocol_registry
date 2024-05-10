@@ -34,9 +34,10 @@ const (
 	LoanKind AssetKind = "LOAN"
 )
 const (
-	AaveV3    ProtocolName = "aave_v3"
-	SparkLend ProtocolName = "spark_lend"
-	Lido      ProtocolName = "lido"
+	AaveV3     ProtocolName = "aave_v3"
+	SparkLend  ProtocolName = "spark_lend"
+	Lido       ProtocolName = "lido"
+	RocketPool ProtocolName = "RocketPool"
 )
 
 const (
@@ -85,5 +86,11 @@ var SupportedProtocols = map[AssetKind][]Protocol{
 			Address: "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
 			ABI:     `[{"name": "submit", "type": "function","inputs": [{"type": "address"}]}]`,
 		},
+		// {
+		// 	Name:    RocketPool,
+		// 	Action:  SupplyAction,
+		// 	ChainID: big.NewInt(1),
+		// 	Address: "", // we will dynamically retrieve the address
+		// },
 	},
 }
