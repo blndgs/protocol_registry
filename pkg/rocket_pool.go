@@ -58,6 +58,7 @@ type RocketPoolOperation struct {
 	contract     *rocketpool.Contract
 	rethContract *rocketpool.Contract
 	action       ContractAction
+	parsedABI    abi.ABI
 }
 
 func (r *RocketPoolOperation) GenerateCalldata(kind AssetKind, args []interface{}) (string, error) {
@@ -117,6 +118,11 @@ func NewRocketPool(rpcURL, contractAddress string, action ContractAction) (*Rock
 		return nil, err
 	}
 
+	parsedABI, err := abi.JSON(strings.NewReader(RocketPoolABI))
+	if err != nil {
+		return nil, err
+	}
+
 	p := &RocketPoolOperation{
 		DynamicOperation: DynamicOperation{
 			Protocol: RocketPool,
@@ -126,23 +132,20 @@ func NewRocketPool(rpcURL, contractAddress string, action ContractAction) (*Rock
 		contract:     contract,
 		rethContract: rethContract,
 		action:       action,
+		parsedABI:    parsedABI,
 	}
 
 	return p, nil
 }
 
 func (r *RocketPoolOperation) withdraw(args []interface{}) (string, error) {
-	parsedABI, err := abi.JSON(strings.NewReader(RocketPoolABI))
-	if err != nil {
-		return "", err
-	}
 
-	_, exists := parsedABI.Methods["transfer"]
+	_, exists := r.parsedABI.Methods["transfer"]
 	if !exists {
 		return "", errors.New("unsupported action")
 	}
 
-	calldata, err := parsedABI.Pack("transfer", args...)
+	calldata, err := r.parsedABI.Pack("transfer", args...)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate calldata for %s: %w", r.Action, err)
 	}
@@ -152,12 +155,8 @@ func (r *RocketPoolOperation) withdraw(args []interface{}) (string, error) {
 }
 
 func (r *RocketPoolOperation) deposit(args []interface{}) (string, error) {
-	parsedABI, err := abi.JSON(strings.NewReader(RocketPoolABI))
-	if err != nil {
-		return "", err
-	}
 
-	_, exists := parsedABI.Methods["deposit"]
+	_, exists := r.parsedABI.Methods["deposit"]
 	if !exists {
 		return "", errors.New("unsupported action")
 	}
@@ -177,7 +176,7 @@ func (r *RocketPoolOperation) deposit(args []interface{}) (string, error) {
 		return "", errors.New("rocketpool not accepting this much eth deposit at this time")
 	}
 
-	calldata, err := parsedABI.Pack("deposit")
+	calldata, err := r.parsedABI.Pack("deposit")
 	if err != nil {
 		return "", fmt.Errorf("failed to generate calldata for %s: %w", r.Action, err)
 	}
