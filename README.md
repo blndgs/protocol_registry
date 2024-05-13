@@ -37,9 +37,9 @@ registry := pkg.NewProtocolRegistry()
 To register a new protocol operation, you can use the `RegisterProtocolOperation` function:
 
 ```go
-registry.RegisterProtocolOperation("AaveV3", pkg.SupplyAction, big.NewInt(1), &pkg.GenericProtocolOperation{
+registry.RegisterProtocolOperation(protocol.Name, protocol.Action, protocol.ChainID, &pkg.GenericProtocolOperation{
     DynamicOperation: pkg.DynamicOperation{
-        Protocol: "AaveV3",
+        Protocol: protocol.Name,
         Action:   pkg.SupplyAction,
         ChainID:  big.NewInt(1),
     },
@@ -51,7 +51,7 @@ registry.RegisterProtocolOperation("AaveV3", pkg.SupplyAction, big.NewInt(1), &p
 To retrieve a protocol operation, you can use the `GetProtocolOperation` function:
 
 ```go
-codeoperation, err := registry.GetProtocolOperation("AaveV3", pkg.SupplyAction, big.NewInt(1))
+operation, err := registry.GetProtocolOperation(pkg.AaveV3, pkg.SupplyAction, big.NewInt(1))
 if err != nil {
     // Handle the error
 }
@@ -62,7 +62,13 @@ if err != nil {
 To generate calldata for a specific operation, you can use the `GenerateCalldata` method of the retrieved operation:
 
 ```go
-codecalldata, err := operation.GenerateCalldata()
+args := []interface{}{
+    common.HexToAddress("0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"),
+    big.NewInt(1000000000000000000),
+    common.HexToAddress("0x0000000000000000000000000000000000000000"),
+    uint16(10),
+   }
+calldata, err := operation.GenerateCalldata(pkg.LoanKind, args)
 if err != nil {
     // Handle the error
 }
@@ -75,11 +81,15 @@ To add support for a new protocol and its operations, follow these steps:
 - Define the protocol details in the `SupportedProtocols` map in the `pkg` package:
 
 ```go
-var SupportedProtocols = map[string]Protocol{
-    "YourProtocol": {
+var SupportedProtocols = map[AssetKind][]Protocol{
+    AssetKind: {
+        {
         Name:    "YourProtocol",
+        Action:  SupplyAction,
+        ChainID: big.NewInt(1),
         Address: "0x...",
         ABI:     `[...]`,
+    },
     },
 }
 ```
@@ -87,7 +97,7 @@ var SupportedProtocols = map[string]Protocol{
 - Register the protocol operations using the `RegisterProtocolOperation` function:
 
 ```go
-coderegistry.RegisterProtocolOperation("YourProtocol", pkg.YourAction, big.NewInt(1), &pkg.GenericProtocolOperation{
+registry.RegisterProtocolOperation("YourProtocol", pkg.YourAction, big.NewInt(1), &pkg.GenericProtocolOperation{
     DynamicOperation: pkg.DynamicOperation{
         Protocol: "YourProtocol",
         Action:   pkg.YourAction,
@@ -117,7 +127,7 @@ go build -o protocol main.go
 - Run the command-line tool with the desired flags:
 
 ```sh
-code./protocol -protocol AaveV3 -action supply
+./protocol -protocol aave_v3 -action supply
 ```
 
 Example output:
@@ -131,7 +141,7 @@ Generated calldata: 0x...
 For more information on the available flags and usage examples, refer to the command-line tool's help information:
 
 ```sh
-code./protocol -help
+./protocol -help
 ```
 
 ## Contributing
