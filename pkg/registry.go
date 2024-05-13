@@ -28,9 +28,9 @@ func (pr *ProtocolRegistry) RegisterProtocolOperation(protocol ProtocolName, act
 	pr.lock.Lock()
 	defer pr.lock.Unlock()
 	// Check if protocol is supported
-	if !isProtocolSupported(protocol, action) {
-		panic(fmt.Sprintf("unsupported protocol: %s", protocol))
-	}
+	// if !isProtocolSupported(protocol, action) {
+	// 	panic(fmt.Sprintf("unsupported protocol: %s", protocol))
+	// }
 
 	// Check chainID validity
 	if chainID == nil || chainID.Sign() != 1 {
