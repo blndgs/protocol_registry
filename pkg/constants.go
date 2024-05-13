@@ -98,19 +98,5 @@ var SupportedProtocols = map[AssetKind][]Protocol{
 			Address: LidoContractAddress,
 			ABI:     LidoSubmitABI,
 		},
-		{
-			Name:    RocketPool,
-			Action:  SubmitAction,
-			ChainID: big.NewInt(1),
-			Address: RocketPoolStorageAddress,
-			ABI:     RocketPoolABI,
-		},
-		{
-			Name:    RocketPool,
-			Action:  WithdrawAction,
-			ChainID: big.NewInt(1),
-			Address: RocketPoolStorageAddress,
-			ABI:     RocketPoolABI,
-		},
 	},
 }
