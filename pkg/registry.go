@@ -80,7 +80,7 @@ func (pr *ProtocolRegistry) GetProtocolOperation(protocol ProtocolName, action C
 }
 
 // SetupProtocolOperations automatically sets up protocol operations based on the SupportedProtocols map.
-func SetupProtocolOperations(registry *ProtocolRegistry) {
+func SetupProtocolOperations(rpcURL string, registry *ProtocolRegistry) {
 	for assetKind, protocols := range SupportedProtocols {
 		for i, protocol := range protocols {
 			parsedABI, err := abi.JSON(strings.NewReader(protocol.ABI))
@@ -102,4 +102,15 @@ func SetupProtocolOperations(registry *ProtocolRegistry) {
 			})
 		}
 	}
+	rocketPoolSubmit, err := NewRocketPool(rpcURL, RocketPoolStorageAddress, SubmitAction)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to create RocketPool submit operation: %v", err))
+	}
+	rocketPoolSubmit.Register(registry)
+
+	rocketPoolWithdraw, err := NewRocketPool(rpcURL, RocketPoolStorageAddress, WithdrawAction)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to create RocketPool withdraw operation: %v", err))
+	}
+	rocketPoolWithdraw.Register(registry)
 }
