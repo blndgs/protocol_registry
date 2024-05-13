@@ -52,18 +52,6 @@ func (pr *ProtocolRegistry) RegisterProtocolOperation(protocol ProtocolName, act
 	pr.protocols[protocol][action][chainID.Int64()] = operation
 }
 
-// isProtocolSupported checks if the protocol and action are defined in SupportedProtocols
-func isProtocolSupported(protocol ProtocolName, action ContractAction) bool {
-	for _, protocols := range SupportedProtocols {
-		for _, proto := range protocols {
-			if proto.Name == protocol && proto.Action == action {
-				return true
-			}
-		}
-	}
-	return false
-}
-
 // GetProtocolOperation retrieves an operation for a given protocol and chain.
 func (pr *ProtocolRegistry) GetProtocolOperation(protocol ProtocolName, action ContractAction, chainID *big.Int) (ProtocolOperation, error) {
 	pr.lock.RLock()

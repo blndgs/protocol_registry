@@ -27,12 +27,6 @@ func TestProtocolRegistry(t *testing.T) {
 		require.Nil(t, operation)
 	})
 
-	// t.Run("RegisterProtocolOperation_UnsupportedProtocol", func(t *testing.T) {
-	// 	require.Panics(t, func() {
-	// 		registry.RegisterProtocolOperation("UnsupportedProtocol", SupplyAction, big.NewInt(1), &GenericProtocolOperation{})
-	// 	})
-	// })
-
 	t.Run("RegisterProtocolOperation_InvalidChainID", func(t *testing.T) {
 		require.Panics(t, func() {
 			registry.RegisterProtocolOperation(AaveV3, SupplyAction, big.NewInt(-1), &GenericProtocolOperation{})
