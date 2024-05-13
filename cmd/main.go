@@ -36,10 +36,14 @@ func main() {
 		fmt.Println("Error: Action name is required")
 		os.Exit(1)
 	}
-
+	// TODO:: lanre ENV variable (the CLI is for demo/test only)
+	rpc := os.Getenv("TEST_ETH_RPC_URL")
+	if rpc == "" {
+		panic("rpc url is empty")
+	}
 	// Create a new protocol registry and set up the operations
 	registry := pkg.NewProtocolRegistry()
-	pkg.SetupProtocolOperations(registry)
+	pkg.SetupProtocolOperations(rpc, registry)
 
 	// Convert action flag to ContractAction type
 	action := pkg.ContractAction(*actionFlag)
