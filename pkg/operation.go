@@ -25,7 +25,7 @@ type ProtocolOperation interface {
 	// Sometimes this might be static but some protocols do not use a static address
 	// like Rocketpool and others. The current deposit pool address would need to be dynamically
 	// retrieved
-	// GetContractAddress(ctx context.Context) (common.Address, error)
+	GetContractAddress(ctx context.Context) (common.Address, error)
 }
 
 // GenericProtocolOperation provides a flexible implementation for generating calldata for any protocol operation.

@@ -53,6 +53,8 @@ const (
      `
 )
 
+// RocketPoolOperation implements an implementation for generating calldata for staking and unstaking with Rocketpool
+// It also implements dynamic retrival of Rocketpool's dynamic deposit and token contract addresses
 type RocketPoolOperation struct {
 	DynamicOperation
 	contract     *rocketpool.Contract
@@ -61,6 +63,7 @@ type RocketPoolOperation struct {
 	parsedABI    abi.ABI
 }
 
+// GenerateCalldata dynamically generates the calldata for deposit and withdrawal actions
 func (r *RocketPoolOperation) GenerateCalldata(kind AssetKind, args []interface{}) (string, error) {
 	switch r.Action {
 	case SubmitAction:
@@ -71,10 +74,13 @@ func (r *RocketPoolOperation) GenerateCalldata(kind AssetKind, args []interface{
 	return "", errors.New("unsupported action")
 }
 
+// Register registers the RocketPoolOperation client into the protocol registry so it can be used by any user of
+// the registry library
 func (r *RocketPoolOperation) Register(registry *ProtocolRegistry) {
 	registry.RegisterProtocolOperation(r.Protocol, r.Action, r.ChainID, r)
 }
 
+// NewRocketPool initializes a RocketPool client
 func NewRocketPool(rpcURL, contractAddress string, action ContractAction) (*RocketPoolOperation, error) {
 	if action != SubmitAction && action != WithdrawAction {
 		return nil, errors.New("unsupported action")
@@ -185,6 +191,7 @@ func (r *RocketPoolOperation) deposit(args []interface{}) (string, error) {
 	return calldataHex, nil
 }
 
+// GetContractAddress dynamically returns the correct contract address for the operation
 func (r *RocketPoolOperation) GetContractAddress(
 	_ context.Context) (common.Address, error) {
 	switch r.action {
