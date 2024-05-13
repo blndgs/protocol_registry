@@ -50,7 +50,7 @@ const (
 	AaveV3ContractAddress    = "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2"
 	AaveV3SupplyABI          = `[{"name":"supply","type":"function","inputs":[{"type":"address"},{"type":"uint256"},{"type":"address"},{"type":"uint16"}]}]`
 	AaveV3WithdrawABI        = `[{"name":"withdraw","type":"function","inputs":[{"type":"address"},{"type":"uint256"},{"type":"address"}]}]`
-	SparkLendContractAddress = "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2" //TODO:: Larne please check and fix the correct address
+	SparkLendContractAddress = "0xC13e21B648A5Ee794902342038FF3aDAB66BE987"
 	SparkSupplyABI           = AaveV3SupplyABI
 	SparkWithdrawABI         = AaveV3WithdrawABI
 	LidoContractAddress      = "0xae7ab96520de3a18e5e111b5eaab095312d7fe84"

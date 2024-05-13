@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"context"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -16,46 +17,47 @@ import (
 
 const (
 	RocketPoolABI = `
-    [
-      {
-        "inputs": [],
-        "name": "deposit",
-        "outputs": [],
-        "stateMutability": "payable",
-        "type": "function"
-      },
-      {
-        "inputs": [
-          {
-            "internalType": "address",
-            "name": "recipient",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          }
-        ],
-        "name": "transfer",
-        "outputs": [
-          {
-            "internalType": "bool",
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "stateMutability": "nonpayable",
-        "type": "function"
-      }
-    ]
-    `
+     [
+       {
+         "inputs": [],
+         "name": "deposit",
+         "outputs": [],
+         "stateMutability": "payable",
+         "type": "function"
+       },
+       {
+         "inputs": [
+           {
+             "internalType": "address",
+             "name": "recipient",
+             "type": "address"
+           },
+           {
+             "internalType": "uint256",
+             "name": "amount",
+             "type": "uint256"
+           }
+         ],
+         "name": "transfer",
+         "outputs": [
+           {
+             "internalType": "bool",
+             "name": "",
+             "type": "bool"
+           }
+         ],
+         "stateMutability": "nonpayable",
+         "type": "function"
+       }
+     ]
+     `
 )
 
 type RocketPoolOperation struct {
 	DynamicOperation
 	contract     *rocketpool.Contract
 	rethContract *rocketpool.Contract
+	action       ContractAction
 }
 
 func (r *RocketPoolOperation) GenerateCalldata(kind AssetKind, args []interface{}) (string, error) {
@@ -73,6 +75,10 @@ func (r *RocketPoolOperation) Register(registry *ProtocolRegistry) {
 }
 
 func NewRocketPool(rpcURL, contractAddress string, action ContractAction) (*RocketPoolOperation, error) {
+	if action != SubmitAction && action != WithdrawAction {
+		return nil, errors.New("unsupported action")
+	}
+
 	ethClient, err := ethclient.Dial(rpcURL)
 	if err != nil {
 		return nil, err
@@ -119,6 +125,7 @@ func NewRocketPool(rpcURL, contractAddress string, action ContractAction) (*Rock
 		},
 		contract:     contract,
 		rethContract: rethContract,
+		action:       action,
 	}
 
 	return p, nil
@@ -177,4 +184,15 @@ func (r *RocketPoolOperation) deposit(args []interface{}) (string, error) {
 
 	calldataHex := HexPrefix + hex.EncodeToString(calldata)
 	return calldataHex, nil
+}
+
+func (r *RocketPoolOperation) GetContractAddress(
+	_ context.Context) (common.Address, error) {
+	switch r.action {
+	case SubmitAction:
+		return *r.contract.Address, nil
+
+	default:
+		return *r.rethContract.Address, nil
+	}
 }

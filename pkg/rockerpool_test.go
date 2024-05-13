@@ -2,25 +2,15 @@ package pkg
 
 import (
 	"math/big"
-	"os"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
 )
 
-func getTestRPCURL(t *testing.T) string {
-	t.Helper()
-
-	u := os.Getenv("TEST_ETH_RPC_URL")
-
-	require.NotEmpty(t, u)
-	return u
-}
-
 func TestRocketPoolOperation_GenerateCallData_UnsupportedAction(t *testing.T) {
 
-	rp, err := NewRocketPool(getTestRPCURL(t), SupplyAction)
+	rp, err := NewRocketPool(getTestRPCURL(t), RocketPoolStorageAddress, SupplyAction)
 	require.Error(t, err)
 
 	require.Nil(t, rp)
@@ -63,7 +53,7 @@ func TestRocketPoolOperation_GenerateCallData(t *testing.T) {
 
 		t.Run(v.name, func(t *testing.T) {
 
-			rp, err := NewRocketPool(getTestRPCURL(t), v.action)
+			rp, err := NewRocketPool(getTestRPCURL(t), RocketPoolStorageAddress, v.action)
 			require.NoError(t, err)
 
 			rp.Register(registry)

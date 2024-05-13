@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"math/big"
+	"os"
 	"strings"
 	"testing"
 
@@ -13,8 +14,7 @@ import (
 func getTestRPCURL(t *testing.T) string {
 	t.Helper()
 
-	// u := os.Getenv("TEST_ETH_RPC_URL")
-	u := "https://eth.public-rpc.com"
+	u := os.Getenv("TEST_ETH_RPC_URL")
 
 	require.NotEmpty(t, u)
 	return u
