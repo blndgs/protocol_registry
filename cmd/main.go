@@ -36,10 +36,13 @@ func main() {
 		fmt.Println("Error: Action name is required")
 		os.Exit(1)
 	}
-
+	rpc := os.Getenv("ETH_RPC_URL")
+	if rpc == "" {
+		rpc = "https://eth.public-rpc.com"
+	}
 	// Create a new protocol registry and set up the operations
 	registry := pkg.NewProtocolRegistry()
-	pkg.SetupProtocolOperations(registry)
+	pkg.SetupProtocolOperations(rpc, registry)
 
 	// Convert action flag to ContractAction type
 	action := pkg.ContractAction(*actionFlag)

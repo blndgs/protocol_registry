@@ -108,6 +108,13 @@ registry.RegisterProtocolOperation("YourProtocol", pkg.YourAction, big.NewInt(1)
 
 - Implement the necessary logic for generating calldata in the `GenerateCalldata` method of the `GenericProtocolOperation` struct, if required.
 
+## Supported protocols
+
+- Lido
+- Aave3
+- SparkLend
+- Rocketpool
+
 ## Command-Line Tool
 
 The Protocol Registry Package also includes a command-line tool for demonstration and testing purposes. To use the command-line tool, follow these steps:

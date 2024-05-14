@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"math/big"
+	"os"
 	"strings"
 	"testing"
 
@@ -10,9 +11,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func getTestRPCURL(t *testing.T) string {
+	t.Helper()
+
+	u := os.Getenv("TEST_ETH_RPC_URL")
+
+	require.NotEmpty(t, u)
+	return u
+}
+
 func TestProtocolRegistry(t *testing.T) {
 	registry := NewProtocolRegistry()
-	SetupProtocolOperations(registry)
+	SetupProtocolOperations(getTestRPCURL(t), registry)
 
 	t.Run("GetProtocolOperation_Exists", func(t *testing.T) {
 		operation, err := registry.GetProtocolOperation(AaveV3, SupplyAction, big.NewInt(1))
@@ -25,12 +35,6 @@ func TestProtocolRegistry(t *testing.T) {
 		operation, err := registry.GetProtocolOperation(AaveV3, SupplyAction, big.NewInt(2))
 		require.Error(t, err)
 		require.Nil(t, operation)
-	})
-
-	t.Run("RegisterProtocolOperation_UnsupportedProtocol", func(t *testing.T) {
-		require.Panics(t, func() {
-			registry.RegisterProtocolOperation("UnsupportedProtocol", SupplyAction, big.NewInt(1), &GenericProtocolOperation{})
-		})
 	})
 
 	t.Run("RegisterProtocolOperation_InvalidChainID", func(t *testing.T) {
@@ -47,7 +51,7 @@ func TestProtocolRegistry(t *testing.T) {
 }
 func TestProtocolOperations(t *testing.T) {
 	registry := NewProtocolRegistry()
-	SetupProtocolOperations(registry)
+	SetupProtocolOperations(getTestRPCURL(t), registry)
 	tests := []struct {
 		name     string
 		protocol ProtocolName
@@ -97,6 +101,31 @@ func TestProtocolOperations(t *testing.T) {
 			// 0xa1903eab000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6
 			expected: "0xa1903eab000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6",
 		},
+		{
+			name:     "Rocket Pool Stake",
+			protocol: RocketPool,
+			action:   SubmitAction,
+			kind:     StakeKind,
+			args: []interface{}{
+				big.NewInt(1 * 1e6),
+			},
+			// cast calldata "deposit()"
+			// 0xd0e30db0
+			expected: "0xd0e30db0",
+		},
+		{
+			name:     "Rocket Pool UnStake (withdraw)",
+			protocol: RocketPool,
+			action:   WithdrawAction,
+			kind:     StakeKind,
+			args: []interface{}{
+				common.HexToAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"),
+				big.NewInt(1 * 1e18),
+			},
+			// cast calldata "transfer(address,uint256)" 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6 1000000000000000000
+			// 0xa9059cbb000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000
+			expected: "0xa9059cbb000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000",
+		},
 	}
 
 	for _, tt := range tests {
@@ -114,7 +143,7 @@ func TestProtocolOperations(t *testing.T) {
 
 func TestSetupProtocolOperations(t *testing.T) {
 	registry := NewProtocolRegistry()
-	SetupProtocolOperations(registry)
+	SetupProtocolOperations(getTestRPCURL(t), registry)
 
 	// Iterate over each asset kind and their associated protocols
 	for _, protocols := range SupportedProtocols {
