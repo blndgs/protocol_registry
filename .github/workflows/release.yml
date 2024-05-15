@@ -25,6 +25,8 @@ jobs:
 
     - name: Run tests
       run: go test ./...
+      env:
+        TEST_ETH_RPC_URL: "https://eth.public-rpc.com"
 
     - name: Create GitHub App Token
       uses: actions/create-github-app-token@v1
