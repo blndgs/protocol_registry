@@ -38,12 +38,15 @@ const (
 	SparkLend  ProtocolName = "spark_lend"
 	Lido       ProtocolName = "lido"
 	RocketPool ProtocolName = "rocket_pool"
+	Ankr       ProtocolName = "ankr"
 )
 
 const (
-	SupplyAction   ContractAction = "supply"
-	WithdrawAction ContractAction = "withdraw"
-	SubmitAction   ContractAction = "submit"
+	SupplyAction        ContractAction = "supply"
+	WithdrawAction      ContractAction = "withdraw"
+	SubmitAction        ContractAction = "submit"
+	StakeAndClaimEthC   ContractAction = "stakeAndClaimAethC"
+	UnstakeAndClaimEthC ContractAction = "unstakeAETH"
 )
 
 const (
@@ -56,6 +59,9 @@ const (
 	LidoContractAddress      = "0xae7ab96520de3a18e5e111b5eaab095312d7fe84"
 	LidoSubmitABI            = `[{"name": "submit", "type": "function","inputs": [{"type": "address"}]}]`
 	RocketPoolStorageAddress = "0x1d8f8f00cfa6758d7bE78336684788Fb0ee0Fa46"
+	AnkrContractAddress      = "0x84db6ee82b7cf3b47e8f19270abde5718b936670"
+	AnkrSupplyABI            = `[{"inputs":[],"name":"stakeAndClaimAethC","outputs":[],"stateMutability":"payable","type":"function"}]`
+	AnkrWithdrawABI          = `[{"inputs":[{"internalType":"uint256","name":"shares","type":"uint256"}],"name":"unstakeAETH","outputs":[],"stateMutability":"nonpayable","type":"function"}]`
 )
 
 // Predefined protocols
@@ -97,6 +103,20 @@ var SupportedProtocols = map[AssetKind][]Protocol{
 			ChainID: big.NewInt(1),
 			Address: LidoContractAddress,
 			ABI:     LidoSubmitABI,
+		},
+		{
+			Name:    Ankr,
+			Action:  StakeAndClaimEthC,
+			ChainID: big.NewInt(1),
+			Address: AnkrContractAddress,
+			ABI:     AnkrSupplyABI,
+		},
+		{
+			Name:    Ankr,
+			Action:  UnstakeAndClaimEthC,
+			ChainID: big.NewInt(1),
+			Address: AnkrContractAddress,
+			ABI:     AnkrWithdrawABI,
 		},
 	},
 }
