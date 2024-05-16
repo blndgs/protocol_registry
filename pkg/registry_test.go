@@ -163,6 +163,28 @@ func TestProtocolOperations(t *testing.T) {
 			// 0xa9059cbb000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000
 			expected: "0xa9059cbb000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000",
 		},
+		{
+			name:     "Ankr staking ( deposit )",
+			protocol: Ankr,
+			action:   StakeAndClaimEthC,
+			kind:     StakeKind,
+			args:     []interface{}{},
+			// cast calldata "stakeAndClaimAethC()"
+			// 0x9fa65c56
+			expected: "0x9fa65c56",
+		},
+		{
+			name:     "Ankr staking ( withdrawal )",
+			protocol: Ankr,
+			action:   UnstakeAndClaimEthC,
+			kind:     StakeKind,
+			args: []interface{}{
+				big.NewInt(3987509938965136896),
+			},
+			// cast calldata "unstakeAETH(uint256)" 3987509938965136896
+			// 0xc957619d00000000000000000000000000000000000000000000000037567b29aa5b4600
+			expected: "0xc957619d00000000000000000000000000000000000000000000000037567b29aa5b4600",
+		},
 	}
 
 	for _, tt := range tests {
