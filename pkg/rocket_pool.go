@@ -202,3 +202,11 @@ func (r *RocketPoolOperation) GetContractAddress(
 		return *r.rethContract.Address, nil
 	}
 }
+
+func (r *RocketPoolOperation) Validate(asset common.Address) error {
+	if IsNativeToken(asset) {
+		return nil
+	}
+
+	return fmt.Errorf("unsupported asset for rocket pool staking (%s)", asset.Hex())
+}

@@ -20,6 +20,43 @@ func getTestRPCURL(t *testing.T) string {
 	return u
 }
 
+func TestProtocolRegistry_Validate(t *testing.T) {
+	registry := NewProtocolRegistry()
+	SetupProtocolOperations(getTestRPCURL(t), registry)
+
+	t.Run("ValidateAave", func(t *testing.T) {
+		operation, err := registry.GetProtocolOperation(AaveV3, SupplyAction, big.NewInt(1))
+		require.NoError(t, err)
+
+		require.Nil(t, operation.Validate(common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")))
+	})
+
+	t.Run("ValidateAave_UnsupportedAsset", func(t *testing.T) {
+		operation, err := registry.GetProtocolOperation(AaveV3, SupplyAction, big.NewInt(1))
+		require.NoError(t, err)
+
+		require.Error(t, operation.Validate(common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb49")))
+	})
+
+	// t.Run("GetProtocolOperation_NotExists", func(t *testing.T) {
+	// 	operation, err := registry.GetProtocolOperation(AaveV3, SupplyAction, big.NewInt(2))
+	// 	require.Error(t, err)
+	// 	require.Nil(t, operation)
+	// })
+	//
+	// t.Run("RegisterProtocolOperation_InvalidChainID", func(t *testing.T) {
+	// 	require.Panics(t, func() {
+	// 		registry.RegisterProtocolOperation(AaveV3, SupplyAction, big.NewInt(-1), &GenericProtocolOperation{})
+	// 	})
+	// })
+	//
+	// t.Run("RegisterProtocolOperation_NilOperation", func(t *testing.T) {
+	// 	require.Panics(t, func() {
+	// 		registry.RegisterProtocolOperation(AaveV3, SupplyAction, big.NewInt(1), nil)
+	// 	})
+	// })
+}
+
 func TestProtocolRegistry(t *testing.T) {
 	registry := NewProtocolRegistry()
 	SetupProtocolOperations(getTestRPCURL(t), registry)
