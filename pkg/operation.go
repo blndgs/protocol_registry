@@ -60,12 +60,15 @@ func (gpo *GenericProtocolOperation) Validate(asset common.Address) error {
 	}
 
 	if len(addrs) == 0 {
-		return nil
+		if strings.ToLower(asset.Hex()) == nativeDenomAddress {
+			return nil
+		}
+
+		return fmt.Errorf("unsupported asset for %s ( %s )", gpo.Protocol, asset)
 	}
 
 	for _, addr := range addrs {
-		if strings.ToLower(asset.Hex()) == strings.ToLower(addr) ||
-			strings.ToLower(asset.Hex()) == nativeDenomAddress {
+		if strings.ToLower(asset.Hex()) == strings.ToLower(addr) {
 			return nil
 		}
 	}

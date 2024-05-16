@@ -35,7 +35,8 @@ func TestProtocolRegistry_Validate(t *testing.T) {
 		operation, err := registry.GetProtocolOperation(AaveV3, SupplyAction, big.NewInt(1))
 		require.NoError(t, err)
 
-		require.Nil(t, operation.Validate(common.HexToAddress(nativeDenomAddress)))
+		// native token not supported
+		require.Error(t, operation.Validate(common.HexToAddress(nativeDenomAddress)))
 	})
 
 	t.Run("ValidateAave_UnsupportedAsset", func(t *testing.T) {
@@ -49,7 +50,8 @@ func TestProtocolRegistry_Validate(t *testing.T) {
 		operation, err := registry.GetProtocolOperation(Lido, SubmitAction, big.NewInt(1))
 		require.NoError(t, err)
 
-		require.Nil(t, operation.Validate(common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb49")))
+		require.Nil(t, operation.Validate(common.HexToAddress(nativeDenomAddress)))
+		require.Error(t, operation.Validate(common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb49")))
 	})
 }
 
