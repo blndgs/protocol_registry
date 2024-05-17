@@ -60,7 +60,7 @@ func (gpo *GenericProtocolOperation) Validate(asset common.Address) error {
 	}
 
 	if len(addrs) == 0 {
-		if strings.ToLower(asset.Hex()) == nativeDenomAddress {
+		if strings.EqualFold(strings.ToLower(asset.Hex()), nativeDenomAddress) {
 			return nil
 		}
 
