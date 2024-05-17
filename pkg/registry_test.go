@@ -20,6 +20,41 @@ func getTestRPCURL(t *testing.T) string {
 	return u
 }
 
+func TestProtocolRegistry_Validate(t *testing.T) {
+	registry := NewProtocolRegistry()
+	SetupProtocolOperations(getTestRPCURL(t), registry)
+
+	t.Run("ValidateAave", func(t *testing.T) {
+		operation, err := registry.GetProtocolOperation(AaveV3, SupplyAction, big.NewInt(1))
+		require.NoError(t, err)
+
+		require.Nil(t, operation.Validate(common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")))
+	})
+
+	t.Run("ValidateAave_NativeAsset", func(t *testing.T) {
+		operation, err := registry.GetProtocolOperation(AaveV3, SupplyAction, big.NewInt(1))
+		require.NoError(t, err)
+
+		// native token not supported
+		require.Error(t, operation.Validate(common.HexToAddress(nativeDenomAddress)))
+	})
+
+	t.Run("ValidateAave_UnsupportedAsset", func(t *testing.T) {
+		operation, err := registry.GetProtocolOperation(AaveV3, SupplyAction, big.NewInt(1))
+		require.NoError(t, err)
+
+		require.Error(t, operation.Validate(common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb49")))
+	})
+
+	t.Run("ValidateLido_NativeAsset", func(t *testing.T) {
+		operation, err := registry.GetProtocolOperation(Lido, SubmitAction, big.NewInt(1))
+		require.NoError(t, err)
+
+		require.Nil(t, operation.Validate(common.HexToAddress(nativeDenomAddress)))
+		require.Error(t, operation.Validate(common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb49")))
+	})
+}
+
 func TestProtocolRegistry(t *testing.T) {
 	registry := NewProtocolRegistry()
 	SetupProtocolOperations(getTestRPCURL(t), registry)

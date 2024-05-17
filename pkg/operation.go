@@ -3,8 +3,10 @@ package pkg
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -26,6 +28,11 @@ type ProtocolOperation interface {
 	// like Rocketpool and others. The current deposit pool address would need to be dynamically
 	// retrieved
 	GetContractAddress(ctx context.Context) (common.Address, error)
+
+	// Validate checks if the given asset is a valid one for this operation
+	// This will not be automatically called by GenerateCalldata.
+	// The client must call this to validate against the current known action type
+	Validate(asset common.Address) error
 }
 
 // GenericProtocolOperation provides a flexible implementation for generating calldata for any protocol operation.
@@ -37,6 +44,36 @@ type GenericProtocolOperation struct {
 func (gpo *GenericProtocolOperation) GetContractAddress(
 	_ context.Context) (common.Address, error) {
 	return gpo.Address, nil
+}
+
+// Validate checks if the given asset is a valid one for this operation
+func (gpo *GenericProtocolOperation) Validate(asset common.Address) error {
+
+	protocols, ok := tokenSupportedMap[gpo.ChainID.Int64()]
+	if !ok {
+		return errors.New("unsupported chain for asset validation")
+	}
+
+	addrs, ok := protocols[gpo.Protocol]
+	if !ok {
+		return errors.New("unsupported protocol for asset validation")
+	}
+
+	if len(addrs) == 0 {
+		if strings.EqualFold(strings.ToLower(asset.Hex()), nativeDenomAddress) {
+			return nil
+		}
+
+		return fmt.Errorf("unsupported asset for %s ( %s )", gpo.Protocol, asset)
+	}
+
+	for _, addr := range addrs {
+		if strings.EqualFold(strings.ToLower(asset.Hex()), strings.ToLower(addr)) {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("unsupported asset for %s ( %s )", gpo.Protocol, asset)
 }
 
 // GenerateCalldata dynamically generates calldata for a contract method call based on the operation's ABI, method, and arguments.
