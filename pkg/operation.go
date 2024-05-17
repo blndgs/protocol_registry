@@ -68,7 +68,7 @@ func (gpo *GenericProtocolOperation) Validate(asset common.Address) error {
 	}
 
 	for _, addr := range addrs {
-		if strings.ToLower(asset.Hex()) == strings.ToLower(addr) {
+		if strings.EqualFold(strings.ToLower(asset.Hex()), strings.ToLower(addr)) {
 			return nil
 		}
 	}
