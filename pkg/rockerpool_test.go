@@ -8,14 +8,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// TestRocketPoolOperation_GenerateCallData_UnsupportedAction test rocket pool unsupported action.
 func TestRocketPoolOperation_GenerateCallData_UnsupportedAction(t *testing.T) {
 
-	rp, err := NewRocketPool(getTestRPCURL(t), RocketPoolStorageAddress, RocketPoolStakeAction)
+	rp, err := NewRocketPool(getTestRPCURL(t), RocketPoolStorageAddress, SupplyAction)
 	require.Error(t, err)
 
 	require.Nil(t, rp)
 }
 
+// TestRocketPoolOperation_GenerateCallData_SupportedAction test rocket pool supported action.
+func TestRocketPoolOperation_GenerateCallData_SupportedAction(t *testing.T) {
+
+	rp, err := NewRocketPool(getTestRPCURL(t), RocketPoolStorageAddress, RocketPoolStakeAction)
+	require.NoError(t, err)
+
+	require.NotNil(t, rp)
+}
+
+// TestRocketPoolOperation_GenerateCallData test rocket pool Stake UnStake calldata.
 func TestRocketPoolOperation_GenerateCallData(t *testing.T) {
 
 	tt := []struct {
