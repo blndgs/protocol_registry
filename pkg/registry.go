@@ -7,24 +7,23 @@ import (
 	"sync"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 // ProtocolRegistry maintains a registry of supported protocols and their operations.
 type ProtocolRegistry struct {
 	lock      sync.RWMutex
-	protocols map[ProtocolName]map[ContractAction]map[int64]ProtocolOperation
+	protocols map[ContractAddress]map[ContractAction]map[int64]ProtocolOperation
 }
 
 // NewProtocolRegistry creates a new instance of ProtocolRegistry.
 func NewProtocolRegistry() *ProtocolRegistry {
 	return &ProtocolRegistry{
-		protocols: make(map[ProtocolName]map[ContractAction]map[int64]ProtocolOperation),
+		protocols: make(map[ContractAddress]map[ContractAction]map[int64]ProtocolOperation),
 	}
 }
 
 // RegisterProtocolOperation registers a new operation for a protocol on a specific chain.
-func (pr *ProtocolRegistry) RegisterProtocolOperation(protocol ProtocolName, action ContractAction, chainID *big.Int, operation ProtocolOperation) {
+func (pr *ProtocolRegistry) RegisterProtocolOperation(protocol ContractAddress, action ContractAction, chainID *big.Int, operation ProtocolOperation) {
 	pr.lock.Lock()
 	defer pr.lock.Unlock()
 
@@ -49,7 +48,7 @@ func (pr *ProtocolRegistry) RegisterProtocolOperation(protocol ProtocolName, act
 }
 
 // GetProtocolOperation retrieves an operation for a given protocol and chain.
-func (pr *ProtocolRegistry) GetProtocolOperation(protocol ProtocolName, action ContractAction, chainID *big.Int) (ProtocolOperation, error) {
+func (pr *ProtocolRegistry) GetProtocolOperation(protocol ContractAddress, action ContractAction, chainID *big.Int) (ProtocolOperation, error) {
 	pr.lock.RLock()
 	defer pr.lock.RUnlock()
 
@@ -66,6 +65,8 @@ func (pr *ProtocolRegistry) GetProtocolOperation(protocol ProtocolName, action C
 
 // SetupProtocolOperations automatically sets up protocol operations based on the SupportedProtocols map.
 func SetupProtocolOperations(rpcURL string, registry *ProtocolRegistry) {
+	var rocketPool *RocketPoolOperation
+
 	for assetKind, protocols := range SupportedProtocols {
 		for i, protocol := range protocols {
 			parsedABI, err := abi.JSON(strings.NewReader(protocol.ABI))
@@ -77,30 +78,29 @@ func SetupProtocolOperations(rpcURL string, registry *ProtocolRegistry) {
 			protocol.ParsedABI = parsedABI
 			SupportedProtocols[assetKind][i] = protocol
 
-			if addr := protocol.Address; !common.IsHexAddress(addr) {
-				panic(fmt.Sprintf("provided address is not a valid EVM address.. %v", addr))
+			// Initialize RocketPool instance only once for applicable actions
+			if protocol.Name == RocketPool && rocketPool == nil {
+				// Use any action to initialize; specific actions can be registered separately
+				rocketPool, err = NewRocketPool(rpcURL, RocketPoolStorageAddress, protocol.Action)
+				if err != nil {
+					panic(fmt.Sprintf("Failed to initialize RocketPool: %v", err))
+				}
 			}
 
 			// Register each action of the protocol in the registry
-			registry.RegisterProtocolOperation(protocol.Name, protocol.Action, protocol.ChainID, &GenericProtocolOperation{
+			registry.RegisterProtocolOperation(protocol.Address, protocol.Action, protocol.ChainID, &GenericProtocolOperation{
 				DynamicOperation: DynamicOperation{
 					Protocol: protocol.Name,
 					Action:   protocol.Action,
 					ChainID:  protocol.ChainID,
-					Address:  common.HexToAddress(protocol.Address),
+					Address:  protocol.Address,
 				},
 			})
 		}
 	}
-	rocketPoolSubmit, err := NewRocketPool(rpcURL, RocketPoolStorageAddress, SubmitAction)
-	if err != nil {
-		panic(fmt.Sprintf("Failed to create RocketPool submit operation: %v", err))
-	}
-	rocketPoolSubmit.Register(registry)
 
-	rocketPoolWithdraw, err := NewRocketPool(rpcURL, RocketPoolStorageAddress, WithdrawAction)
-	if err != nil {
-		panic(fmt.Sprintf("Failed to create RocketPool withdraw operation: %v", err))
+	// Register the RocketPool actions if RocketPool was initialized
+	if rocketPool != nil {
+		rocketPool.Register(registry)
 	}
-	rocketPoolWithdraw.Register(registry)
 }

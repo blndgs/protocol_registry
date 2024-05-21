@@ -10,7 +10,7 @@ import (
 
 func TestRocketPoolOperation_GenerateCallData_UnsupportedAction(t *testing.T) {
 
-	rp, err := NewRocketPool(getTestRPCURL(t), RocketPoolStorageAddress, SupplyAction)
+	rp, err := NewRocketPool(getTestRPCURL(t), RocketPoolStorageAddress, RocketPoolStakeAction)
 	require.Error(t, err)
 
 	require.Nil(t, rp)
@@ -26,7 +26,7 @@ func TestRocketPoolOperation_GenerateCallData(t *testing.T) {
 	}{
 		{
 			name:   "Supply action",
-			action: SubmitAction,
+			action: RocketPoolStakeAction,
 			// cast calldata "deposit()"
 			// 0xd0e30db0
 			expected: "0xd0e30db0",
@@ -36,7 +36,7 @@ func TestRocketPoolOperation_GenerateCallData(t *testing.T) {
 		},
 		{
 			name:   "Withdraw action",
-			action: WithdrawAction,
+			action: RocketPoolUnStakeAction,
 			// cast calldata "transfer(address,uint256)" 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6 1000000000000000000
 			// 0xa9059cbb000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000
 			expected: "0xa9059cbb000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000",

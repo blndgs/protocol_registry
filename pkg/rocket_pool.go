@@ -66,9 +66,9 @@ type RocketPoolOperation struct {
 // GenerateCalldata dynamically generates the calldata for deposit and withdrawal actions
 func (r *RocketPoolOperation) GenerateCalldata(kind AssetKind, args []interface{}) (string, error) {
 	switch r.Action {
-	case SubmitAction:
+	case RocketPoolStakeAction:
 		return r.deposit(args)
-	case WithdrawAction:
+	case RocketPoolUnStakeAction:
 		return r.withdraw(args)
 	}
 	return "", errors.New("unsupported action")
@@ -77,12 +77,12 @@ func (r *RocketPoolOperation) GenerateCalldata(kind AssetKind, args []interface{
 // Register registers the RocketPoolOperation client into the protocol registry so it can be used by any user of
 // the registry library
 func (r *RocketPoolOperation) Register(registry *ProtocolRegistry) {
-	registry.RegisterProtocolOperation(r.Protocol, r.Action, r.ChainID, r)
+	registry.RegisterProtocolOperation(r.Address, r.Action, r.ChainID, r)
 }
 
 // NewRocketPool initializes a RocketPool client
-func NewRocketPool(rpcURL, contractAddress string, action ContractAction) (*RocketPoolOperation, error) {
-	if action != SubmitAction && action != WithdrawAction {
+func NewRocketPool(rpcURL string, contractAddress ContractAddress, action ContractAction) (*RocketPoolOperation, error) {
+	if action != RocketPoolStakeAction && action != RocketPoolUnStakeAction {
 		return nil, errors.New("unsupported action")
 	}
 
@@ -91,7 +91,7 @@ func NewRocketPool(rpcURL, contractAddress string, action ContractAction) (*Rock
 		return nil, err
 	}
 
-	rp, err := rocketpool.NewRocketPool(ethClient, common.HexToAddress(contractAddress))
+	rp, err := rocketpool.NewRocketPool(ethClient, contractAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +195,7 @@ func (r *RocketPoolOperation) deposit(args []interface{}) (string, error) {
 func (r *RocketPoolOperation) GetContractAddress(
 	_ context.Context) (common.Address, error) {
 	switch r.action {
-	case SubmitAction:
+	case RocketPoolStakeAction:
 		return *r.contract.Address, nil
 
 	default:
