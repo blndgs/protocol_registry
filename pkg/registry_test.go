@@ -15,7 +15,6 @@ func getTestRPCURL(t *testing.T) string {
 	t.Helper()
 
 	u := os.Getenv("TEST_ETH_RPC_URL")
-
 	require.NotEmpty(t, u)
 	return u
 }
@@ -25,14 +24,14 @@ func TestProtocolRegistry_Validate(t *testing.T) {
 	SetupProtocolOperations(getTestRPCURL(t), registry)
 
 	t.Run("ValidateAave", func(t *testing.T) {
-		operation, err := registry.GetProtocolOperation(AaveV3, SupplyAction, big.NewInt(1))
+		operation, err := registry.GetProtocolOperation(AaveV3ContractAddress, SupplyAction, big.NewInt(1))
 		require.NoError(t, err)
 
 		require.Nil(t, operation.Validate(common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")))
 	})
 
 	t.Run("ValidateAave_NativeAsset", func(t *testing.T) {
-		operation, err := registry.GetProtocolOperation(AaveV3, SupplyAction, big.NewInt(1))
+		operation, err := registry.GetProtocolOperation(AaveV3ContractAddress, SupplyAction, big.NewInt(1))
 		require.NoError(t, err)
 
 		// native token not supported
@@ -40,14 +39,14 @@ func TestProtocolRegistry_Validate(t *testing.T) {
 	})
 
 	t.Run("ValidateAave_UnsupportedAsset", func(t *testing.T) {
-		operation, err := registry.GetProtocolOperation(AaveV3, SupplyAction, big.NewInt(1))
+		operation, err := registry.GetProtocolOperation(AaveV3ContractAddress, SupplyAction, big.NewInt(1))
 		require.NoError(t, err)
 
 		require.Error(t, operation.Validate(common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb49")))
 	})
 
 	t.Run("ValidateLido_NativeAsset", func(t *testing.T) {
-		operation, err := registry.GetProtocolOperation(Lido, SubmitAction, big.NewInt(1))
+		operation, err := registry.GetProtocolOperation(LidoContractAddress, LidoStakeAction, big.NewInt(1))
 		require.NoError(t, err)
 
 		require.Nil(t, operation.Validate(common.HexToAddress(nativeDenomAddress)))
@@ -60,27 +59,27 @@ func TestProtocolRegistry(t *testing.T) {
 	SetupProtocolOperations(getTestRPCURL(t), registry)
 
 	t.Run("GetProtocolOperation_Exists", func(t *testing.T) {
-		operation, err := registry.GetProtocolOperation(AaveV3, SupplyAction, big.NewInt(1))
+		operation, err := registry.GetProtocolOperation(AaveV3ContractAddress, SupplyAction, big.NewInt(1))
 		require.NoError(t, err)
 		require.NotNil(t, operation)
 		require.IsType(t, &GenericProtocolOperation{}, operation)
 	})
 
 	t.Run("GetProtocolOperation_NotExists", func(t *testing.T) {
-		operation, err := registry.GetProtocolOperation(AaveV3, SupplyAction, big.NewInt(2))
+		operation, err := registry.GetProtocolOperation(LidoContractAddress, SupplyAction, big.NewInt(2))
 		require.Error(t, err)
 		require.Nil(t, operation)
 	})
 
 	t.Run("RegisterProtocolOperation_InvalidChainID", func(t *testing.T) {
 		require.Panics(t, func() {
-			registry.RegisterProtocolOperation(AaveV3, SupplyAction, big.NewInt(-1), &GenericProtocolOperation{})
+			registry.RegisterProtocolOperation(AaveV3ContractAddress, SupplyAction, big.NewInt(-1), &GenericProtocolOperation{})
 		})
 	})
 
 	t.Run("RegisterProtocolOperation_NilOperation", func(t *testing.T) {
 		require.Panics(t, func() {
-			registry.RegisterProtocolOperation(AaveV3, SupplyAction, big.NewInt(1), nil)
+			registry.RegisterProtocolOperation(AaveV3ContractAddress, SupplyAction, big.NewInt(1), nil)
 		})
 	})
 }
@@ -89,7 +88,7 @@ func TestProtocolOperations(t *testing.T) {
 	SetupProtocolOperations(getTestRPCURL(t), registry)
 	tests := []struct {
 		name     string
-		protocol ProtocolName
+		protocol ContractAddress
 		action   ContractAction
 		kind     AssetKind
 		args     []interface{}
@@ -97,7 +96,7 @@ func TestProtocolOperations(t *testing.T) {
 	}{
 		{
 			name:     "AaveV3 Supply",
-			protocol: AaveV3,
+			protocol: AaveV3ContractAddress,
 			action:   SupplyAction,
 			kind:     LoanKind,
 			args: []interface{}{
@@ -112,7 +111,7 @@ func TestProtocolOperations(t *testing.T) {
 		},
 		{
 			name:     "SparkLend Withdraw",
-			protocol: SparkLend,
+			protocol: SparkLendContractAddress,
 			action:   WithdrawAction,
 			kind:     LoanKind,
 			args: []interface{}{
@@ -126,8 +125,8 @@ func TestProtocolOperations(t *testing.T) {
 		},
 		{
 			name:     "Lido Stake",
-			protocol: Lido,
-			action:   SubmitAction,
+			protocol: LidoContractAddress,
+			action:   LidoStakeAction,
 			kind:     StakeKind,
 			args: []interface{}{
 				common.HexToAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"),
@@ -138,20 +137,18 @@ func TestProtocolOperations(t *testing.T) {
 		},
 		{
 			name:     "Rocket Pool Stake",
-			protocol: RocketPool,
-			action:   SubmitAction,
+			protocol: RocketPoolStorageAddress,
+			action:   RocketPoolStakeAction,
 			kind:     StakeKind,
-			args: []interface{}{
-				big.NewInt(1 * 1e6),
-			},
+			args:     []interface{}{},
 			// cast calldata "deposit()"
 			// 0xd0e30db0
 			expected: "0xd0e30db0",
 		},
 		{
 			name:     "Rocket Pool UnStake (withdraw)",
-			protocol: RocketPool,
-			action:   WithdrawAction,
+			protocol: RocketPoolStorageAddress,
+			action:   RocketPoolUnStakeAction,
 			kind:     StakeKind,
 			args: []interface{}{
 				common.HexToAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"),
@@ -163,7 +160,7 @@ func TestProtocolOperations(t *testing.T) {
 		},
 		{
 			name:     "Ankr staking ( deposit )",
-			protocol: Ankr,
+			protocol: AnkrContractAddress,
 			action:   StakeAndClaimEthC,
 			kind:     StakeKind,
 			args:     []interface{}{},
@@ -173,7 +170,7 @@ func TestProtocolOperations(t *testing.T) {
 		},
 		{
 			name:     "Ankr staking ( withdrawal )",
-			protocol: Ankr,
+			protocol: AnkrContractAddress,
 			action:   UnstakeAndClaimEthC,
 			kind:     StakeKind,
 			args: []interface{}{
@@ -182,6 +179,17 @@ func TestProtocolOperations(t *testing.T) {
 			// cast calldata "unstakeAETH(uint256)" 3987509938965136896
 			// 0xc957619d00000000000000000000000000000000000000000000000037567b29aa5b4600
 			expected: "0xc957619d00000000000000000000000000000000000000000000000037567b29aa5b4600",
+		},
+		{
+			name:     "Renzo ETH Stake",
+			protocol: RenzoManagerAddress,
+			action:   RenzoStakeERC20Action,
+			kind:     StakeKind,
+			args: []interface{}{common.HexToAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"),
+				big.NewInt(1 * 1e18)},
+			// cast calldata "deposit(address,uint256)" 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6 1000000000000000000
+			// 0x47e7ef24000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000
+			expected: "0x47e7ef24000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000",
 		},
 	}
 
@@ -212,7 +220,7 @@ func TestSetupProtocolOperations(t *testing.T) {
 			// Test each method in the parsed ABI
 			for _, method := range parsedABI.Methods {
 				action := ContractAction(method.Name)
-				operation, err := registry.GetProtocolOperation(proto.Name, action, big.NewInt(1))
+				operation, err := registry.GetProtocolOperation(proto.Address, action, big.NewInt(1))
 
 				require.NoError(t, err, "Should not have error retrieving operation for protocol %s and action %s", proto.Name, action)
 				require.NotNil(t, operation, "Operation should not be nil for protocol %s and action %s", proto.Name, action)
