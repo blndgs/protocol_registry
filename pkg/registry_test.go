@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// getTestRPCURL helper function that gets the rpc url from env.
 func getTestRPCURL(t *testing.T) string {
 	t.Helper()
 
@@ -19,6 +20,7 @@ func getTestRPCURL(t *testing.T) string {
 	return u
 }
 
+// TestProtocolRegistry_Validate test protocol registry validation.
 func TestProtocolRegistry_Validate(t *testing.T) {
 	registry := NewProtocolRegistry()
 	SetupProtocolOperations(getTestRPCURL(t), registry)
@@ -54,6 +56,7 @@ func TestProtocolRegistry_Validate(t *testing.T) {
 	})
 }
 
+// TestProtocolRegistry test protocol registry.
 func TestProtocolRegistry(t *testing.T) {
 	registry := NewProtocolRegistry()
 	SetupProtocolOperations(getTestRPCURL(t), registry)
@@ -83,6 +86,8 @@ func TestProtocolRegistry(t *testing.T) {
 		})
 	})
 }
+
+// TestProtocolOperations test protocol operations.
 func TestProtocolOperations(t *testing.T) {
 	registry := NewProtocolRegistry()
 	SetupProtocolOperations(getTestRPCURL(t), registry)
@@ -183,6 +188,16 @@ func TestProtocolOperations(t *testing.T) {
 		{
 			name:     "Renzo ETH Stake",
 			protocol: RenzoManagerAddress,
+			action:   RenzoStakeETHAction,
+			kind:     StakeKind,
+			args:     []interface{}{},
+			// cast calldata "depositETH()"
+			// 0xf6326fb3
+			expected: "0xf6326fb3",
+		},
+		{
+			name:     "Renzo ERC20 Stake",
+			protocol: RenzoManagerAddress,
 			action:   RenzoStakeERC20Action,
 			kind:     StakeKind,
 			args: []interface{}{common.HexToAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"),
@@ -206,6 +221,7 @@ func TestProtocolOperations(t *testing.T) {
 	}
 }
 
+// TestSetupProtocolOperations test general supported operations.
 func TestSetupProtocolOperations(t *testing.T) {
 	registry := NewProtocolRegistry()
 	SetupProtocolOperations(getTestRPCURL(t), registry)
