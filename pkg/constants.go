@@ -12,7 +12,8 @@ const HexPrefix = "0x"
 
 type (
 	ProtocolName   = string
-	ContractAction = string
+	ContractAction = int64
+	ProtocolMethod = string
 	// AssetKind describes the way to process an intent
 	// TODO:: replace with model after protobuf
 	AssetKind       = string
@@ -21,6 +22,7 @@ type (
 type Protocol struct {
 	Name      ProtocolName
 	Action    ContractAction
+	Method    ProtocolMethod
 	ChainID   *big.Int
 	Address   ContractAddress
 	ABI       string
@@ -45,15 +47,26 @@ const (
 )
 
 const (
-	SupplyAction            ContractAction = "supply"
-	WithdrawAction          ContractAction = "withdraw"
-	LidoStakeAction         ContractAction = "submit"
-	StakeAndClaimEthC       ContractAction = "stakeAndClaimAethC"
-	UnstakeAndClaimEthC     ContractAction = "unstakeAETH"
-	RocketPoolStakeAction   ContractAction = "deposit"
-	RocketPoolUnStakeAction ContractAction = "transfer"
-	RenzoStakeETHAction     ContractAction = "depositETH"
-	RenzoStakeERC20Action   ContractAction = "deposit"
+	LoanSupply ContractAction = iota
+	LoanWithdraw
+	NativeStake
+	NativeUnStake
+	// ERC20Stake
+	// ERC20UnStake
+)
+
+const (
+	aaveSupply        ProtocolMethod = "supply"
+	aaveWithdraw      ProtocolMethod = "withdraw"
+	sparkLendSupply   ProtocolMethod = "supply"
+	sparkLendWithdraw ProtocolMethod = "withdraw"
+	lidoStake         ProtocolMethod = "submit"
+	ankrStake         ProtocolMethod = "stakeAndClaimAethC"
+	ankrUnstake       ProtocolMethod = "unstakeAETH"
+	rocketPoolStake   ProtocolMethod = "deposit"
+	rocketPoolUnStake ProtocolMethod = "transfer"
+	renzoStakeETH     ProtocolMethod = "depositETH"
+	// renzoStakeERC20   ProtocolMethod = "deposit"
 )
 
 var (
@@ -82,28 +95,32 @@ var SupportedProtocols = map[AssetKind][]Protocol{
 	LoanKind: {
 		{
 			Name:    AaveV3,
-			Action:  SupplyAction,
+			Action:  LoanSupply,
+			Method:  aaveSupply,
 			ChainID: big.NewInt(1),
 			Address: AaveV3ContractAddress,
 			ABI:     AaveV3SupplyABI,
 		},
 		{
 			Name:    AaveV3,
-			Action:  WithdrawAction,
+			Action:  LoanWithdraw,
+			Method:  aaveWithdraw,
 			ChainID: big.NewInt(1),
 			Address: AaveV3ContractAddress,
 			ABI:     AaveV3WithdrawABI,
 		},
 		{
 			Name:    SparkLend,
-			Action:  SupplyAction,
+			Action:  LoanSupply,
+			Method:  sparkLendSupply,
 			ChainID: big.NewInt(1),
 			Address: SparkLendContractAddress,
 			ABI:     SparkSupplyABI,
 		},
 		{
 			Name:    SparkLend,
-			Action:  WithdrawAction,
+			Action:  LoanWithdraw,
+			Method:  sparkLendWithdraw,
 			ChainID: big.NewInt(1),
 			Address: SparkLendContractAddress,
 			ABI:     SparkWithdrawABI,
@@ -112,52 +129,60 @@ var SupportedProtocols = map[AssetKind][]Protocol{
 	StakeKind: {
 		{
 			Name:    Lido,
-			Action:  LidoStakeAction,
+			Action:  NativeStake,
+			Method:  lidoStake,
 			ChainID: big.NewInt(1),
 			Address: LidoContractAddress,
 			ABI:     LidoSubmitABI,
 		},
 		{
 			Name:    RocketPool,
-			Action:  RocketPoolStakeAction,
+			Action:  NativeStake,
+			Method:  rocketPoolStake,
 			ChainID: big.NewInt(1),
 			Address: RocketPoolStorageAddress,
 			ABI:     RocketPoolABI,
 		},
 		{
 			Name:    RocketPool,
-			Action:  RocketPoolUnStakeAction,
+			Action:  NativeUnStake,
+			Method:  rocketPoolUnStake,
 			ChainID: big.NewInt(1),
 			Address: RocketPoolStorageAddress,
 			ABI:     RocketPoolABI,
 		},
 		{
 			Name:    Ankr,
-			Action:  StakeAndClaimEthC,
+			Action:  NativeStake,
+			Method:  ankrStake,
 			ChainID: big.NewInt(1),
 			Address: AnkrContractAddress,
 			ABI:     AnkrSupplyABI,
 		},
 		{
 			Name:    Ankr,
-			Action:  UnstakeAndClaimEthC,
+			Action:  NativeUnStake,
+			Method:  ankrUnstake,
 			ChainID: big.NewInt(1),
 			Address: AnkrContractAddress,
 			ABI:     AnkrWithdrawABI,
 		},
 		{
 			Name:    Renzo,
-			Action:  RenzoStakeETHAction,
+			Action:  NativeStake,
+			Method:  renzoStakeETH,
 			ChainID: big.NewInt(1),
 			Address: RenzoManagerAddress,
 			ABI:     RenzoDepositETHABI,
 		},
-		{
-			Name:    Renzo,
-			Action:  RenzoStakeERC20Action,
-			ChainID: big.NewInt(1),
-			Address: RenzoManagerAddress,
-			ABI:     RenzoDepositERC20ABI,
-		},
+		// TODO:: later (not supporting for now)
+		// {
+		// 	Name:    Renzo,
+		// 	Action:  ERC20Stake,
+		// 	Method:  renzoStakeERC20,
+		// 	ChainID: big.NewInt(1),
+		// 	Address: RenzoManagerAddress,
+		// 	ABI:     RenzoDepositERC20ABI,
+		// },
 	},
 }

@@ -60,7 +60,7 @@ func (pr *ProtocolRegistry) GetProtocolOperation(protocol ContractAddress, actio
 		}
 	}
 
-	return nil, fmt.Errorf("operation not found for action %s on chain %d for protocol %s", action, chainID, protocol)
+	return nil, fmt.Errorf("operation not found for action %d on chain %d for protocol %s", action, chainID, protocol)
 }
 
 // SetupProtocolOperations automatically sets up protocol operations based on the SupportedProtocols map.
@@ -81,7 +81,7 @@ func SetupProtocolOperations(rpcURL string, registry *ProtocolRegistry) {
 			// Initialize RocketPool instance only once for applicable actions
 			if protocol.Name == RocketPool && rocketPool == nil {
 				// Use any action to initialize; specific actions can be registered separately
-				rocketPool, err = NewRocketPool(rpcURL, RocketPoolStorageAddress, protocol.Action)
+				rocketPool, err = NewRocketPool(rpcURL, RocketPoolStorageAddress, protocol.Action, protocol.Method)
 				if err != nil {
 					panic(fmt.Sprintf("Failed to initialize RocketPool: %v", err))
 				}
@@ -91,7 +91,7 @@ func SetupProtocolOperations(rpcURL string, registry *ProtocolRegistry) {
 			registry.RegisterProtocolOperation(protocol.Address, protocol.Action, protocol.ChainID, &GenericProtocolOperation{
 				DynamicOperation: DynamicOperation{
 					Protocol: protocol.Name,
-					Action:   protocol.Action,
+					Method:   protocol.Method,
 					ChainID:  protocol.ChainID,
 					Address:  protocol.Address,
 				},
