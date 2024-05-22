@@ -81,8 +81,8 @@ To add support for a new protocol and its operations, follow these steps:
 - Define the protocol details in the `SupportedProtocols` map in the `pkg` package:
 
 ```go
-var SupportedProtocols = map[AssetKind][]Protocol{
-    AssetKind: {
+var SupportedProtocols = map[pb.AssetKind][]Protocol{
+    pb.AssetKind_ASSET_KIND_LOAN: {
         {
         Name:    "YourProtocol",
         Action:  SupplyAction,

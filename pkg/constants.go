@@ -3,6 +3,7 @@ package pkg
 import (
 	"math/big"
 
+	pb "github.com/blndgs/model/gen/go/proto/v1"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -11,12 +12,9 @@ import (
 const HexPrefix = "0x"
 
 type (
-	ProtocolName   = string
-	ContractAction = int64
-	ProtocolMethod = string
-	// AssetKind describes the way to process an intent
-	// TODO:: replace with model after protobuf
-	AssetKind       = string
+	ProtocolName    = string
+	ContractAction  = int64
+	ProtocolMethod  = string
 	ContractAddress = common.Address
 )
 type Protocol struct {
@@ -29,14 +27,6 @@ type Protocol struct {
 	ParsedABI abi.ABI
 }
 
-const (
-	// TokenKind describes how to swap an asset onchain
-	TokenKind AssetKind = "TOKEN"
-	// StakeKind describes an inent to stake an asset onchain
-	StakeKind AssetKind = "STAKE"
-	// LoanKind describes how to supply an asset to a defi protocol onchain
-	LoanKind AssetKind = "LOAN"
-)
 const (
 	AaveV3     ProtocolName = "aave_v3"
 	SparkLend  ProtocolName = "spark_lend"
@@ -91,8 +81,8 @@ const (
 )
 
 // Predefined protocols
-var SupportedProtocols = map[AssetKind][]Protocol{
-	LoanKind: {
+var SupportedProtocols = map[pb.AssetKind][]Protocol{
+	pb.AssetKind_ASSET_KIND_LOAN: {
 		{
 			Name:    AaveV3,
 			Action:  LoanSupply,
@@ -126,7 +116,7 @@ var SupportedProtocols = map[AssetKind][]Protocol{
 			ABI:     SparkWithdrawABI,
 		},
 	},
-	StakeKind: {
+	pb.AssetKind_ASSET_KIND_STAKE: {
 		{
 			Name:    Lido,
 			Action:  NativeStake,
