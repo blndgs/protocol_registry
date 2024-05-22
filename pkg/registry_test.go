@@ -3,6 +3,7 @@ package pkg
 import (
 	"math/big"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -13,7 +14,9 @@ import (
 func getTestRPCURL(t *testing.T) string {
 	t.Helper()
 	u := os.Getenv("TEST_ETH_RPC_URL")
-	u = "https://eth.public-rpc.com"
+	if len(strings.TrimSpace(u)) == 0 {
+		u = "https://eth.public-rpc.com"
+	}
 	require.NotEmpty(t, u)
 	return u
 }
