@@ -29,13 +29,42 @@ func TestRocketPoolOperation_GenerateCallData_SupportedAction(t *testing.T) {
 // TestRocketPoolOperation_GenerateCallData test rocket pool Stake UnStake calldata.
 func TestRocketPoolOperation_GenerateCallData(t *testing.T) {
 
+	amountInWei := new(big.Int)
+
+	// 10,0000 ETH in wei
+	amountInWei, ok := amountInWei.SetString("10000000000000000000000", 10)
+	require.True(t, ok)
+
 	tt := []struct {
 		name     string
 		action   ContractAction
 		method   ProtocolMethod
 		expected string
 		args     []interface{}
+		hasError bool
 	}{
+		{
+			name:   "Supply action ( failure, staked amount too low)",
+			action: NativeStake,
+			method: rocketPoolStake,
+			// cast calldata "deposit()"
+			// 0xd0e30db0
+			expected: "0xd0e30db0",
+			args: []interface{}{
+				big.NewInt(1 * 1e6),
+			},
+			hasError: true,
+		},
+		{
+			name:   "Supply action ( failure, staked amount too high)",
+			action: NativeStake,
+			method: rocketPoolStake,
+			// cast calldata "deposit()"
+			// 0xd0e30db0
+			expected: "0xd0e30db0",
+			args:     []interface{}{amountInWei},
+			hasError: true,
+		},
 		{
 			name:   "Supply action",
 			action: NativeStake,
@@ -74,8 +103,12 @@ func TestRocketPoolOperation_GenerateCallData(t *testing.T) {
 
 			calldata, err := rp.GenerateCalldata(v.args)
 
-			require.NoError(t, err)
+			if v.hasError {
+				require.Error(t, err)
+				return
+			}
 
+			require.NoError(t, err)
 			require.Equal(t, v.expected, calldata)
 		})
 	}
