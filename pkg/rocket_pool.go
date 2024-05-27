@@ -136,6 +136,9 @@ func NewRocketPool(rpcURL string, contractAddress ContractAddress, action Contra
 	}
 
 	depositSettingsContract, err := rp.MakeContract("rocketDAOProtocolSettingsDeposit", *settingsForDeposits, &bind.CallOpts{})
+	if err != nil {
+		return nil, err
+	}
 
 	parsedABI, err := abi.JSON(strings.NewReader(RocketPoolABI))
 	if err != nil {
