@@ -57,10 +57,16 @@ const (
 // It also implements dynamic retrival of Rocketpool's dynamic deposit and token contract addresses
 type RocketPoolOperation struct {
 	DynamicOperation
-	contract     *rocketpool.Contract
+	// main deposit pool. this contract takes in the ETH
+	contract *rocketpool.Contract
+	// for unstaking
 	rethContract *rocketpool.Contract
-	action       ContractAction
-	parsedABI    abi.ABI
+	// the deposit pool contract only checks for the maximum allowed amount
+	// but the settings contract allows us check for the minimum amount of eth that
+	// can be staked
+	depositSettingsContract *rocketpool.Contract
+	action                  ContractAction
+	parsedABI               abi.ABI
 }
 
 // GenerateCalldata dynamically generates the calldata for deposit and withdrawal actions
@@ -124,6 +130,13 @@ func NewRocketPool(rpcURL string, contractAddress ContractAddress, action Contra
 		return nil, err
 	}
 
+	settingsForDeposits, err := rp.GetAddress("rocketDAOProtocolSettingsDeposit", &bind.CallOpts{})
+	if err != nil {
+		return nil, err
+	}
+
+	depositSettingsContract, err := rp.MakeContract("rocketDAOProtocolSettingsDeposit", *settingsForDeposits, &bind.CallOpts{})
+
 	parsedABI, err := abi.JSON(strings.NewReader(RocketPoolABI))
 	if err != nil {
 		return nil, err
@@ -135,10 +148,11 @@ func NewRocketPool(rpcURL string, contractAddress ContractAddress, action Contra
 			Method:   method,
 			ChainID:  big.NewInt(1),
 		},
-		contract:     contract,
-		rethContract: rethContract,
-		action:       action,
-		parsedABI:    parsedABI,
+		contract:                contract,
+		rethContract:            rethContract,
+		depositSettingsContract: depositSettingsContract,
+		action:                  action,
+		parsedABI:               parsedABI,
 	}
 
 	return p, nil
@@ -180,6 +194,16 @@ func (r *RocketPoolOperation) deposit(args []interface{}) (string, error) {
 
 	if val := amount.Cmp(amountToDeposit); val == -1 {
 		return "", errors.New("rocketpool not accepting this much eth deposit at this time")
+	}
+
+	amount = big.NewInt(0)
+
+	if err := r.depositSettingsContract.Call(&bind.CallOpts{}, &amount, "getMinimumDeposit"); err != nil {
+		return "", err
+	}
+
+	if val := amount.Cmp(amountToDeposit); val == 1 {
+		return "", errors.New("eth value too low to deposit to Rocketpool at this time")
 	}
 
 	calldata, err := r.parsedABI.Pack("deposit")
