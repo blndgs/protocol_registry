@@ -44,7 +44,7 @@ func TestRocketPoolOperation_GenerateCallData(t *testing.T) {
 			// 0xd0e30db0
 			expected: "0xd0e30db0",
 			args: []interface{}{
-				big.NewInt(1 * 1e6),
+				big.NewInt(1 * 1e18), // 1 ETH
 			},
 		},
 		{
