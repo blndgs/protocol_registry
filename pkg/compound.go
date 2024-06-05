@@ -49,6 +49,22 @@ type CompoundV3Operation struct {
 	action ContractAction
 }
 
+// dynamically registers all supported pools
+func registerCompoundRegistry(registry *ProtocolRegistry) {
+	for chainID, v := range compoundSupportedAssets {
+		for poolAddr := range v {
+			for _, action := range []ContractAction{LoanSupply, LoanWithdraw} {
+				c, err := NewCompoundV3(big.NewInt(chainID), common.HexToAddress(poolAddr), action)
+				if err != nil {
+					panic(fmt.Sprintf("Failed to create compound client for %s", poolAddr))
+				}
+
+				c.Register(registry)
+			}
+		}
+	}
+}
+
 // NewCompoundV3 creates a new compound v3 instance
 func NewCompoundV3(chainID *big.Int,
 	proxyContractAddress common.Address, action ContractAction) (*CompoundV3Operation, error) {
@@ -84,6 +100,12 @@ func NewCompoundV3(chainID *big.Int,
 		parsedABI:       parsedABI,
 		action:          action,
 	}, nil
+}
+
+// Register registers the CompoundV3Operation client into the protocol registry so it can be used by any user of
+// the registry library
+func (c *CompoundV3Operation) Register(registry *ProtocolRegistry) {
+	registry.RegisterProtocolOperation(common.HexToAddress(c.proxyContract), c.action, big.NewInt(c.chainID), c)
 }
 
 // GetContractAddress retrieves the current lending market contract
