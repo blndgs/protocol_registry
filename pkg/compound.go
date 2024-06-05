@@ -2,11 +2,13 @@ package pkg
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -33,17 +35,23 @@ var compoundSupportedAssets = map[int64]map[string][]string{
 	},
 }
 
-type CompoundOperation struct {
+type CompoundV3Operation struct {
+	// current chain
 	chainID int64
-
 	// Compound has different deployments for each single market
 	proxyContract string
-
+	// assets that are supported in this pool
 	supportedAssets []string
+	// make sure to parse the abi only once
+	parsedABI abi.ABI
+
+	// current lending action
+	action ContractAction
 }
 
-func NewCompound(chainID *big.Int,
-	proxyContractAddress common.Address) (*CompoundOperation, error) {
+// NewCompoundV3 creates a new compound v3 instance
+func NewCompoundV3(chainID *big.Int,
+	proxyContractAddress common.Address, action ContractAction) (*CompoundV3Operation, error) {
 
 	supportedChain, ok := compoundSupportedAssets[chainID.Int64()]
 	if !ok {
@@ -55,18 +63,36 @@ func NewCompound(chainID *big.Int,
 		return nil, errors.New("unsupported Compound pool address")
 	}
 
-	return &CompoundOperation{
+	if action != LoanSupply && action != LoanWithdraw {
+		return nil, errors.New("unsupported action for Compound")
+	}
+
+	var abiDefinition = CompoundV3SupplyABI
+	if action == LoanWithdraw {
+		abiDefinition = CompoundV3WithdrawABI
+	}
+
+	parsedABI, err := abi.JSON(strings.NewReader(abiDefinition))
+	if err != nil {
+		return nil, fmt.Errorf("Failed to parse ABI for %s: %v", Compound, err)
+	}
+
+	return &CompoundV3Operation{
 		proxyContract:   strings.ToLower(proxyContractAddress.Hex()),
 		chainID:         chainID.Int64(),
 		supportedAssets: supportedAssets,
+		parsedABI:       parsedABI,
+		action:          action,
 	}, nil
 }
 
-func (c *CompoundOperation) GetContractAddress(_ context.Context) (common.Address, error) {
+// GetContractAddress retrieves the current lending market contract
+func (c *CompoundV3Operation) GetContractAddress(_ context.Context) (common.Address, error) {
 	return common.HexToAddress(c.proxyContract), nil
 }
 
-func (c *CompoundOperation) Validate(asset common.Address) error {
+// Validate ensures the current asset can be supplied to the market
+func (c *CompoundV3Operation) Validate(asset common.Address) error {
 
 	for _, addr := range c.supportedAssets {
 		if strings.EqualFold(strings.ToLower(asset.Hex()), strings.ToLower(addr)) {
@@ -75,4 +101,50 @@ func (c *CompoundOperation) Validate(asset common.Address) error {
 	}
 
 	return fmt.Errorf("unsupported asset for %s ( %s )", Compound, asset)
+}
+
+// GenerateCalldata creates a dynamic calldata that can be sent onchain
+// to carry out lending operations
+func (c *CompoundV3Operation) GenerateCalldata(args []interface{}) (string, error) {
+
+	if len(args) > 2 {
+		return "", errors.New("provided args more than supported abi arguments. there can only be 2 args")
+	}
+
+	tokenAddress, ok := args[0].(common.Address)
+	if !ok {
+		return "", errors.New("argument 1 must be of type common.Address")
+	}
+
+	amount, ok := args[1].(*big.Int)
+	if !ok {
+		return "", errors.New("argument 2 must be of type *big.Int")
+	}
+
+	if c.action == LoanSupply {
+		return c.supply(tokenAddress, amount)
+	}
+
+	return c.withdraw(tokenAddress, amount)
+}
+
+func (c *CompoundV3Operation) withdraw(tokenAddress common.Address, amount *big.Int) (string, error) {
+	calldata, err := c.parsedABI.Pack("withdraw", tokenAddress, amount)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate calldata for %s: %w", "withdraw", err)
+	}
+
+	calldataHex := HexPrefix + hex.EncodeToString(calldata)
+	return calldataHex, nil
+}
+
+func (c *CompoundV3Operation) supply(tokenAddress common.Address, amount *big.Int) (string, error) {
+
+	calldata, err := c.parsedABI.Pack("supply", tokenAddress, amount)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate calldata for %s: %w", "supply", err)
+	}
+
+	calldataHex := HexPrefix + hex.EncodeToString(calldata)
+	return calldataHex, nil
 }
