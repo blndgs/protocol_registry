@@ -34,6 +34,7 @@ const (
 	RocketPool ProtocolName = "rocket_pool"
 	Ankr       ProtocolName = "ankr"
 	Renzo      ProtocolName = "renzo"
+	Compound   ProtocolName = "compound"
 )
 
 const (
