@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/blndgs/model v0.25.0
-	github.com/ethereum/go-ethereum v1.14.4
+	github.com/ethereum/go-ethereum v1.11.5
 	github.com/rocket-pool/rocketpool-go v1.8.2
 	github.com/stretchr/testify v1.9.0
 )
