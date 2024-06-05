@@ -39,12 +39,6 @@ func TestCompoundV3_New(t *testing.T) {
 
 func TestCompoundV3_GenerateCallData(t *testing.T) {
 
-	amountInWei := new(big.Int)
-
-	// 10,0000 ETH in wei
-	amountInWei, ok := amountInWei.SetString("10000000000000000000000", 10)
-	require.True(t, ok)
-
 	tt := []struct {
 		name     string
 		chainID  *big.Int
