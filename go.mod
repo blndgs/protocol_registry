@@ -3,7 +3,7 @@ module github.com/blndgs/protocol_registry
 go 1.22
 
 require (
-	github.com/blndgs/model v0.25.0
+	github.com/blndgs/model v0.28.2
 	github.com/ethereum/go-ethereum v1.11.5
 	github.com/rocket-pool/rocketpool-go v1.8.2
 	github.com/stretchr/testify v1.9.0
@@ -19,6 +19,7 @@ require (
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
+	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
