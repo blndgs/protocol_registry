@@ -65,7 +65,6 @@ func (pr *ProtocolRegistry) GetProtocolOperation(protocol ContractAddress, actio
 
 // SetupProtocolOperations automatically sets up protocol operations based on the SupportedProtocols map.
 func SetupProtocolOperations(rpcURL string, registry *ProtocolRegistry) {
-	var rocketPool *RocketPoolOperation
 
 	for protocolType, protocols := range SupportedProtocols {
 		for i, protocol := range protocols {
@@ -77,15 +76,6 @@ func SetupProtocolOperations(rpcURL string, registry *ProtocolRegistry) {
 			// Correctly updating the protocol entry with parsed ABI
 			protocol.ParsedABI = parsedABI
 			SupportedProtocols[protocolType][i] = protocol
-
-			// Initialize RocketPool instance only once for applicable actions
-			if protocol.Name == RocketPool && rocketPool == nil {
-				// Use any action to initialize; specific actions can be registered separately
-				rocketPool, err = NewRocketPool(rpcURL, RocketPoolStorageAddress, protocol.Action, protocol.Method)
-				if err != nil {
-					panic(fmt.Sprintf("Failed to initialize RocketPool: %v", err))
-				}
-			}
 
 			// Register each action of the protocol in the registry
 			registry.RegisterProtocolOperation(protocol.Address, protocol.Action, protocol.ChainID, &GenericProtocolOperation{
@@ -99,10 +89,17 @@ func SetupProtocolOperations(rpcURL string, registry *ProtocolRegistry) {
 		}
 	}
 
-	// Register the RocketPool actions if RocketPool was initialized
-	if rocketPool != nil {
-		rocketPool.Register(registry)
+	rocketPoolSubmit, err := NewRocketPool(rpcURL, RocketPoolStorageAddress, NativeStake, rocketPoolStake)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to create RocketPool submit operation: %v", err))
 	}
+	rocketPoolSubmit.Register(registry)
+
+	rocketPoolWithdraw, err := NewRocketPool(rpcURL, RocketPoolStorageAddress, NativeUnStake, rocketPoolUnStake)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to create RocketPool withdraw operation: %v", err))
+	}
+	rocketPoolWithdraw.Register(registry)
 
 	registerCompoundRegistry(registry)
 }

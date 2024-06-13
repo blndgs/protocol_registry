@@ -134,22 +134,6 @@ var SupportedProtocols = map[ProtocolType][]Protocol{
 			ABI:     LidoSubmitABI,
 		},
 		{
-			Name:    RocketPool,
-			Action:  NativeStake,
-			Method:  rocketPoolStake,
-			ChainID: big.NewInt(1),
-			Address: RocketPoolStorageAddress,
-			ABI:     RocketPoolABI,
-		},
-		{
-			Name:    RocketPool,
-			Action:  NativeUnStake,
-			Method:  rocketPoolUnStake,
-			ChainID: big.NewInt(1),
-			Address: RocketPoolStorageAddress,
-			ABI:     RocketPoolABI,
-		},
-		{
 			Name:    Ankr,
 			Action:  NativeStake,
 			Method:  ankrStake,
