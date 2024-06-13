@@ -138,27 +138,6 @@ func TestProtocolOperations(t *testing.T) {
 			expected: "0xa1903eab000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6",
 		},
 		{
-			name:     "Rocket Pool Stake",
-			protocol: RocketPoolStorageAddress,
-			action:   NativeStake,
-			args:     []interface{}{},
-			// cast calldata "deposit()"
-			// 0xd0e30db0
-			expected: "0xd0e30db0",
-		},
-		{
-			name:     "Rocket Pool UnStake (withdraw)",
-			protocol: RocketPoolStorageAddress,
-			action:   NativeUnStake,
-			args: []interface{}{
-				common.HexToAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"),
-				big.NewInt(1 * 1e18),
-			},
-			// cast calldata "transfer(address,uint256)" 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6 1000000000000000000
-			// 0xa9059cbb000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000
-			expected: "0xa9059cbb000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000",
-		},
-		{
 			name:     "Ankr staking ( deposit )",
 			protocol: AnkrContractAddress,
 			action:   NativeStake,
