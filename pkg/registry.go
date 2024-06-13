@@ -103,4 +103,6 @@ func SetupProtocolOperations(rpcURL string, registry *ProtocolRegistry) {
 	if rocketPool != nil {
 		rocketPool.Register(registry)
 	}
+
+	registerCompoundRegistry(registry)
 }

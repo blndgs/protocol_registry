@@ -39,6 +39,7 @@ const (
 	RocketPool ProtocolName = "rocket_pool"
 	Ankr       ProtocolName = "ankr"
 	Renzo      ProtocolName = "renzo"
+	Compound   ProtocolName = "compound"
 )
 
 const (
@@ -74,15 +75,17 @@ var (
 )
 
 const (
-	AaveV3SupplyABI      = `[{"name":"supply","type":"function","inputs":[{"type":"address"},{"type":"uint256"},{"type":"address"},{"type":"uint16"}]}]`
-	AaveV3WithdrawABI    = `[{"name":"withdraw","type":"function","inputs":[{"type":"address"},{"type":"uint256"},{"type":"address"}]}]`
-	SparkSupplyABI       = AaveV3SupplyABI
-	SparkWithdrawABI     = AaveV3WithdrawABI
-	LidoSubmitABI        = `[{"name": "submit", "type": "function","inputs": [{"type": "address"}]}]`
-	AnkrSupplyABI        = `[{"name":"stakeAndClaimAethC","type":"function","inputs":[]}]`
-	AnkrWithdrawABI      = `[{"name":"unstakeAETH","type":"function","inputs":[{"internalType":"uint256","name":"shares","type":"uint256"}]}]`
-	RenzoDepositETHABI   = `[{"name":"depositETH","type":"function","inputs":[]}]`
-	RenzoDepositERC20ABI = `[{"name":"deposit","type":"function","inputs":[{"type":"address"},{"type":"uint256"}]}]`
+	AaveV3SupplyABI       = `[{"name":"supply","type":"function","inputs":[{"type":"address"},{"type":"uint256"},{"type":"address"},{"type":"uint16"}]}]`
+	AaveV3WithdrawABI     = `[{"name":"withdraw","type":"function","inputs":[{"type":"address"},{"type":"uint256"},{"type":"address"}]}]`
+	SparkSupplyABI        = AaveV3SupplyABI
+	SparkWithdrawABI      = AaveV3WithdrawABI
+	LidoSubmitABI         = `[{"name": "submit", "type": "function","inputs": [{"type": "address"}]}]`
+	AnkrSupplyABI         = `[{"name":"stakeAndClaimAethC","type":"function","inputs":[]}]`
+	AnkrWithdrawABI       = `[{"name":"unstakeAETH","type":"function","inputs":[{"internalType":"uint256","name":"shares","type":"uint256"}]}]`
+	RenzoDepositETHABI    = `[{"name":"depositETH","type":"function","inputs":[]}]`
+	RenzoDepositERC20ABI  = `[{"name":"deposit","type":"function","inputs":[{"type":"address"},{"type":"uint256"}]}]`
+	CompoundV3SupplyABI   = `[{"name":"supply","type":"function","inputs":[{"type":"address"},{"type":"uint256"}]}]`
+	CompoundV3WithdrawABI = `[{"name":"withdraw","type":"function","inputs":[{"type":"address"},{"type":"uint256"}]}]`
 )
 
 // Predefined protocols
