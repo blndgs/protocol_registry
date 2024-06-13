@@ -67,7 +67,7 @@ func (pr *ProtocolRegistry) GetProtocolOperation(protocol ContractAddress, actio
 func SetupProtocolOperations(rpcURL string, registry *ProtocolRegistry) {
 	var rocketPool *RocketPoolOperation
 
-	for assetKind, protocols := range SupportedProtocols {
+	for protocolType, protocols := range SupportedProtocols {
 		for i, protocol := range protocols {
 			parsedABI, err := abi.JSON(strings.NewReader(protocol.ABI))
 			if err != nil {
@@ -76,7 +76,7 @@ func SetupProtocolOperations(rpcURL string, registry *ProtocolRegistry) {
 
 			// Correctly updating the protocol entry with parsed ABI
 			protocol.ParsedABI = parsedABI
-			SupportedProtocols[assetKind][i] = protocol
+			SupportedProtocols[protocolType][i] = protocol
 
 			// Initialize RocketPool instance only once for applicable actions
 			if protocol.Name == RocketPool && rocketPool == nil {

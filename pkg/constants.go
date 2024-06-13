@@ -3,7 +3,6 @@ package pkg
 import (
 	"math/big"
 
-	pb "github.com/blndgs/model/gen/go/proto/v1"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -13,6 +12,7 @@ const HexPrefix = "0x"
 
 type (
 	ProtocolName    = string
+	ProtocolType    = string
 	ContractAction  = int64
 	ProtocolMethod  = string
 	ContractAddress = common.Address
@@ -26,6 +26,11 @@ type Protocol struct {
 	ABI       string
 	ParsedABI abi.ABI
 }
+
+const (
+	TypeLoan  ProtocolType = "Loan"
+	TypeStake ProtocolType = "Stake"
+)
 
 const (
 	AaveV3     ProtocolName = "aave_v3"
@@ -84,8 +89,8 @@ const (
 )
 
 // Predefined protocols
-var SupportedProtocols = map[pb.AssetKind][]Protocol{
-	pb.AssetKind_ASSET_KIND_LOAN: {
+var SupportedProtocols = map[ProtocolType][]Protocol{
+	TypeLoan: {
 		{
 			Name:    AaveV3,
 			Action:  LoanSupply,
@@ -119,7 +124,7 @@ var SupportedProtocols = map[pb.AssetKind][]Protocol{
 			ABI:     SparkWithdrawABI,
 		},
 	},
-	pb.AssetKind_ASSET_KIND_STAKE: {
+	TypeStake: {
 		{
 			Name:    Lido,
 			Action:  NativeStake,
