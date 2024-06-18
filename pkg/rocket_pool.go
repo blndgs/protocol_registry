@@ -150,6 +150,7 @@ func NewRocketPool(rpcURL string, contractAddress ContractAddress, action Contra
 			Protocol: RocketPool,
 			Method:   method,
 			ChainID:  big.NewInt(1),
+			Address:  contractAddress,
 		},
 		contract:                contract,
 		rethContract:            rethContract,

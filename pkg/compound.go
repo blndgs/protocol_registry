@@ -90,7 +90,7 @@ func NewCompoundV3(chainID *big.Int,
 
 	parsedABI, err := abi.JSON(strings.NewReader(abiDefinition))
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse ABI for %s: %v", Compound, err)
+		return nil, fmt.Errorf("failed to parse ABI for %s: %v", Compound, err)
 	}
 
 	return &CompoundV3Operation{
