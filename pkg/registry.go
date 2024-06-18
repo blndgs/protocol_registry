@@ -66,7 +66,7 @@ func (pr *ProtocolRegistry) GetProtocolOperation(protocol ContractAddress, actio
 // SetupProtocolOperations automatically sets up protocol operations based on the SupportedProtocols map.
 func SetupProtocolOperations(rpcURL string, registry *ProtocolRegistry) {
 
-	for protocolType, protocols := range SupportedProtocols {
+	for protocolType, protocols := range staticProtocols {
 		for i, protocol := range protocols {
 			parsedABI, err := abi.JSON(strings.NewReader(protocol.ABI))
 			if err != nil {
@@ -75,7 +75,7 @@ func SetupProtocolOperations(rpcURL string, registry *ProtocolRegistry) {
 
 			// Correctly updating the protocol entry with parsed ABI
 			protocol.ParsedABI = parsedABI
-			SupportedProtocols[protocolType][i] = protocol
+			staticProtocols[protocolType][i] = protocol
 
 			// Register each action of the protocol in the registry
 			registry.RegisterProtocolOperation(protocol.Address, protocol.Action, protocol.ChainID, &GenericProtocolOperation{
