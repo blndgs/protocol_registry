@@ -47,7 +47,7 @@ const (
 	LoanWithdraw
 	NativeStake
 	NativeUnStake
-	// ERC20Stake
+	ERC20Stake
 	// ERC20UnStake
 )
 
@@ -62,7 +62,7 @@ const (
 	rocketPoolStake   ProtocolMethod = "deposit"
 	rocketPoolUnStake ProtocolMethod = "transfer"
 	renzoStakeETH     ProtocolMethod = "depositETH"
-	// renzoStakeERC20   ProtocolMethod = "deposit"
+	renzoStakeERC20   ProtocolMethod = "deposit"
 )
 
 var (
@@ -89,7 +89,7 @@ const (
 )
 
 // Predefined protocols
-var SupportedProtocols = map[ProtocolType][]Protocol{
+var staticProtocols = map[ProtocolType][]Protocol{
 	TypeLoan: {
 		{
 			Name:    AaveV3,
@@ -157,14 +157,13 @@ var SupportedProtocols = map[ProtocolType][]Protocol{
 			Address: RenzoManagerAddress,
 			ABI:     RenzoDepositETHABI,
 		},
-		// TODO:: later (not supporting for now)
-		// {
-		// 	Name:    Renzo,
-		// 	Action:  ERC20Stake,
-		// 	Method:  renzoStakeERC20,
-		// 	ChainID: big.NewInt(1),
-		// 	Address: RenzoManagerAddress,
-		// 	ABI:     RenzoDepositERC20ABI,
-		// },
+		{
+			Name:    Renzo,
+			Action:  ERC20Stake,
+			Method:  renzoStakeERC20,
+			ChainID: big.NewInt(1),
+			Address: RenzoManagerAddress,
+			ABI:     RenzoDepositERC20ABI,
+		},
 	},
 }

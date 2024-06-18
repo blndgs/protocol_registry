@@ -80,7 +80,7 @@ func (gpo *GenericProtocolOperation) Validate(asset common.Address) error {
 func (gpo *GenericProtocolOperation) GenerateCalldata(args []interface{}) (string, error) {
 	var protocol Protocol
 	found := false
-	for _, protocols := range SupportedProtocols {
+	for _, protocols := range staticProtocols {
 		for _, p := range protocols {
 			if p.Method == gpo.Method {
 				protocol = p

@@ -166,17 +166,17 @@ func TestProtocolOperations(t *testing.T) {
 			// 0xf6326fb3
 			expected: "0xf6326fb3",
 		},
-		// {
-		// 	name:     "Renzo ERC20 Stake",
-		// 	protocol: RenzoManagerAddress,
-		// 	action:   ERC20Stake,
-		// 	args: []interface{}{
-		// 		common.HexToAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"),
-		// 		big.NewInt(1 * 1e18)},
-		// 	// cast calldata "deposit(address,uint256)" 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6 1000000000000000000
-		// 	// 0x47e7ef24000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000
-		// 	expected: "0x47e7ef24000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000",
-		// },
+		{
+			name:     "Renzo ERC20 Stake",
+			protocol: RenzoManagerAddress,
+			action:   ERC20Stake,
+			args: []interface{}{
+				common.HexToAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"),
+				big.NewInt(1 * 1e18)},
+			// cast calldata "deposit(address,uint256)" 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6 1000000000000000000
+			// 0x47e7ef24000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000
+			expected: "0x47e7ef24000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000",
+		},
 	}
 
 	for _, tt := range tests {
