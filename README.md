@@ -1,5 +1,8 @@
 # Protocol Registry
 
+![codecov](https://codecov.io/gh/blndgs/protocol_registry/graph/badge.svg?token=O42114OGRQ)
+![Go Release](https://img.shields.io/github/v/release/blndgs/protocol_registry?logo=go)
+
 The Protocol Registry is a Go library that provides a flexible and extensible way to manage and interact with different protocols and their operations. It allows you to register protocol operations, retrieve them based on protocol name and action, and generate calldata for specific operations.
 
 ## Features

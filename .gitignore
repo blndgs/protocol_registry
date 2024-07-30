@@ -27,3 +27,6 @@ launch.json
 
 # build binary
 ./protocol
+
+# coverage report
+coverage.txt
