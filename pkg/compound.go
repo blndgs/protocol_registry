@@ -31,6 +31,7 @@ var compoundSupportedAssets = map[int64]map[string][]string{
 			"0xBe9895146f7AF43049ca1c1AE358B0541Ea49704", // cbETH
 			"0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0", // wsETH (Lido)
 			"0xae78736Cd615f374D3085123A210448E74Fc6393", // RocketPool ETH
+			"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", // WETH
 		},
 	},
 }
