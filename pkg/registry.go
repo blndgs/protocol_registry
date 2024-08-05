@@ -3,10 +3,7 @@ package pkg
 import (
 	"fmt"
 	"math/big"
-	"strings"
 	"sync"
-
-	"github.com/ethereum/go-ethereum/accounts/abi"
 )
 
 // ProtocolRegistry maintains a registry of supported protocols and their operations.
@@ -66,40 +63,4 @@ func (pr *ProtocolRegistry) GetProtocolOperation(protocol ContractAddress, actio
 // SetupProtocolOperations automatically sets up protocol operations based on the SupportedProtocols map.
 func SetupProtocolOperations(rpcURL string, registry *ProtocolRegistry) {
 
-	for protocolType, protocols := range staticProtocols {
-		for i, protocol := range protocols {
-			parsedABI, err := abi.JSON(strings.NewReader(protocol.ABI))
-			if err != nil {
-				panic(fmt.Sprintf("Failed to parse ABI for %s: %v", protocol.Name, err))
-			}
-
-			// Correctly updating the protocol entry with parsed ABI
-			protocol.ParsedABI = parsedABI
-			staticProtocols[protocolType][i] = protocol
-
-			// Register each action of the protocol in the registry
-			registry.RegisterProtocolOperation(protocol.Address, protocol.Action, protocol.ChainID, &GenericProtocolOperation{
-				DynamicOperation: DynamicOperation{
-					Protocol: protocol.Name,
-					Method:   protocol.Method,
-					ChainID:  protocol.ChainID,
-					Address:  protocol.Address,
-				},
-			})
-		}
-	}
-
-	rocketPoolSubmit, err := NewRocketPool(rpcURL, RocketPoolStorageAddress, NativeStake, rocketPoolStake)
-	if err != nil {
-		panic(fmt.Sprintf("Failed to create RocketPool submit operation: %v", err))
-	}
-	rocketPoolSubmit.Register(registry)
-
-	rocketPoolWithdraw, err := NewRocketPool(rpcURL, RocketPoolStorageAddress, NativeUnStake, rocketPoolUnStake)
-	if err != nil {
-		panic(fmt.Sprintf("Failed to create RocketPool withdraw operation: %v", err))
-	}
-	rocketPoolWithdraw.Register(registry)
-
-	registerCompoundRegistry(registry)
 }

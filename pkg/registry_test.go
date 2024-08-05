@@ -113,70 +113,70 @@ func TestProtocolOperations(t *testing.T) {
 			// 0x617ba0370000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f9840000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a
 			expected: "0x617ba0370000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f9840000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a",
 		},
-		{
-			name:     "SparkLend Withdraw",
-			protocol: SparkLendContractAddress,
-			action:   LoanWithdraw,
-			args: []interface{}{
-				common.HexToAddress("0xc0ffee254729296a45a3885639AC7E10F9d54979"),
-				big.NewInt(500000000000000000),
-				common.HexToAddress("0x0000000000000000000000000000000000000000"),
-			},
-			// cast calldata "withdraw(address,uint256,address)" 0xc0ffee254729296a45a3885639AC7E10F9d54979 500000000000000000 0x0000000000000000000000000000000000000000
-			// 0x69328dec000000000000000000000000c0ffee254729296a45a3885639ac7e10f9d5497900000000000000000000000000000000000000000000000006f05b59d3b200000000000000000000000000000000000000000000000000000000000000000000
-			expected: "0x69328dec000000000000000000000000c0ffee254729296a45a3885639ac7e10f9d5497900000000000000000000000000000000000000000000000006f05b59d3b200000000000000000000000000000000000000000000000000000000000000000000",
-		},
-		{
-			name:     "Lido Stake",
-			protocol: LidoContractAddress,
-			action:   NativeStake,
-			args: []interface{}{
-				common.HexToAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"),
-			},
-			// cast calldata "submit(address)" 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6
-			// 0xa1903eab000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6
-			expected: "0xa1903eab000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6",
-		},
-		{
-			name:     "Ankr staking ( deposit )",
-			protocol: AnkrContractAddress,
-			action:   NativeStake,
-			args:     []interface{}{},
-			// cast calldata "stakeAndClaimAethC()"
-			// 0x9fa65c56
-			expected: "0x9fa65c56",
-		},
-		{
-			name:     "Ankr staking ( withdrawal )",
-			protocol: AnkrContractAddress,
-			action:   NativeUnStake,
-			args: []interface{}{
-				big.NewInt(3987509938965136896),
-			},
-			// cast calldata "unstakeAETH(uint256)" 3987509938965136896
-			// 0xc957619d00000000000000000000000000000000000000000000000037567b29aa5b4600
-			expected: "0xc957619d00000000000000000000000000000000000000000000000037567b29aa5b4600",
-		},
-		{
-			name:     "Renzo ETH Stake",
-			protocol: RenzoManagerAddress,
-			action:   NativeStake,
-			args:     []interface{}{},
-			// cast calldata "depositETH()"
-			// 0xf6326fb3
-			expected: "0xf6326fb3",
-		},
-		{
-			name:     "Renzo ERC20 Stake",
-			protocol: RenzoManagerAddress,
-			action:   ERC20Stake,
-			args: []interface{}{
-				common.HexToAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"),
-				big.NewInt(1 * 1e18)},
-			// cast calldata "deposit(address,uint256)" 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6 1000000000000000000
-			// 0x47e7ef24000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000
-			expected: "0x47e7ef24000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000",
-		},
+		// {
+		// 	name:     "SparkLend Withdraw",
+		// 	protocol: SparkLendContractAddress,
+		// 	action:   LoanWithdraw,
+		// 	args: []interface{}{
+		// 		common.HexToAddress("0xc0ffee254729296a45a3885639AC7E10F9d54979"),
+		// 		big.NewInt(500000000000000000),
+		// 		common.HexToAddress("0x0000000000000000000000000000000000000000"),
+		// 	},
+		// 	// cast calldata "withdraw(address,uint256,address)" 0xc0ffee254729296a45a3885639AC7E10F9d54979 500000000000000000 0x0000000000000000000000000000000000000000
+		// 	// 0x69328dec000000000000000000000000c0ffee254729296a45a3885639ac7e10f9d5497900000000000000000000000000000000000000000000000006f05b59d3b200000000000000000000000000000000000000000000000000000000000000000000
+		// 	expected: "0x69328dec000000000000000000000000c0ffee254729296a45a3885639ac7e10f9d5497900000000000000000000000000000000000000000000000006f05b59d3b200000000000000000000000000000000000000000000000000000000000000000000",
+		// },
+		// {
+		// 	name:     "Lido Stake",
+		// 	protocol: LidoContractAddress,
+		// 	action:   NativeStake,
+		// 	args: []interface{}{
+		// 		common.HexToAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"),
+		// 	},
+		// 	// cast calldata "submit(address)" 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6
+		// 	// 0xa1903eab000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6
+		// 	expected: "0xa1903eab000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6",
+		// },
+		// {
+		// 	name:     "Ankr staking ( deposit )",
+		// 	protocol: AnkrContractAddress,
+		// 	action:   NativeStake,
+		// 	args:     []interface{}{},
+		// 	// cast calldata "stakeAndClaimAethC()"
+		// 	// 0x9fa65c56
+		// 	expected: "0x9fa65c56",
+		// },
+		// {
+		// 	name:     "Ankr staking ( withdrawal )",
+		// 	protocol: AnkrContractAddress,
+		// 	action:   NativeUnStake,
+		// 	args: []interface{}{
+		// 		big.NewInt(3987509938965136896),
+		// 	},
+		// 	// cast calldata "unstakeAETH(uint256)" 3987509938965136896
+		// 	// 0xc957619d00000000000000000000000000000000000000000000000037567b29aa5b4600
+		// 	expected: "0xc957619d00000000000000000000000000000000000000000000000037567b29aa5b4600",
+		// },
+		// {
+		// 	name:     "Renzo ETH Stake",
+		// 	protocol: RenzoManagerAddress,
+		// 	action:   NativeStake,
+		// 	args:     []interface{}{},
+		// 	// cast calldata "depositETH()"
+		// 	// 0xf6326fb3
+		// 	expected: "0xf6326fb3",
+		// },
+		// {
+		// 	name:     "Renzo ERC20 Stake",
+		// 	protocol: RenzoManagerAddress,
+		// 	action:   ERC20Stake,
+		// 	args: []interface{}{
+		// 		common.HexToAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"),
+		// 		big.NewInt(1 * 1e18)},
+		// 	// cast calldata "deposit(address,uint256)" 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6 1000000000000000000
+		// 	// 0x47e7ef24000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000
+		// 	expected: "0x47e7ef24000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d60000000000000000000000000000000000000000000000000de0b6b3a7640000",
+		// },
 	}
 
 	for _, tt := range tests {

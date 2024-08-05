@@ -48,7 +48,7 @@ const (
 	NativeStake
 	NativeUnStake
 	ERC20Stake
-	// ERC20UnStake
+	ERC20UnStake
 )
 
 const (
@@ -75,10 +75,11 @@ var (
 )
 
 const (
-	AaveV3SupplyABI       = `[{"name":"supply","type":"function","inputs":[{"type":"address"},{"type":"uint256"},{"type":"address"},{"type":"uint16"}]}]`
-	AaveV3WithdrawABI     = `[{"name":"withdraw","type":"function","inputs":[{"type":"address"},{"type":"uint256"},{"type":"address"}]}]`
-	SparkSupplyABI        = AaveV3SupplyABI
-	SparkWithdrawABI      = AaveV3WithdrawABI
+	aaveV3ABI = `[
+	{"name":"withdraw","type":"function","inputs":[{"type":"address"},{"type":"uint256"},{"type":"address"}]}
+	{"name":"supply","type":"function","inputs":[{"type":"address"},{"type":"uint256"},{"type":"address"},{"type":"uint16"}]}]`
+	SparkSupplyABI        = aaveV3ABI
+	SparkWithdrawABI      = ``
 	LidoSubmitABI         = `[{"name": "submit", "type": "function","inputs": [{"type": "address"}]}]`
 	AnkrSupplyABI         = `[{"name":"stakeAndClaimAethC","type":"function","inputs":[]}]`
 	AnkrWithdrawABI       = `[{"name":"unstakeAETH","type":"function","inputs":[{"internalType":"uint256","name":"shares","type":"uint256"}]}]`
@@ -97,7 +98,7 @@ var staticProtocols = map[ProtocolType][]Protocol{
 			Method:  aaveSupply,
 			ChainID: big.NewInt(1),
 			Address: AaveV3ContractAddress,
-			ABI:     AaveV3SupplyABI,
+			ABI:     aaveV3ABI,
 		},
 		{
 			Name:    AaveV3,
@@ -105,7 +106,7 @@ var staticProtocols = map[ProtocolType][]Protocol{
 			Method:  aaveWithdraw,
 			ChainID: big.NewInt(1),
 			Address: AaveV3ContractAddress,
-			ABI:     AaveV3WithdrawABI,
+			// ABI:     aaveV3WithdrawABI,
 		},
 		{
 			Name:    SparkLend,
