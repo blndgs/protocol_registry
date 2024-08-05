@@ -22,6 +22,7 @@ type GenerateCalldataOptions struct {
 	// but here for future proofing in case we decide to let people send minted
 	// tokens from these protocols to another address instead of themselves
 	Recipient   common.Address
+	Asset       common.Address
 	ReferalCode any
 }
 

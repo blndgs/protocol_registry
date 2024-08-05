@@ -75,18 +75,75 @@ var (
 )
 
 const (
-	aaveV3ABI = `[
-	{"name":"withdraw","type":"function","inputs":[{"type":"address"},{"type":"uint256"},{"type":"address"}]}
-	{"name":"supply","type":"function","inputs":[{"type":"address"},{"type":"uint256"},{"type":"address"},{"type":"uint16"}]}]`
-	SparkSupplyABI        = aaveV3ABI
-	SparkWithdrawABI      = ``
-	LidoSubmitABI         = `[{"name": "submit", "type": "function","inputs": [{"type": "address"}]}]`
-	AnkrSupplyABI         = `[{"name":"stakeAndClaimAethC","type":"function","inputs":[]}]`
-	AnkrWithdrawABI       = `[{"name":"unstakeAETH","type":"function","inputs":[{"internalType":"uint256","name":"shares","type":"uint256"}]}]`
-	RenzoDepositETHABI    = `[{"name":"depositETH","type":"function","inputs":[]}]`
-	RenzoDepositERC20ABI  = `[{"name":"deposit","type":"function","inputs":[{"type":"address"},{"type":"uint256"}]}]`
-	CompoundV3SupplyABI   = `[{"name":"supply","type":"function","inputs":[{"type":"address"},{"type":"uint256"}]}]`
-	CompoundV3WithdrawABI = `[{"name":"withdraw","type":"function","inputs":[{"type":"address"},{"type":"uint256"}]}]`
+	aaveV3ABI = `
+[
+  {
+    "name": "withdraw",
+    "type": "function",
+    "inputs": [
+      {
+        "type": "address"
+      },
+      {
+        "type": "uint256"
+      },
+      {
+        "type": "address"
+      }
+    ]
+  },
+  {
+    "name": "supply",
+    "type": "function",
+    "inputs": [
+      {
+        "type": "address"
+      },
+      {
+        "type": "uint256"
+      },
+      {
+        "type": "address"
+      },
+      {
+        "type": "uint16"
+      }
+    ]
+  }
+]`
+	compoundv3ABI = `
+[
+  {
+    "name": "withdraw",
+    "type": "function",
+    "inputs": [
+      {
+        "type": "address"
+      },
+      {
+        "type": "uint256"
+      }
+    ]
+  },
+  {
+    "name": "supply",
+    "type": "function",
+    "inputs": [
+      {
+        "type": "address"
+      },
+      {
+        "type": "uint256"
+      }
+    ]
+  }
+]
+	`
+	LidoSubmitABI        = `[{"name": "submit", "type": "function","inputs": [{"type": "address"}]}]`
+	AnkrSupplyABI        = `[{"name":"stakeAndClaimAethC","type":"function","inputs":[]}]`
+	AnkrWithdrawABI      = `[{"name":"unstakeAETH","type":"function","inputs":[{"internalType":"uint256","name":"shares","type":"uint256"}]}]`
+	RenzoDepositETHABI   = `[{"name":"depositETH","type":"function","inputs":[]}]`
+	RenzoDepositERC20ABI = `[{"name":"deposit","type":"function","inputs":[{"type":"address"},{"type":"uint256"}]}]`
 )
 
 // Predefined protocols
@@ -107,22 +164,6 @@ var staticProtocols = map[ProtocolType][]Protocol{
 			ChainID: big.NewInt(1),
 			Address: AaveV3ContractAddress,
 			// ABI:     aaveV3WithdrawABI,
-		},
-		{
-			Name:    SparkLend,
-			Action:  LoanSupply,
-			Method:  sparkLendSupply,
-			ChainID: big.NewInt(1),
-			Address: SparkLendContractAddress,
-			ABI:     SparkSupplyABI,
-		},
-		{
-			Name:    SparkLend,
-			Action:  LoanWithdraw,
-			Method:  sparkLendWithdraw,
-			ChainID: big.NewInt(1),
-			Address: SparkLendContractAddress,
-			ABI:     SparkWithdrawABI,
 		},
 	},
 	TypeStake: {
