@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -54,4 +55,8 @@ func (a *LidoOperation) Validate(asset common.Address) error {
 	}
 
 	return nil
+}
+
+func (a *LidoOperation) Register(registry *ProtocolRegistry) {
+	registry.RegisterProtocolOperation(LidoContractAddress, big.NewInt(1), a)
 }

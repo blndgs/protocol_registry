@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -61,4 +62,8 @@ func (a *AnkrOperation) Validate(asset common.Address) error {
 	}
 
 	return nil
+}
+
+func (a *AnkrOperation) Register(registry *ProtocolRegistry) {
+	registry.RegisterProtocolOperation(AnkrContractAddress, big.NewInt(1), a)
 }

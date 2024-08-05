@@ -1,10 +1,10 @@
 package pkg
 
 import (
-	"context"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"math/big"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -63,11 +63,6 @@ func (a *AaveOperation) GenerateCalldata(op ContractAction,
 	return HexPrefix + hex.EncodeToString(calldata), nil
 }
 
-func (a *AaveOperation) GetContractAddress(ctx context.Context) (
-	common.Address, error) {
-	return common.HexToAddress(""), nil
-}
-
 func (a *AaveOperation) Validate(asset common.Address) error {
 
 	protocols, ok := tokenSupportedMap[1]
@@ -95,4 +90,8 @@ func (a *AaveOperation) Validate(asset common.Address) error {
 	}
 
 	return fmt.Errorf("unsupported asset for %s ( %s )", AaveV3, asset)
+}
+
+func (a *AaveOperation) Register(registry *ProtocolRegistry, addr common.Address) {
+	registry.RegisterProtocolOperation(addr, big.NewInt(1), a)
 }

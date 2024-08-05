@@ -142,7 +142,7 @@ func NewRocketPool(rpcURL string) (*RocketPoolOperation, error) {
 // Register registers the RocketPoolOperation client into the protocol registry so it can be used by any user of
 // the registry library
 func (r *RocketPoolOperation) Register(registry *ProtocolRegistry) {
-	// registry.RegisterProtocolOperation(r.Address, r.action, r.ChainID, r)
+	registry.RegisterProtocolOperation(r.Address, r.ChainID, r)
 }
 
 // GenerateCalldata dynamically generates the calldata for deposit and withdrawal actions
