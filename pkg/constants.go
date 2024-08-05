@@ -139,9 +139,39 @@ const (
   }
 ]
 	`
-	LidoSubmitABI        = `[{"name": "submit", "type": "function","inputs": [{"type": "address"}]}]`
-	AnkrSupplyABI        = `[{"name":"stakeAndClaimAethC","type":"function","inputs":[]}]`
-	AnkrWithdrawABI      = `[{"name":"unstakeAETH","type":"function","inputs":[{"internalType":"uint256","name":"shares","type":"uint256"}]}]`
+	lidoABI = `
+[
+  {
+    "name": "submit",
+    "type": "function",
+    "inputs": [
+      {
+        "type": "address"
+      }
+    ]
+  }
+]
+	`
+	ankrABI = `
+[
+  {
+    "name": "stakeAndClaimAethC",
+    "type": "function",
+    "inputs": []
+  },
+  {
+    "name": "unstakeAETH",
+    "type": "function",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "shares",
+        "type": "uint256"
+      }
+    ]
+  }
+]
+	`
 	RenzoDepositETHABI   = `[{"name":"depositETH","type":"function","inputs":[]}]`
 	RenzoDepositERC20ABI = `[{"name":"deposit","type":"function","inputs":[{"type":"address"},{"type":"uint256"}]}]`
 )
@@ -168,28 +198,12 @@ var staticProtocols = map[ProtocolType][]Protocol{
 	},
 	TypeStake: {
 		{
-			Name:    Lido,
-			Action:  NativeStake,
-			Method:  lidoStake,
-			ChainID: big.NewInt(1),
-			Address: LidoContractAddress,
-			ABI:     LidoSubmitABI,
-		},
-		{
 			Name:    Ankr,
 			Action:  NativeStake,
 			Method:  ankrStake,
 			ChainID: big.NewInt(1),
 			Address: AnkrContractAddress,
-			ABI:     AnkrSupplyABI,
-		},
-		{
-			Name:    Ankr,
-			Action:  NativeUnStake,
-			Method:  ankrUnstake,
-			ChainID: big.NewInt(1),
-			Address: AnkrContractAddress,
-			ABI:     AnkrWithdrawABI,
+			ABI:     ankrABI,
 		},
 		{
 			Name:    Renzo,

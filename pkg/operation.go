@@ -1,7 +1,6 @@
 package pkg
 
 import (
-	"context"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -39,12 +38,6 @@ func (g GenerateCalldataOptions) UBO() common.Address {
 type ProtocolOperation interface {
 	// Generates the calldata based on the dynamic operation details
 	GenerateCalldata(ContractAction, GenerateCalldataOptions) (string, error)
-
-	// retrieves the address for the contract interaction.
-	// Sometimes this might be static but some protocols do not use a static address
-	// like Rocketpool and others. The current deposit pool address would need to be dynamically
-	// retrieved
-	GetContractAddress(ctx context.Context) (common.Address, error)
 
 	// Validate checks if the given asset is a valid one for this operation
 	// This will not be automatically called by GenerateCalldata.

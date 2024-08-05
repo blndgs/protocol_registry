@@ -20,7 +20,8 @@ func NewProtocolRegistry() *ProtocolRegistry {
 }
 
 // RegisterProtocolOperation registers a new operation for a protocol on a specific chain.
-func (pr *ProtocolRegistry) RegisterProtocolOperation(protocol ContractAddress, action ContractAction, chainID *big.Int, operation ProtocolOperation) {
+func (pr *ProtocolRegistry) RegisterProtocolOperation(protocol ContractAddress, action ContractAction,
+	chainID *big.Int, operation ProtocolOperation) {
 	pr.lock.Lock()
 	defer pr.lock.Unlock()
 
