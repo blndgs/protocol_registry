@@ -26,8 +26,9 @@ type GenerateCalldataOptions struct {
 }
 
 // Ultimate Beneficiary Owner of the token to be minted
+// Defaults to the sender
 func (g GenerateCalldataOptions) UBO() common.Address {
-	if len(g.Recipient.Bytes()) == 0 {
+	if g.Recipient.Hex() == "0x0000000000000000000000000000000000000000" {
 		return g.Sender
 	}
 

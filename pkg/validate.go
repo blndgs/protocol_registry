@@ -45,27 +45,3 @@ var tokenSupportedMap = map[int64]map[ProtocolName][]string{
 		Lido: {},
 	},
 }
-
-// chainID -> Contract address -> ERC20s that can be used as collateral
-// Compound has different markets and each market only supports a
-// few assets as collateral
-var compoundSupportedAssets = map[int64]map[string][]string{
-	// Ethereum
-	1: {
-		// USDC pool
-		"0xc3d688b66703497daa19211eedff47f25384cdc3": []string{
-			nativeDenomAddress,                           // ETH
-			"0x514910771AF9Ca656af840dff83E8264EcF986CA", // LINK
-			"0xc00e94Cb662C3520282E6f5717214004A7f26888", // COMP
-			"0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984", // UNI
-			"0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", // WBTC
-		},
-		// ETH pool
-		"0xa17581a9e3356d9a858b789d68b4d866e593ae94": []string{
-			"0xBe9895146f7AF43049ca1c1AE358B0541Ea49704", // cbETH
-			"0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0", // wsETH (Lido)
-			"0xae78736Cd615f374D3085123A210448E74Fc6393", // RocketPool ETH
-			"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", // WETH
-		},
-	},
-}

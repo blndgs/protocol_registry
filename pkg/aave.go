@@ -36,8 +36,13 @@ func (a *AaveOperation) GenerateCalldata(op ContractAction,
 	switch op {
 	case LoanSupply:
 
+		referalCode, ok := opts.ReferalCode.(uint16)
+		if !ok {
+			return "", errors.New("referal code is not a uint16")
+		}
+
 		calldata, err = a.parsedABI.Pack("supply",
-			[]interface{}{opts.Sender, opts.Amount, opts.UBO(), uint16(0)})
+			opts.Asset, opts.Amount, opts.UBO(), referalCode)
 		if err != nil {
 			return "", err
 		}
@@ -45,7 +50,7 @@ func (a *AaveOperation) GenerateCalldata(op ContractAction,
 	case LoanWithdraw:
 
 		calldata, err = a.parsedABI.Pack("withdraw",
-			[]interface{}{opts.Sender, opts.Amount, opts.UBO()})
+			opts.Asset, opts.Amount, opts.UBO())
 		if err != nil {
 			return "", err
 		}

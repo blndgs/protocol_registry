@@ -49,30 +49,9 @@ func (a *LidoOperation) GenerateCalldata(op ContractAction,
 }
 
 func (a *LidoOperation) Validate(asset common.Address) error {
-
-	protocols, ok := tokenSupportedMap[1]
-	if !ok {
-		return errors.New("unsupported chain for asset validation")
+	if !IsNativeToken(asset) {
+		return fmt.Errorf("unsupported asset for Lido staking ( %s )", asset)
 	}
 
-	addrs, ok := protocols[AaveV3]
-	if !ok {
-		return errors.New("unsupported protocol for asset validation")
-	}
-
-	if len(addrs) == 0 {
-		if strings.EqualFold(strings.ToLower(asset.Hex()), nativeDenomAddress) {
-			return nil
-		}
-
-		return fmt.Errorf("unsupported asset for %s ( %s )", AaveV3, asset)
-	}
-
-	for _, addr := range addrs {
-		if strings.EqualFold(strings.ToLower(asset.Hex()), strings.ToLower(addr)) {
-			return nil
-		}
-	}
-
-	return fmt.Errorf("unsupported asset for %s ( %s )", AaveV3, asset)
+	return nil
 }

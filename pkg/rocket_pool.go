@@ -160,7 +160,7 @@ func (r *RocketPoolOperation) GenerateCalldata(op ContractAction, opts GenerateC
 
 func (r *RocketPoolOperation) withdraw(opts GenerateCalldataOptions) (string, error) {
 
-	calldata, err := r.parsedABI.Pack("transfer", opts.Amount)
+	calldata, err := r.parsedABI.Pack("transfer", opts.UBO(), opts.Amount)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate calldata for %s: %w", r.Method, err)
 	}

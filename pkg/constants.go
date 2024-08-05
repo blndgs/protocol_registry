@@ -178,33 +178,7 @@ const (
 
 // Predefined protocols
 var staticProtocols = map[ProtocolType][]Protocol{
-	TypeLoan: {
-		{
-			Name:    AaveV3,
-			Action:  LoanSupply,
-			Method:  aaveSupply,
-			ChainID: big.NewInt(1),
-			Address: AaveV3ContractAddress,
-			ABI:     aaveV3ABI,
-		},
-		{
-			Name:    AaveV3,
-			Action:  LoanWithdraw,
-			Method:  aaveWithdraw,
-			ChainID: big.NewInt(1),
-			Address: AaveV3ContractAddress,
-			// ABI:     aaveV3WithdrawABI,
-		},
-	},
 	TypeStake: {
-		{
-			Name:    Ankr,
-			Action:  NativeStake,
-			Method:  ankrStake,
-			ChainID: big.NewInt(1),
-			Address: AnkrContractAddress,
-			ABI:     ankrABI,
-		},
 		{
 			Name:    Renzo,
 			Action:  NativeStake,
