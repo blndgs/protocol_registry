@@ -22,18 +22,16 @@ type CompoundV3Operation struct {
 
 // dynamically registers all supported pools
 func registerCompoundRegistry(registry *ProtocolRegistry) {
-	// for chainID, v := range compoundSupportedAssets {
-	// 	for poolAddr := range v {
-	// 		for _, action := range []ContractAction{LoanSupply, LoanWithdraw} {
-	// 			c, err := NewCompoundV3(big.NewInt(chainID), common.HexToAddress(poolAddr), action)
-	// 			if err != nil {
-	// 				panic(fmt.Sprintf("Failed to create compound client for %s", poolAddr))
-	// 			}
-	//
-	// 			c.Register(registry)
-	// 		}
-	// 	}
-	// }
+	for chainID, v := range compoundSupportedAssets {
+		for poolAddr := range v {
+			c, err := NewCompoundV3(big.NewInt(chainID), common.HexToAddress(poolAddr))
+			if err != nil {
+				panic(fmt.Sprintf("Failed to create compound client for %s", poolAddr))
+			}
+
+			c.Register(registry, common.HexToAddress(poolAddr))
+		}
+	}
 }
 
 // chainID -> Contract address of pool market -> ERC20s that can be used as collateral
@@ -87,8 +85,8 @@ func NewCompoundV3(chainID *big.Int, marketContractAddress common.Address) (*Com
 
 // Register registers the CompoundV3Operation client into the protocol registry so it can be used by any user of
 // the registry library
-func (c *CompoundV3Operation) Register(registry *ProtocolRegistry) {
-	// registry.RegisterProtocolOperation(common.HexToAddress(c.proxyContract), c.action, big.NewInt(c.chainID), c)
+func (c *CompoundV3Operation) Register(registry *ProtocolRegistry, addr common.Address) {
+	registry.RegisterProtocolOperation(addr, big.NewInt(c.chainID), c)
 }
 
 // Validate ensures the current asset can be supplied to the market

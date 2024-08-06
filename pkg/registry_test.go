@@ -51,4 +51,14 @@ func TestProtocolRegistry_Validate(t *testing.T) {
 		_, err := registry.GetProtocolOperation(AnkrContractAddress, big.NewInt(1))
 		require.NoError(t, err)
 	})
+
+	t.Run("GetCompound", func(t *testing.T) {
+		_, err := registry.GetProtocolOperation(common.HexToAddress("0xc3d688b66703497daa19211eedff47f25384cdc3"),
+			big.NewInt(1))
+		require.NoError(t, err)
+
+		_, err = registry.GetProtocolOperation(common.HexToAddress("0xa17581a9e3356d9a858b789d68b4d866e593ae94"),
+			big.NewInt(1))
+		require.NoError(t, err)
+	})
 }

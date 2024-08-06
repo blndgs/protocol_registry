@@ -91,4 +91,6 @@ func (pr *ProtocolRegistry) setupProtocolOperations(rpcURL string) {
 		panic(fmt.Sprintf("Failed to create RocketPool submit operation: %v", err))
 	}
 	rocketPool.Register(pr)
+
+	registerCompoundRegistry(pr)
 }

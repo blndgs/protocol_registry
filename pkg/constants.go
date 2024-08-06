@@ -51,20 +51,6 @@ const (
 	ERC20UnStake
 )
 
-const (
-	aaveSupply        ProtocolMethod = "supply"
-	aaveWithdraw      ProtocolMethod = "withdraw"
-	sparkLendSupply   ProtocolMethod = "supply"
-	sparkLendWithdraw ProtocolMethod = "withdraw"
-	lidoStake         ProtocolMethod = "submit"
-	ankrStake         ProtocolMethod = "stakeAndClaimAethC"
-	ankrUnstake       ProtocolMethod = "unstakeAETH"
-	rocketPoolStake   ProtocolMethod = "deposit"
-	rocketPoolUnStake ProtocolMethod = "transfer"
-	renzoStakeETH     ProtocolMethod = "depositETH"
-	renzoStakeERC20   ProtocolMethod = "deposit"
-)
-
 var (
 	AaveV3ContractAddress    ContractAddress = common.HexToAddress("0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2")
 	SparkLendContractAddress ContractAddress = common.HexToAddress("0xC13e21B648A5Ee794902342038FF3aDAB66BE987")
@@ -175,25 +161,3 @@ const (
 	RenzoDepositETHABI   = `[{"name":"depositETH","type":"function","inputs":[]}]`
 	RenzoDepositERC20ABI = `[{"name":"deposit","type":"function","inputs":[{"type":"address"},{"type":"uint256"}]}]`
 )
-
-// Predefined protocols
-var staticProtocols = map[ProtocolType][]Protocol{
-	TypeStake: {
-		{
-			Name:    Renzo,
-			Action:  NativeStake,
-			Method:  renzoStakeETH,
-			ChainID: big.NewInt(1),
-			Address: RenzoManagerAddress,
-			ABI:     RenzoDepositETHABI,
-		},
-		{
-			Name:    Renzo,
-			Action:  ERC20Stake,
-			Method:  renzoStakeERC20,
-			ChainID: big.NewInt(1),
-			Address: RenzoManagerAddress,
-			ABI:     RenzoDepositERC20ABI,
-		},
-	},
-}
