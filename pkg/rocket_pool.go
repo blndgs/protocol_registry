@@ -64,7 +64,6 @@ type RocketPoolOperation struct {
 	// but the settings contract allows us check for the minimum amount of eth that
 	// can be staked
 	depositSettingsContract *rocketpool.Contract
-	action                  ContractAction
 	parsedABI               abi.ABI
 }
 
