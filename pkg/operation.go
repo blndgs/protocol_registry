@@ -20,6 +20,8 @@ type GenerateCalldataOptions struct {
 	// Not used right now because the sender is also the recipient
 	// but here for future proofing in case we decide to let people send minted
 	// tokens from these protocols to another address instead of themselves
+	// e.g With Aave, when you supply DAI, the ADAI can be programmed to be deposite
+	// into another address
 	Recipient   common.Address
 	Asset       common.Address
 	ReferalCode any
