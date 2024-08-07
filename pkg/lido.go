@@ -60,3 +60,5 @@ func (a *LidoOperation) Validate(asset common.Address) error {
 func (a *LidoOperation) Register(registry *ProtocolRegistry) {
 	registry.RegisterProtocolOperation(LidoContractAddress, big.NewInt(1), a)
 }
+
+func (a *LidoOperation) Name() string { return Lido }

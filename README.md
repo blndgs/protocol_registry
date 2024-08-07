@@ -75,13 +75,38 @@ if err != nil {
 }
 ```
 
-## Supported protocols
+#### Supported protocols
 
 - Lido
 - Aave3
 - SparkLend
 - Rocketpool
 - Ankr
+
+### Adding New Protocols and Operations
+
+To add support for a new protocol and its operations, follow these steps:
+
+- Create a struct that implements the following:
+
+```go
+GenerateCalldata(ContractAction, GenerateCalldataOptions) (string, error)
+Validate(asset common.Address) error
+```
+
+- Register the cutom implementation using the `RegisterProtocolOperation` function:
+
+```go
+registry.RegisterProtocolOperation(Protocol", pkg.YourAction, big.NewInt(1), &pkg.GenericProtocolOperation{
+    DynamicOperation: pkg.DynamicOperation{
+        Protocol: "YourProtocol",
+        Action:   pkg.YourAction,
+        ChainID:  big.NewInt(1),
+    },
+})
+```
+
+- Implement the necessary logic for generating calldata in the `GenerateCalldata` method of the `GenericProtocolOperation` struct, if required.
 
 ## Contributing
 

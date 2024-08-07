@@ -204,3 +204,5 @@ func (r *RocketPoolOperation) Validate(asset common.Address) error {
 
 	return fmt.Errorf("unsupported asset for rocket pool staking (%s)", asset.Hex())
 }
+
+func (a *RocketPoolOperation) Name() string { return RocketPool }

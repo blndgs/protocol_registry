@@ -46,4 +46,7 @@ type ProtocolOperation interface {
 	// This will not be automatically called by GenerateCalldata.
 	// The client must call this to validate against the current known action type
 	Validate(asset common.Address) error
+
+	// Name returns the protcol name. This can be useful for debugging purposes
+	Name() string
 }

@@ -11,12 +11,22 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+// ENUM(aave,spark)
+type AaveProtocolFork uint8
+
 // AaveOperation is an implementation of calldata generation for Aave and it's other forks
 type AaveOperation struct {
 	parsedABI abi.ABI
+	fork      AaveProtocolFork
 }
 
-func NewAaveOperation() (*AaveOperation, error) {
+// NewAaveOperation creates a new calldata generator for Aave3 and other forks
+// of Aave3. Spark is the only supported fork at this time
+func NewAaveOperation(fork AaveProtocolFork) (*AaveOperation, error) {
+	if !fork.IsValid() {
+		return nil, errors.New("unsupported aave protocol fork")
+	}
+
 	parsedABI, err := abi.JSON(strings.NewReader(aaveV3ABI))
 	if err != nil {
 		return nil, err
@@ -24,6 +34,7 @@ func NewAaveOperation() (*AaveOperation, error) {
 
 	return &AaveOperation{
 		parsedABI: parsedABI,
+		fork:      fork,
 	}, nil
 }
 
@@ -70,7 +81,12 @@ func (a *AaveOperation) Validate(asset common.Address) error {
 		return errors.New("unsupported chain for asset validation")
 	}
 
-	addrs, ok := protocols[AaveV3]
+	var protocol = AaveV3
+	if a.fork == AaveProtocolForkSpark {
+		protocol = SparkLend
+	}
+
+	addrs, ok := protocols[protocol]
 	if !ok {
 		return errors.New("unsupported protocol for asset validation")
 	}
@@ -92,6 +108,19 @@ func (a *AaveOperation) Validate(asset common.Address) error {
 	return fmt.Errorf("unsupported asset for %s ( %s )", AaveV3, asset)
 }
 
-func (a *AaveOperation) Register(registry *ProtocolRegistry, addr common.Address) {
+func (a *AaveOperation) Name() string {
+	if a.fork == AaveProtocolForkAave {
+		return AaveV3
+	}
+
+	return SparkLend
+}
+
+func (a *AaveOperation) Register(registry *ProtocolRegistry) {
+	addr := AaveV3ContractAddress
+	if a.fork == AaveProtocolForkSpark {
+		addr = SparkLendContractAddress
+	}
+
 	registry.RegisterProtocolOperation(addr, big.NewInt(1), a)
 }

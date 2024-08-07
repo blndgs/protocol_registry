@@ -134,3 +134,5 @@ func (c *CompoundV3Operation) supply(opts GenerateCalldataOptions) (string, erro
 
 	return HexPrefix + hex.EncodeToString(calldata), nil
 }
+
+func (c *CompoundV3Operation) Name() string { return Compound }

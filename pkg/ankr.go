@@ -67,3 +67,5 @@ func (a *AnkrOperation) Validate(asset common.Address) error {
 func (a *AnkrOperation) Register(registry *ProtocolRegistry) {
 	registry.RegisterProtocolOperation(AnkrContractAddress, big.NewInt(1), a)
 }
+
+func (a *AnkrOperation) Name() string { return Ankr }

@@ -78,13 +78,18 @@ func (pr *ProtocolRegistry) setupProtocolOperations(rpcURL string) {
 
 	ankr.Register(pr)
 
-	aaveOperation, err := NewAaveOperation()
+	aaveOperation, err := NewAaveOperation(AaveProtocolForkAave)
 	if err != nil {
 		panic(fmt.Sprintf("Failed to create Aave operation: %v", err))
 	}
 
-	aaveOperation.Register(pr, AaveV3ContractAddress)
-	aaveOperation.Register(pr, SparkLendContractAddress)
+	sparklend, err := NewAaveOperation(AaveProtocolForkSpark)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to create Aave operation: %v", err))
+	}
+
+	aaveOperation.Register(pr)
+	sparklend.Register(pr)
 
 	rocketPool, err := NewRocketPool(rpcURL)
 	if err != nil {

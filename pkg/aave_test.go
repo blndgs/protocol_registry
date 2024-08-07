@@ -8,13 +8,26 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestAave_GenerateCalldata_Forks(t *testing.T) {
+
+	aave, err := NewAaveOperation(AaveProtocolForkAave)
+	require.NoError(t, err)
+
+	require.Equal(t, AaveV3, aave.Name())
+
+	aave, err = NewAaveOperation(AaveProtocolForkSpark)
+	require.NoError(t, err)
+
+	require.Equal(t, SparkLend, aave.Name())
+}
+
 func TestAave_GenerateCalldata_Withdraw(t *testing.T) {
 	// cast calldata "withdraw(address,uint256,address)" 0xc0ffee254729296a45a3885639AC7E10F9d54979 500000000000000000 0x0000000000000000000000000000000000000000
 	// 0x69328dec000000000000000000000000c0ffee254729296a45a3885639ac7e10f9d5497900000000000000000000000000000000000000000000000006f05b59d3b200000000000000000000000000000000000000000000000000000000000000000000
 
 	expectedCalldata := "0x69328dec000000000000000000000000c0ffee254729296a45a3885639ac7e10f9d5497900000000000000000000000000000000000000000000000006f05b59d3b200000000000000000000000000000000000000000000000000000000000000000000"
 
-	aave, err := NewAaveOperation()
+	aave, err := NewAaveOperation(AaveProtocolForkAave)
 	require.NoError(t, err)
 
 	calldata, err := aave.GenerateCalldata(LoanWithdraw, GenerateCalldataOptions{
@@ -33,7 +46,7 @@ func TestAave_GenerateCalldata_Supply(t *testing.T) {
 
 	expectedCalldata := "0x617ba0370000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f9840000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a"
 
-	aave, err := NewAaveOperation()
+	aave, err := NewAaveOperation(AaveProtocolForkAave)
 	require.NoError(t, err)
 
 	calldata, err := aave.GenerateCalldata(LoanSupply, GenerateCalldataOptions{
@@ -49,7 +62,7 @@ func TestAave_GenerateCalldata_Supply(t *testing.T) {
 
 func TestAave_GenerateCalldataUnspportedAction(t *testing.T) {
 
-	aave, err := NewAaveOperation()
+	aave, err := NewAaveOperation(AaveProtocolForkAave)
 	require.NoError(t, err)
 
 	_, err = aave.GenerateCalldata(NativeStake, GenerateCalldataOptions{
