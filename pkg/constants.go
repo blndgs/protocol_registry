@@ -48,21 +48,7 @@ const (
 	NativeStake
 	NativeUnStake
 	ERC20Stake
-	// ERC20UnStake
-)
-
-const (
-	aaveSupply        ProtocolMethod = "supply"
-	aaveWithdraw      ProtocolMethod = "withdraw"
-	sparkLendSupply   ProtocolMethod = "supply"
-	sparkLendWithdraw ProtocolMethod = "withdraw"
-	lidoStake         ProtocolMethod = "submit"
-	ankrStake         ProtocolMethod = "stakeAndClaimAethC"
-	ankrUnstake       ProtocolMethod = "unstakeAETH"
-	rocketPoolStake   ProtocolMethod = "deposit"
-	rocketPoolUnStake ProtocolMethod = "transfer"
-	renzoStakeETH     ProtocolMethod = "depositETH"
-	renzoStakeERC20   ProtocolMethod = "deposit"
+	ERC20UnStake
 )
 
 var (
@@ -75,95 +61,103 @@ var (
 )
 
 const (
-	AaveV3SupplyABI       = `[{"name":"supply","type":"function","inputs":[{"type":"address"},{"type":"uint256"},{"type":"address"},{"type":"uint16"}]}]`
-	AaveV3WithdrawABI     = `[{"name":"withdraw","type":"function","inputs":[{"type":"address"},{"type":"uint256"},{"type":"address"}]}]`
-	SparkSupplyABI        = AaveV3SupplyABI
-	SparkWithdrawABI      = AaveV3WithdrawABI
-	LidoSubmitABI         = `[{"name": "submit", "type": "function","inputs": [{"type": "address"}]}]`
-	AnkrSupplyABI         = `[{"name":"stakeAndClaimAethC","type":"function","inputs":[]}]`
-	AnkrWithdrawABI       = `[{"name":"unstakeAETH","type":"function","inputs":[{"internalType":"uint256","name":"shares","type":"uint256"}]}]`
-	RenzoDepositETHABI    = `[{"name":"depositETH","type":"function","inputs":[]}]`
-	RenzoDepositERC20ABI  = `[{"name":"deposit","type":"function","inputs":[{"type":"address"},{"type":"uint256"}]}]`
-	CompoundV3SupplyABI   = `[{"name":"supply","type":"function","inputs":[{"type":"address"},{"type":"uint256"}]}]`
-	CompoundV3WithdrawABI = `[{"name":"withdraw","type":"function","inputs":[{"type":"address"},{"type":"uint256"}]}]`
+	aaveV3ABI = `
+[
+  {
+    "name": "withdraw",
+    "type": "function",
+    "inputs": [
+      {
+        "type": "address"
+      },
+      {
+        "type": "uint256"
+      },
+      {
+        "type": "address"
+      }
+    ]
+  },
+  {
+    "name": "supply",
+    "type": "function",
+    "inputs": [
+      {
+        "type": "address"
+      },
+      {
+        "type": "uint256"
+      },
+      {
+        "type": "address"
+      },
+      {
+        "type": "uint16"
+      }
+    ]
+  }
+]`
+	compoundv3ABI = `
+[
+  {
+    "name": "withdraw",
+    "type": "function",
+    "inputs": [
+      {
+        "type": "address"
+      },
+      {
+        "type": "uint256"
+      }
+    ]
+  },
+  {
+    "name": "supply",
+    "type": "function",
+    "inputs": [
+      {
+        "type": "address"
+      },
+      {
+        "type": "uint256"
+      }
+    ]
+  }
+]
+	`
+	lidoABI = `
+[
+  {
+    "name": "submit",
+    "type": "function",
+    "inputs": [
+      {
+        "type": "address"
+      }
+    ]
+  }
+]
+	`
+	ankrABI = `
+[
+  {
+    "name": "stakeAndClaimAethC",
+    "type": "function",
+    "inputs": []
+  },
+  {
+    "name": "unstakeAETH",
+    "type": "function",
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "shares",
+        "type": "uint256"
+      }
+    ]
+  }
+]
+	`
+	RenzoDepositETHABI   = `[{"name":"depositETH","type":"function","inputs":[]}]`
+	RenzoDepositERC20ABI = `[{"name":"deposit","type":"function","inputs":[{"type":"address"},{"type":"uint256"}]}]`
 )
-
-// Predefined protocols
-var staticProtocols = map[ProtocolType][]Protocol{
-	TypeLoan: {
-		{
-			Name:    AaveV3,
-			Action:  LoanSupply,
-			Method:  aaveSupply,
-			ChainID: big.NewInt(1),
-			Address: AaveV3ContractAddress,
-			ABI:     AaveV3SupplyABI,
-		},
-		{
-			Name:    AaveV3,
-			Action:  LoanWithdraw,
-			Method:  aaveWithdraw,
-			ChainID: big.NewInt(1),
-			Address: AaveV3ContractAddress,
-			ABI:     AaveV3WithdrawABI,
-		},
-		{
-			Name:    SparkLend,
-			Action:  LoanSupply,
-			Method:  sparkLendSupply,
-			ChainID: big.NewInt(1),
-			Address: SparkLendContractAddress,
-			ABI:     SparkSupplyABI,
-		},
-		{
-			Name:    SparkLend,
-			Action:  LoanWithdraw,
-			Method:  sparkLendWithdraw,
-			ChainID: big.NewInt(1),
-			Address: SparkLendContractAddress,
-			ABI:     SparkWithdrawABI,
-		},
-	},
-	TypeStake: {
-		{
-			Name:    Lido,
-			Action:  NativeStake,
-			Method:  lidoStake,
-			ChainID: big.NewInt(1),
-			Address: LidoContractAddress,
-			ABI:     LidoSubmitABI,
-		},
-		{
-			Name:    Ankr,
-			Action:  NativeStake,
-			Method:  ankrStake,
-			ChainID: big.NewInt(1),
-			Address: AnkrContractAddress,
-			ABI:     AnkrSupplyABI,
-		},
-		{
-			Name:    Ankr,
-			Action:  NativeUnStake,
-			Method:  ankrUnstake,
-			ChainID: big.NewInt(1),
-			Address: AnkrContractAddress,
-			ABI:     AnkrWithdrawABI,
-		},
-		{
-			Name:    Renzo,
-			Action:  NativeStake,
-			Method:  renzoStakeETH,
-			ChainID: big.NewInt(1),
-			Address: RenzoManagerAddress,
-			ABI:     RenzoDepositETHABI,
-		},
-		{
-			Name:    Renzo,
-			Action:  ERC20Stake,
-			Method:  renzoStakeERC20,
-			ChainID: big.NewInt(1),
-			Address: RenzoManagerAddress,
-			ABI:     RenzoDepositERC20ABI,
-		},
-	},
-}
