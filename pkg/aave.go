@@ -38,6 +38,7 @@ func NewAaveOperation(fork AaveProtocolFork) (*AaveOperation, error) {
 	}, nil
 }
 
+// GenerateCalldata creates the required calldata based off the provided options
 func (a *AaveOperation) GenerateCalldata(op ContractAction,
 	opts GenerateCalldataOptions) (string, error) {
 
@@ -74,6 +75,7 @@ func (a *AaveOperation) GenerateCalldata(op ContractAction,
 	return HexPrefix + hex.EncodeToString(calldata), nil
 }
 
+// Validates makes sure the protocol supports the provided asset
 func (a *AaveOperation) Validate(asset common.Address) error {
 
 	protocols, ok := tokenSupportedMap[1]
@@ -116,6 +118,7 @@ func (a *AaveOperation) Name() string {
 	return SparkLend
 }
 
+// Name returns the human readable name for the protocol
 func (a *AaveOperation) Register(registry *ProtocolRegistry) {
 	addr := AaveV3ContractAddress
 	if a.fork == AaveProtocolForkSpark {

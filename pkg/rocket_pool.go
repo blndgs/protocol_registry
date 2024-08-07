@@ -197,6 +197,7 @@ func (r *RocketPoolOperation) deposit(opts GenerateCalldataOptions) (string, err
 	return HexPrefix + hex.EncodeToString(calldata), nil
 }
 
+// Validates makes sure the protocol supports the provided asset
 func (r *RocketPoolOperation) Validate(asset common.Address) error {
 	if IsNativeToken(asset) {
 		return nil
@@ -205,4 +206,5 @@ func (r *RocketPoolOperation) Validate(asset common.Address) error {
 	return fmt.Errorf("unsupported asset for rocket pool staking (%s)", asset.Hex())
 }
 
+// Name returns the human readable name for the protocol
 func (a *RocketPoolOperation) Name() string { return RocketPool }

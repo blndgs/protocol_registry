@@ -135,4 +135,5 @@ func (c *CompoundV3Operation) supply(opts GenerateCalldataOptions) (string, erro
 	return HexPrefix + hex.EncodeToString(calldata), nil
 }
 
+// Name returns the human readable name for the protocol
 func (c *CompoundV3Operation) Name() string { return Compound }

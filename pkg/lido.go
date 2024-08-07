@@ -16,6 +16,7 @@ type LidoOperation struct {
 	parsedABI abi.ABI
 }
 
+// NewLidoOperation creates an implementation of Lido protocol for generating calldata
 func NewLidoOperation() (*LidoOperation, error) {
 	parsedABI, err := abi.JSON(strings.NewReader(lidoABI))
 	if err != nil {
@@ -27,6 +28,7 @@ func NewLidoOperation() (*LidoOperation, error) {
 	}, nil
 }
 
+// GenerateCalldata creates the required calldata based off the provided options
 func (a *LidoOperation) GenerateCalldata(op ContractAction,
 	opts GenerateCalldataOptions) (string, error) {
 
@@ -49,6 +51,7 @@ func (a *LidoOperation) GenerateCalldata(op ContractAction,
 	return HexPrefix + hex.EncodeToString(calldata), nil
 }
 
+// Validates makes sure the protocol supports the provided asset
 func (a *LidoOperation) Validate(asset common.Address) error {
 	if !IsNativeToken(asset) {
 		return fmt.Errorf("unsupported asset for Lido staking ( %s )", asset)
@@ -61,4 +64,5 @@ func (a *LidoOperation) Register(registry *ProtocolRegistry) {
 	registry.RegisterProtocolOperation(LidoContractAddress, big.NewInt(1), a)
 }
 
+// Name returns the human readable name for the protocol
 func (a *LidoOperation) Name() string { return Lido }

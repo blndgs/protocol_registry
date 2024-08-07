@@ -16,6 +16,7 @@ type AnkrOperation struct {
 	parsedABI abi.ABI
 }
 
+// NewAnkrOperation provides an implementation of the Ankr protocol
 func NewAnkrOperation() (*AnkrOperation, error) {
 	parsedABI, err := abi.JSON(strings.NewReader(ankrABI))
 	if err != nil {
@@ -27,6 +28,7 @@ func NewAnkrOperation() (*AnkrOperation, error) {
 	}, nil
 }
 
+// GenerateCalldata creates the required calldata based off the provided options
 func (a *AnkrOperation) GenerateCalldata(op ContractAction,
 	opts GenerateCalldataOptions) (string, error) {
 
@@ -56,6 +58,7 @@ func (a *AnkrOperation) GenerateCalldata(op ContractAction,
 	return HexPrefix + hex.EncodeToString(calldata), nil
 }
 
+// Validates makes sure the protocol supports the provided asset
 func (a *AnkrOperation) Validate(asset common.Address) error {
 	if !IsNativeToken(asset) {
 		return fmt.Errorf("unsupported asset for %s ( %s )", Ankr, asset)
@@ -68,4 +71,5 @@ func (a *AnkrOperation) Register(registry *ProtocolRegistry) {
 	registry.RegisterProtocolOperation(AnkrContractAddress, big.NewInt(1), a)
 }
 
+// Name returns the human readable name for the protocol
 func (a *AnkrOperation) Name() string { return Ankr }
