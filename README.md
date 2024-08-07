@@ -94,19 +94,17 @@ GenerateCalldata(ContractAction, GenerateCalldataOptions) (string, error)
 Validate(asset common.Address) error
 ```
 
-- Register the cutom implementation using the `RegisterProtocolOperation` function:
+- Register the custom implementation using the `RegisterProtocolOperation` function:
 
 ```go
-registry.RegisterProtocolOperation(Protocol", pkg.YourAction, big.NewInt(1), &pkg.GenericProtocolOperation{
-    DynamicOperation: pkg.DynamicOperation{
-        Protocol: "YourProtocol",
-        Action:   pkg.YourAction,
-        ChainID:  big.NewInt(1),
-    },
-})
+// big.NewInt(1) is the chainID for the protocol
+registry.RegisterProtocolOperation("ContractAddressOfProtocol", big.NewInt(1), implementationStruct)
 ```
 
-- Implement the necessary logic for generating calldata in the `GenerateCalldata` method of the `GenericProtocolOperation` struct, if required.
+- Implement the necessary logic for generating calldata in the `GenerateCalldata`
+  method of the struct
+
+- Implement the `Name` method as that is useful for logging and context
 
 ## Contributing
 
