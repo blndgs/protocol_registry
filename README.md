@@ -6,7 +6,7 @@
 The Protocol Registry is a Go library that provides a flexible and extensible
 way to manage and interact with different protocols and their operations.
 It allows you to register protocol operations, retrieve them based on protocol
-name and action, and generate calldata for specific operations.
+address and chain ID, and generate calldata for specific operations.
 
 ## Features
 
