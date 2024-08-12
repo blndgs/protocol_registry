@@ -1,4 +1,4 @@
-# Generalized DeFi Protocol Interface
+# Generalized Chain-Aware DeFi Protocol Interface
 
 Here's a comprehensive interface that can adapt to any DeFi protocol, incorporating initialization, transaction generation, validation, and data retrieval.
 This interface also includes a method to handle the supported assets, which can vary per chain.
@@ -35,13 +35,24 @@ type Protocol interface {
     // GetType returns the protocol type.
     GetType() ProtocolType
 
+    // GetName returns the human-readable name of the protocol.
+    GetName() string
+
+    // GetVersion returns the version of the protocol.
+    GetVersion() string
+
     // GetContractAddress returns the contract address for a specific chain.
     GetContractAddress(chainID *big.Int) common.Address
+
+   // GetBeneficiaryOwner determines the ultimate beneficiary owner for the token to be minted.
+    GetBeneficiaryOwner(params TransactionParams) common.Address
 }
 
 // ProtocolConfig contains configuration data for initializing a protocol.
 type ProtocolConfig struct {
     RPCURL   string
+    Name     string
+    Version  string
     ChainID  *big.Int
     Contract common.Address
     ABI      abi.ABI
@@ -55,6 +66,8 @@ type TransactionParams struct {
     AmountIn     *big.Int
     AmountOut    *big.Int
     Sender       common.Address
+    Recipient    common.Address
+    ReferralCode  any
     ExtraData    map[string]interface{}
 }
 ```
@@ -94,108 +107,6 @@ import (
  "github.com/ethereum/go-ethereum/common"
 )
 
-// LidoOperation implements the Protocol interface for Lido
-type LidoOperation struct {
- parsedABI abi.ABI
- contract  common.Address
- chainID   *big.Int
- // additional fields 
-}
-
-// Initialize prepares the Lido protocol with necessary configurations and network connections
-func (l *LidoOperation) Initialize(ctx context.Context, config ProtocolConfig) error {
- parsedABI, err := abi.JSON(strings.NewReader(LidoABI))
- if err != nil {
-  return err
- }
-
- l.parsedABI = parsedABI
- l.contract = config.Contract
- l.chainID = config.ChainID
-
- // Perform any additional initialization tasks here, if needed
-
- return nil
-}
-
-// GenerateCalldata creates the necessary blockchain transaction data
-func (l *LidoOperation) GenerateCalldata(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) (string, error) {
- var calldata []byte
- var err error
-
- switch action {
- case NativeStake:
-  calldata, err = l.parsedABI.Pack("submit", params.AmountIn)
-  if err != nil {
-   return "", err
-  }
- default:
-  return "", errors.New("action not supported")
- }
-
- return "0x" + hex.EncodeToString(calldata), nil
-}
-
-// Validate checks if the provided parameters are valid for the specified action
-func (l *LidoOperation) Validate(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) error {
- if action == NativeStake {
-  if params.AmountIn.Cmp(big.NewInt(0)) <= 0 {
-   return errors.New("amount must be greater than zero")
-  }
-  return nil
- }
- return errors.New("action not supported")
-}
-
-// GetBalance retrieves the balance for a specified account and asset
-func (l *LidoOperation) GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (*big.Int, error) {
- // Implement fetching balance logic based on asset
- return nil, errors.New("not implemented")
-}
-
-// GetSupportedAssets returns a list of assets supported by the protocol on the specified chain
-func (l *LidoOperation) GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error) {
- // Lido primarily supports native ETH, so we return an empty list for simplicity
- return []common.Address{}, nil
-}
-
-// IsSupportedAsset checks if the specified asset is supported on the given chain
-func (l *LidoOperation) IsSupportedAsset(ctx context.Context, chainID *big.Int, asset common.Address) bool {
- // Lido primarily supports native ETH, so we check if the asset is the ETH address
- return asset == common.HexToAddress("0x0000000000000000000000000000000000000000") // Example address for ETH
-}
-
-// GetProtocolConfig returns the protocol config for a specific chain
-func (l *LidoOperation) GetProtocolConfig(chainID *big.Int) ProtocolConfig {
- return ProtocolConfig{
-  RPCURL:   "", // Set appropriate RPC URL
-  ChainID:  chainID,
-  Contract: l.contract,
-  ABI:      l.parsedABI,
-  Type:     TypeStake, // Assuming Lido is a staking protocol
- }
-}
-
-// GetABI returns the ABI of the protocol's contract
-func (l *LidoOperation) GetABI(chainID *big.Int) abi.ABI {
- return l.parsedABI
-}
-
-// GetType returns the protocol type
-func (l *LidoOperation) GetType() ProtocolType {
- return TypeStake
-}
-
-// GetContractAddress returns the contract address for a specific chain
-func (l *LidoOperation) GetContractAddress(chainID *big.Int) common.Address {
- return l.contract
-}
-
-// Name returns the human readable name for the protocol
-func (l *LidoOperation) Name() string {
- return "Lido"
-}
-
 // LidoABI is the ABI definition for the Lido protocol
 const LidoABI = `
 [
@@ -214,4 +125,118 @@ const LidoABI = `
     }
 ]
 `
+// LidoOperation implements the Protocol interface for Lido
+type LidoOperation struct {
+    parsedABI abi.ABI
+    contract  common.Address
+    chainID   *big.Int
+    version   string
+    // additional fields 
+}
+
+// Initialize prepares the Lido protocol with necessary configurations and network connections
+func (l *LidoOperation) Initialize(ctx context.Context, config ProtocolConfig) error {
+    parsedABI, err := abi.JSON(strings.NewReader(LidoABI))
+    if err != nil {
+    return err
+    }
+
+    l.parsedABI = parsedABI
+    l.contract = config.Contract
+    l.chainID = config.ChainID
+    l.name = config.Name
+    l.version = config.Version
+
+    // Perform any additional initialization tasks here, if needed
+
+    return nil
+}
+
+// GenerateCalldata creates the necessary blockchain transaction data
+func (l *LidoOperation) GenerateCalldata(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) (string, error) {
+    var calldata []byte
+    var err error
+
+    switch action {
+    case NativeStake:
+    calldata, err = l.parsedABI.Pack("submit", params.AmountIn)
+    if err != nil {
+    return "", err
+    }
+    default:
+    return "", errors.New("action not supported")
+    }
+
+    return "0x" + hex.EncodeToString(calldata), nil
+}
+
+// Validate checks if the provided parameters are valid for the specified action
+func (l *LidoOperation) Validate(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) error {
+    if action == NativeStake {
+    if params.AmountIn.Cmp(big.NewInt(0)) <= 0 {
+    return errors.New("amount must be greater than zero")
+    }
+    return nil
+    }
+    return errors.New("action not supported")
+}
+
+// GetBalance retrieves the balance for a specified account and asset
+func (l *LidoOperation) GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (*big.Int, error) {
+    return nil, errors.New("not implemented")
+}
+
+// GetSupportedAssets returns a list of assets supported by the protocol on the specified chain
+func (l *LidoOperation) GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error) {
+    return []common.Address{}, nil
+}
+
+// IsSupportedAsset checks if the specified asset is supported on the given chain
+func (l *LidoOperation) IsSupportedAsset(ctx context.Context, chainID *big.Int, asset common.Address) bool {
+    return asset == common.HexToAddress("0x0000000000000000000000000000000000000000")
+}
+
+// GetProtocolConfig returns the protocol config for a specific chain
+func (l *LidoOperation) GetProtocolConfig(chainID *big.Int) ProtocolConfig {
+    return ProtocolConfig{
+    RPCURL:   "",
+    ChainID:  chainID,
+    Contract: l.contract,
+    ABI:      l.parsedABI,
+    Type:     TypeStake, 
+    }
+}
+
+// GetABI returns the ABI of the protocol's contract
+func (l *LidoOperation) GetABI(chainID *big.Int) abi.ABI {
+    return l.parsedABI
+}
+
+// GetType returns the protocol type
+func (l *LidoOperation) GetType() ProtocolType {
+    return TypeStake
+}
+
+// GetContractAddress returns the contract address for a specific chain
+func (l *LidoOperation) GetContractAddress(chainID *big.Int) common.Address {
+    return l.contract
+}
+
+// Name returns the human readable name for the protocol
+func (l *LidoOperation) Name() string {
+    return l.name
+}
+
+// GetVersion returns the version of the protocol
+func (l *LidoOperation) GetVersion() string {
+    return l.version
+}
+
+// GetBeneficiaryOwner determines the ultimate beneficiary owner for the token to be minted.
+func (l *LidoOperation) GetBeneficiaryOwner(params TransactionParams) common.Address {
+    if params.Recipient.Hex() == "0x0000000000000000000000000000000000000000" {
+        return params.Sender
+    }
+    return params.Recipient
+}
 ```

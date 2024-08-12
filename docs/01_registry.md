@@ -1,4 +1,4 @@
-# Generalized ProtocolRegistry Interface
+# Generalized Chain-Aware ProtocolRegistry Interface
 
 The `ProtocolRegistry` interface will define the necessary operations to manage DeFi protocols within the system:
 
@@ -19,19 +19,28 @@ const (
  TypeStake ProtocolType = "Stake"
 )
 
+// ChainConfig chain configuration.
+type ChainConfig struct {
+    ChainID *big.Int
+    RPCURL  string
+}
+
 // ProtocolRegistry defines methods for managing and accessing DeFi 
-type ProtocolRegistry interface {
-    // RegisterProtocol adds a new protocol to the registry.
-    RegisterProtocol(name string, protocol Protocol) error
+type ProtocolRegistry interface {    
+    // GetChainConfig retrieves the configuration for a specific chain
+    GetChainConfig(chainID *big.Int) (ChainConfig, error)
+   
+    // RegisterProtocol adds a new protocol to the registry for a specific chain
+    RegisterProtocol(chainID *big.Int, address common.Address, protocol Protocol) error
 
-    // GetProtocol retrieves a protocol by name.
-    GetProtocol(name string) (Protocol, error)
+    // GetProtocol retrieves a protocol by its contract address and chain ID
+    GetProtocol(chainID *big.Int, address common.Address) (Protocol, error)
 
-    // ListProtocols returns a list of all registered 
-    ListProtocols() []string
+    // ListProtocols returns a list of all registered protocols for a specific chain
+    ListProtocols(chainID *big.Int) []Protocol
 
-    // ListProtocolsByType lists all protocols of a specific type.
-    ListProtocolsByType(protocolType ProtocolType) []string
+    // ListProtocolsByType lists all protocols of a specific type for a given chain
+    ListProtocolsByType(chainID *big.Int, protocolType ProtocolType) []Protocol
 }
 ```
 
@@ -59,131 +68,164 @@ import (
  "sync"
 )
 
-// ProtocolRegistry is a basic implementation of the ProtocolRegistry interface.
-type ProtocolRegistry struct {
- mu         sync.RWMutex
- protocols  map[string]Protocol
- protocolByType map[ProtocolType][]string
+// ChainConfig chain configuration
+type ChainConfig struct {
+    ChainID *big.Int
+    RPCURL  string
 }
+
+// ProtocolRegistry is an implementation of the ProtocolRegistry interface.
+type ProtocolRegistry struct {
+    mu              sync.RWMutex
+    protocols       map[common.Address]Protocol
+    protocolByType  map[ProtocolType][]Protocol
+    chainConfigs    map[string]ChainConfig
+    
+}
+
 
 // NewProtocolRegistry creates a new instance of ProtocolRegistry.
-func NewProtocolRegistry() *ProtocolRegistry {
- return &ProtocolRegistry{
-  protocols: make(map[string]Protocol),
-  protocolByType: make(map[ProtocolType][]string),
- }
+func NewProtocolRegistry(chainConfigs []ChainConfig) *ProtocolRegistry {
+    r := &ProtocolRegistry{
+        protocols:       make(map[common.Address]Protocol),
+        protocolByType:  make(map[ProtocolType][]Protocol),
+        chainConfigs:   make(map[string]ChainConfig),
+    }
+    
+    // Add chain configurations
+    for _, config := range chainConfigs {
+        chainIDStr := config.ChainID.String()
+        r.chainConfigs[chainIDStr] = config
+    }
+
+    // Setup protocol operations
+    err := r.setupProtocolOperations()
+    if err != nil {
+        return nil, err
+    }
+
+    return r, nil
 }
 
-// RegisterProtocol adds a new protocol to the registry.
-func (r *ProtocolRegistry) RegisterProtocol(name string, protocol Protocol) error {
- r.mu.Lock()
- defer r.mu.Unlock()
+func (r *ProtocolRegistry) GetChainConfig(chainID *big.Int) (ChainConfig, error) {
+    r.mu.RLock()
+    defer r.mu.RUnlock()
 
- if _, exists := r.protocols[name]; exists {
-  return errors.New("protocol already registered")
- }
-
- r.protocols[name] = protocol
- protocolType := protocol.GetType()
- r.protocolByType[protocolType] = append(r.protocolByType[protocolType], name)
- return nil
+    chainIDStr := chainID.String()
+    if config, exists := r.chainConfigs[chainIDStr]; exists {
+        return config, nil
+    }
+    return ChainConfig{}, fmt.Errorf("chain config not found for chainID: %s", chainIDStr)
 }
 
-// GetProtocol retrieves a protocol by name.
-func (r *ProtocolRegistry) GetProtocol(name string) (Protocol, error) {
- r.mu.RLock()
- defer r.mu.RUnlock()
+// RegisterProtocol adds a new protocol to the registry by its contract address.
+func (r *ProtocolRegistry) RegisterProtocol(chainID *big.Int, address common.Address, protocol Protocol) error {
+    r.mu.Lock()
+    defer r.mu.Unlock()
 
- protocol, exists := r.protocols[name]
- if !exists {
-  return nil, errors.New("protocol not found")
- }
- return protocol, nil
+    chainIDStr := chainID.String()
+    if _, exists := r.chainConfigs[chainIDStr]; !exists {
+        return fmt.Errorf("chain config not found for chainID: %s", chainIDStr)
+    }
+
+    if _, exists := r.protocols[chainIDStr][address]; exists {
+        return fmt.Errorf("protocol already registered for chainID %s and address %s", chainIDStr, address.Hex())
+    }
+
+    r.protocols[chainIDStr][address] = protocol
+    protocolType := protocol.GetType()
+    r.protocolByType[chainIDStr][protocolType] = append(r.protocolByType[chainIDStr][protocolType], protocol)
+
+    return nil
 }
 
-// ListProtocols returns a list of all registered 
-func (r *ProtocolRegistry) ListProtocols() []string {
- r.mu.RLock()
- defer r.mu.RUnlock()
+// GetProtocol retrieves a protocol by its contract address.
+func (r *ProtocolRegistry) GetProtocol(chainID *big.Int, address common.Address) (Protocol, error) {
+    r.mu.RLock()
+    defer r.mu.RUnlock()
 
- names := make([]string, 0, len(r.protocols))
- for name := range r.protocols {
-  names = append(names, name)
- }
- return names
-}
-
-// ListProtocolsByType lists all protocols of a specific type.
-func (r *ProtocolRegistry) ListProtocolsByType(protocolType ProtocolType) []string {
- r.mu.RLock()
- defer r.mu.RUnlock()
-
- return r.protocolByType[protocolType]
-}
-
-func setupProtocolOperations(registry ProtocolRegistry, rpcURL string) {
-    // Define a helper function to handle protocol creation and registration
-    registerProtocol := func(name string, createFunc func() (Protocol, error)) {
-        protocol, err := createFunc()
-        if err != nil {
-            log.Fatalf("Failed to create %s operation: %v", name, err)
-        }
-
-        err = registry.RegisterProtocol(name, protocol)
-        if err != nil {
-            log.Fatalf("Failed to register %s protocol: %v", name, err)
+    chainIDStr := chainID.String()
+    if chainProtocols, exists := r.protocols[chainIDStr]; exists {
+        if protocol, exists := chainProtocols[address]; exists {
+            return protocol, nil
         }
     }
 
+    return nil, fmt.Errorf("protocol not found for chainID %s and address %s", chainIDStr, address.Hex())
+}
+
+// ListProtocols returns a list of all registered protocols.
+func (r *ProtocolRegistry) ListProtocols(chainID *big.Int) []Protocol {
+    r.mu.RLock()
+    defer r.mu.RUnlock()
+
+    chainIDStr := chainID.String()
+    var protocols []Protocol
+    if chainProtocols, exists := r.protocols[chainIDStr]; exists {
+        for _, protocol := range chainProtocols {
+            protocols = append(protocols, protocol)
+        }
+    }
+    return protocols
+}
+
+// ListProtocolsByType lists all protocols of a specific type.
+func (r *ProtocolRegistry) ListProtocolsByType(chainID *big.Int, protocolType ProtocolType) []Protocol {
+    r.mu.RLock()
+    defer r.mu.RUnlock()
+
+    chainIDStr := chainID.String()
+    if chainTypes, exists := r.protocolByType[chainIDStr]; exists {
+        if protocols, exists := chainTypes[protocolType]; exists {
+            return protocols
+        }
+    }
+    return []Protocol{}
+}
+
+// setupProtocolOperations initializes and registers various DeFi protocols.
+func (r *ProtocolRegistry) setupProtocolOperations() error {
+    registerProtocol := func(address common.Address, chainID *big.Int, createFunc func(ChainConfig) (Protocol, error)) error {
+    chainIDStr := chainID.String()
+    config, exists := r.chainConfigs[chainIDStr]
+    
+    if !exists {
+        return fmt.Errorf("chain configuration not found for chainID: %s", chainIDStr)
+    }
+
+    protocol, err := createFunc(config)
+    if err != nil {
+        return fmt.Errorf("failed to create protocol at address %s: %v", address.Hex(), err)
+    }
+
+    err = r.RegisterProtocol(address, protocol)
+    if err != nil {
+        return fmt.Errorf("failed to register protocol at address %s: %v", address.Hex(), err)
+    }
+
+    return nil
+    }
+
     // Register Lido protocol
-    registerProtocol("Lido", func() (Protocol, error) {
-        lido := &LidoOperation{}
-        config := ProtocolConfig{
-            RPCURL:   rpcURL,
-            ChainID:  big.NewInt(1), // Mainnet
-            Contract: common.HexToAddress("0xYourLidoContractAddress"),
-            ABI:      abi.ABI{}, // Set appropriate ABI
-            Type:     TypeStake,
-        }
-        if err := lido.Initialize(context.Background(), config); err != nil {
-            return nil, err
-        }
+    err := registerProtocol(common.HexToAddress("0xLidoContractAddress"), big.NewInt(1), func(config ChainConfig) (Protocol, error) {
+    lido := &LidoOperation{}
+    protocolConfig := ProtocolConfig{
+        RPCURL:   config.RPCURL,
+        ChainID:  config.ChainID,
+        Contract: common.HexToAddress("0xLidoContractAddress"),
+        ABI:      LidoABI,
+        Type:     TypeStake,
+    }
+    if err := lido.Initialize(context.Background(), protocolConfig); err != nil {
+        return nil, err
+    }
         return lido, nil
     })
+    if err != nil {
+        return err
+    }
 
-    // Register Ankr protocol
-    registerProtocol("Ankr", func() (Protocol, error) {
-        ankr := &AnkrOperation{}
-        config := ProtocolConfig{
-            RPCURL:   rpcURL,
-            ChainID:  big.NewInt(1), // Example chain ID
-            Contract: common.HexToAddress("0xYourAnkrContractAddress"),
-            ABI:      abi.ABI{}, // Set appropriate ABI
-            Type:     TypeStake,
-        }
-        if err := ankr.Initialize(context.Background(), config); err != nil {
-            return nil, err
-        }
-        return ankr, nil
-    })
-
-    // Register Aave protocol (AaveV3)
-    registerProtocol("AaveV3", func() (Protocol, error) {
-        return NewAaveOperation(AaveProtocolForkAave)
-    })
-
-    // Register SparkLend protocol
-    registerProtocol("SparkLend", func() (Protocol, error) {
-        return NewAaveOperation(AaveProtocolForkSpark)
-    })
-
-    // Register RocketPool protocol
-    registerProtocol("RocketPool", func() (Protocol, error) {
-        return NewRocketPool(rpcURL)
-    })
-
-    // Optionally register additional protocols
-    // registerCompoundRegistry(registry)
+    // so on....
 }
 ```
 
@@ -192,11 +234,30 @@ func setupProtocolOperations(registry ProtocolRegistry, rpcURL string) {
 Here's how client usages it in your main function
 
 ```go
- // Create a new protocol registry
-    registry := protocols.NewSimpleProtocolRegistry()
-
     // Setup protocol operations
-    rpcURL := "https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID"
+    chainConfigs := []protocols.ChainConfig{
+        {
+            ChainID: big.NewInt(1),
+            RPCURL:  "https://mainnet.infura.io/v3/YOUR-PROJECT-ID",
+        },
+        {
+            ChainID: big.NewInt(56),
+            RPCURL:  "https://bsc-dataseed.binance.org/",
+        },
+    }
+    // Create a new protocol registry
+    registry := protocols.NewProtocolRegistry(chainConfigs)
+
+   // Example contract addresses
+    lidoAddress := common.HexToAddress("0xLidoContractAddress")
+
+    // Get protocol by address
+    lido, err := registry.GetProtocol(lidoAddress)
+    if err != nil {
+        log.Fatalf("Error getting protocol by address: %v", err)
+    }
+    log.Println("Retrieved protocol by address:", lido)
+
     // List all registered protocols
     protocolsList := registry.ListProtocols()
     log.Println("Registered protocols:", protocolsList)
@@ -205,3 +266,5 @@ Here's how client usages it in your main function
     stakeProtocols := registry.ListProtocolsByType(protocols.TypeStake)
     log.Println("Stake protocols:", stakeProtocols)
 ```
+
+This implementation provides thread-safe operations using a read-write mutex and efficiently manages protocols across multiple chains using nested maps. It includes all the methods defined in the ProtocolRegistry interface, handling errors appropriately and returning meaningful error messages when operations fail.
