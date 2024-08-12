@@ -12,6 +12,7 @@ The Protocol Registry is a Go library that provides a flexible and extensible wa
 - Retrieval of protocol operations based on protocol name and action
 - Generation of calldata for specific operations
 - Extensible design to accommodate new protocols and actions
+- Whitelisted token support for each blockchain network
 
 ## Installation
 
@@ -126,6 +127,33 @@ type ProtocolRegistry interface {
 ```
 
 For more details on the [ProtocolRegistry interface and its implementation](./docs/01_registry.md), refer to the Registry documentation.
+
+## Working with Whitelisted Tokens
+
+The Protocol Registry supports whitelisted tokens for each blockchain network. These tokens are defined in JSON files named after their respective chain IDs (e.g., 1.json for Ethereum mainnet).
+
+The whitelisted tokens are stored in the following format:
+
+```json
+{
+  "tokens": [
+    {
+      "token_address": "0xdcee70654261af21c44c093c300ed3bb97b78192"
+    },
+    {
+      "token_address": "0xd2af830e8cbdfed6cc11bab697bb25496ed6fa62"
+    }
+  ]
+}
+```
+
+To use whitelisted tokens in your application:
+
+- Load the appropriate JSON file based on the chain ID you're working with.
+- Parse the JSON to extract the list of token addresses.
+- Use this list to validate or filter tokens in your application logic.
+
+For more information on the whitelisted token standard and management, please refer to the [Whitelisted Token documentation](./tokens/README.md).
 
 ## Contributing
 
