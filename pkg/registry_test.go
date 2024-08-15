@@ -17,8 +17,8 @@ func getTestRPCURL(t *testing.T) string {
 	u := os.Getenv("TEST_ETH_RPC_URL")
 	if len(strings.TrimSpace(u)) == 0 {
 		u = "https://eth.public-rpc.com"
-		u = "https://eth-mainnet.g.alchemy.com/v2/RRqSworaLN0M_Dm5KpYgE_0JMASwT5yg"
 	}
+
 	require.NotEmpty(t, u)
 	return u
 }
