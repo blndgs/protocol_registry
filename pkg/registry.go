@@ -193,31 +193,16 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 		return err
 	}
 
+	// rocketpool
+	err = registerProtocol(RocketPoolStorageAddress, big.NewInt(1), func(config ChainConfig) (Protocol, error) {
+		rp, err := NewRocketpoolOperation(client, big.NewInt(1))
+		return rp, err
+	})
+	if err != nil {
+		return err
+	}
+
 	// compound
-	registerCompoundRegistry(r)
-
-	// err = registerProtocol(AaveV3ContractAddress, big.NewInt(1), func(config ChainConfig) (Protocol, error) {
-	// 	parsedABI, err := abi.JSON(strings.NewReader(aaveV3ABI))
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-	//
-	// 	aave := &AaveOperation{}
-	// 	protocolConfig := ProtocolConfig{
-	// 		RPCURL:   config.RPCURL,
-	// 		ChainID:  config.ChainID,
-	// 		Contract: AaveV3ContractAddress,
-	// 		ABI:      parsedABI,
-	// 		Type:     TypeLoan,
-	// 	}
-	// 	if err := aave.Initialize(context.Background(), protocolConfig); err != nil {
-	// 		return nil, err
-	// 	}
-	// 	return aave, nil
-	// })
-	// if err != nil {
-	// 	return err
-	// }
-
+	registerCompoundRegistry(r, client)
 	return nil
 }

@@ -39,7 +39,7 @@ var compoundSupportedAssets = map[int64]map[string][]string{
 }
 
 // dynamically registers all supported pools
-func registerCompoundRegistry(registry *ProtocolRegistry, client *ethclient.Client) error {
+func registerCompoundRegistry(registry ProtocolRegistry, client *ethclient.Client) error {
 	for chainID, v := range compoundSupportedAssets {
 		for poolAddr := range v {
 			c, err := NewCompoundOperation(client, big.NewInt(chainID), common.HexToAddress(poolAddr))
@@ -47,7 +47,7 @@ func registerCompoundRegistry(registry *ProtocolRegistry, client *ethclient.Clie
 				return err
 			}
 
-			_ = c
+			registry.RegisterProtocol(big.NewInt(chainID), common.HexToAddress(poolAddr), c)
 		}
 	}
 
