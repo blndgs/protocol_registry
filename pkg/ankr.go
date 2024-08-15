@@ -47,7 +47,7 @@ type AnkrOperation struct {
 }
 
 func NewAnkrOperation(client *ethclient.Client, chainID *big.Int) (*AnkrOperation, error) {
-	parsedABI, err := abi.JSON(strings.NewReader(aaveV3ABI))
+	parsedABI, err := abi.JSON(strings.NewReader(ankrABI))
 	if err != nil {
 		return nil, err
 	}
@@ -116,20 +116,22 @@ func (l *AnkrOperation) Validate(ctx context.Context,
 		return errors.New("action not supported")
 	}
 
+	asset := nativeDenomAddress
+	if action == NativeUnStake {
+		asset = ankrEthER20Account.Hex()
+	}
+
 	if params.Amount.Cmp(big.NewInt(0)) <= 0 {
 		return errors.New("amount must be greater than zero")
 	}
 
-	if action == NativeUnStake {
+	balance, err := l.GetBalance(ctx, l.chainID, params.Sender, common.HexToAddress(asset))
+	if err != nil {
+		return err
+	}
 
-		balance, err := l.GetBalance(ctx, l.chainID, params.Sender, common.Address{})
-		if err != nil {
-			return err
-		}
-
-		if balance.Cmp(params.Amount) == -1 {
-			return errors.New("balance not enough")
-		}
+	if balance.Cmp(params.Amount) == -1 {
+		return errors.New("balance not enough")
 	}
 
 	return nil
@@ -138,12 +140,18 @@ func (l *AnkrOperation) Validate(ctx context.Context,
 var ankrEthER20Account = common.HexToAddress("0xE95A203B1a91a908F9B9CE46459d101078c2c3cb")
 
 // GetBalance retrieves the balance for a specified account and asset
-func (l *AnkrOperation) GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (*big.Int, error) {
+func (l *AnkrOperation) GetBalance(ctx context.Context, chainID *big.Int, account,
+	asset common.Address) (*big.Int, error) {
+
 	if chainID.Int64() != 1 {
 		return nil, ErrChainUnsupported
 	}
 
-	callData, err := l.parsedABI.Pack("balanceOf", account)
+	if strings.ToLower(asset.Hex()) == nativeDenomAddress {
+		return l.client.BalanceAt(ctx, account, nil)
+	}
+
+	callData, err := l.erc20ABI.Pack("balanceOf", account)
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +165,7 @@ func (l *AnkrOperation) GetBalance(ctx context.Context, chainID *big.Int, accoun
 	}
 
 	balance := new(big.Int)
-	err = l.parsedABI.UnpackIntoInterface(&balance, "balanceOf", result)
+	err = l.erc20ABI.UnpackIntoInterface(&balance, "balanceOf", result)
 	return balance, err
 }
 
@@ -174,7 +182,7 @@ func (l *AnkrOperation) IsSupportedAsset(ctx context.Context, chainID *big.Int, 
 		return false
 	}
 
-	return IsNativeToken(asset)
+	return IsNativeToken(asset) || asset.Hex() == ankrEthER20Account.Hex()
 }
 
 // GetProtocolConfig returns the protocol config for a specific chain

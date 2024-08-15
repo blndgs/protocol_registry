@@ -143,7 +143,6 @@ func (l *LidoOperation) Validate(ctx context.Context,
 		return errors.New("balance not enough")
 	}
 
-	fmt.Println(balance.String())
 	return nil
 }
 

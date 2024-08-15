@@ -11,6 +11,35 @@ import (
 
 var hotWallet = common.HexToAddress("0xee5b5b923ffce93a870b3104b7ca09c3db80047a") // bybit hot wallet
 
+func TestAave_IsSupportedAsset(t *testing.T) {
+
+	aave, err := NewAaveOperation(getTestClient(t), big.NewInt(1), AaveProtocolForkAave)
+	require.NoError(t, err)
+
+	sparklend, err := NewAaveOperation(getTestClient(t), big.NewInt(1), AaveProtocolForkSpark)
+	require.NoError(t, err)
+
+	t.Run("(aave) Lido stETH not supported", func(t *testing.T) {
+		require.False(t, aave.IsSupportedAsset(context.Background(),
+			big.NewInt(1), common.HexToAddress("0xE95A203B1a91a908F9B9CE46459d101078c2c3cb")))
+	})
+
+	t.Run("(aave) wrapped btc supported ", func(t *testing.T) {
+		require.True(t, aave.IsSupportedAsset(context.Background(),
+			big.NewInt(1), common.HexToAddress("0x2260fac5e5542a773aa44fbcfedf7c193bc2c599")))
+	})
+
+	t.Run("(sparklend) wrapped btc supported ", func(t *testing.T) {
+		require.True(t, sparklend.IsSupportedAsset(context.Background(),
+			big.NewInt(1), common.HexToAddress("0x2260fac5e5542a773aa44fbcfedf7c193bc2c599")))
+	})
+
+	t.Run("(sparklend) aave token not supported", func(t *testing.T) {
+		require.False(t, sparklend.IsSupportedAsset(context.Background(),
+			big.NewInt(1), common.HexToAddress("0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9")))
+	})
+}
+
 func TestAave_Validate(t *testing.T) {
 
 	aave, err := NewAaveOperation(getTestClient(t), big.NewInt(1), AaveProtocolForkAave)
@@ -64,7 +93,7 @@ func TestAave_Validate(t *testing.T) {
 
 		err = aave.Validate(context.Background(), big.NewInt(1), LoanSupply, TransactionParams{
 			Amount: big.NewInt(100000000),
-			Sender: common.HexToAddress("0xee5b5b923ffce93a870b3104b7ca09c3db80047a"), //BYBIT hot wallet
+			Sender: hotWallet,
 			Asset:  common.HexToAddress("0xdac17f958d2ee523a2206206994597c13d831ec7"),
 		})
 
