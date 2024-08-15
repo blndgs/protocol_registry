@@ -252,7 +252,14 @@ func (l *AaveOperation) GetType() ProtocolType { return TypeLoan }
 func (l *AaveOperation) GetContractAddress(chainID *big.Int) common.Address { return l.contract }
 
 // Name returns the human readable name for the protocol
-func (l *AaveOperation) GetName() string { return AaveV3 }
+func (l *AaveOperation) GetName() string {
+
+	if l.fork == AaveProtocolForkAave {
+		return AaveV3
+	}
+
+	return SparkLend
+}
 
 // GetVersion returns the version of the protocol
 func (l *AaveOperation) GetVersion() string { return l.version }
