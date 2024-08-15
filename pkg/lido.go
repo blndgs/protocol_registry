@@ -95,6 +95,7 @@ func (l *LidoOperation) GenerateCalldata(ctx context.Context, chainID *big.Int,
 
 	switch action {
 	case NativeStake:
+		// TODO: change this to Balloondogs referral
 		calldata, err = l.parsedABI.Pack("submit", params.GetBeneficiaryOwner())
 		if err != nil {
 			return "", err

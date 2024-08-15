@@ -166,6 +166,36 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 		return err
 	}
 
+	// Register Aave protocol
+	err = registerProtocol(AaveV3ContractAddress, big.NewInt(1), func(config ChainConfig) (Protocol, error) {
+		aave, err := NewAaveOperation(client, big.NewInt(1), AaveProtocolForkAave)
+		return aave, err
+	})
+	if err != nil {
+		return err
+	}
+
+	// Sparklend
+	err = registerProtocol(SparkLendContractAddress, big.NewInt(1), func(config ChainConfig) (Protocol, error) {
+		aave, err := NewAaveOperation(client, big.NewInt(1), AaveProtocolForkSpark)
+		return aave, err
+	})
+	if err != nil {
+		return err
+	}
+
+	// ankr
+	err = registerProtocol(AnkrContractAddress, big.NewInt(1), func(config ChainConfig) (Protocol, error) {
+		ankr, err := NewAnkrOperation(client, big.NewInt(1))
+		return ankr, err
+	})
+	if err != nil {
+		return err
+	}
+
+	// compound
+	registerCompoundRegistry(r)
+
 	// err = registerProtocol(AaveV3ContractAddress, big.NewInt(1), func(config ChainConfig) (Protocol, error) {
 	// 	parsedABI, err := abi.JSON(strings.NewReader(aaveV3ABI))
 	// 	if err != nil {
