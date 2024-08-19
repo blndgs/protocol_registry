@@ -47,7 +47,9 @@ func registerCompoundRegistry(registry ProtocolRegistry, client *ethclient.Clien
 				return err
 			}
 
-			registry.RegisterProtocol(big.NewInt(chainID), common.HexToAddress(poolAddr), c)
+			if err := registry.RegisterProtocol(big.NewInt(chainID), common.HexToAddress(poolAddr), c); err != nil {
+				return err
+			}
 		}
 	}
 

@@ -59,7 +59,6 @@ type RocketpoolOperation struct {
 	parsedABI abi.ABI
 	chainID   *big.Int
 	version   string
-	erc20ABI  abi.ABI
 
 	client *ethclient.Client
 
