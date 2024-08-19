@@ -97,6 +97,7 @@ func TestRocketPoolOperation_GenerateCallData(t *testing.T) {
 			}
 
 			calldata, err := rp.GenerateCalldata(context.Background(), big.NewInt(1), v.action, v.args)
+			require.NoError(t, err)
 			require.Equal(t, v.expected, calldata)
 		})
 	}

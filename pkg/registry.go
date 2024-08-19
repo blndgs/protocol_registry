@@ -203,6 +203,5 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 	}
 
 	// compound
-	registerCompoundRegistry(r, client)
-	return nil
+	return registerCompoundRegistry(r, client)
 }

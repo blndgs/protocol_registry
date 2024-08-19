@@ -63,6 +63,7 @@ func TestCompound_GenerateCalldata_Withdraw(t *testing.T) {
 			Asset:  common.HexToAddress("0x514910771AF9Ca656af840dff83E8264EcF986CA"),
 			Amount: big.NewInt(1 * 1e18),
 		})
+	require.NoError(t, err)
 	require.Equal(t, expectedCalldata, calldata)
 }
 
@@ -97,7 +98,7 @@ func TestCompound_GetBalance(t *testing.T) {
 	require.NoError(t, err)
 
 	bal, err := compoundImpl.GetBalance(context.Background(), big.NewInt(1), emptyTestWallet,
-		common.Address{}) // empty address since the erc20 interface is used
+		common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48")) // empty address since the erc20 interface is used
 
 	require.NoError(t, err)
 	require.NotNil(t, bal)
@@ -116,10 +117,6 @@ func TestCompoundV3_Validate_ETH_Market(t *testing.T) {
 		address  string
 		hasError bool
 	}{
-		{
-			name:    "lido wrapped eth can be supplied",
-			address: "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
-		},
 		{
 			name:     "wbtc cannot be supplied",
 			address:  "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",

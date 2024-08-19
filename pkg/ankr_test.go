@@ -40,6 +40,7 @@ func TestAnkr_GenerateCalldata_Withdraw(t *testing.T) {
 		Sender: emptyTestWallet,
 	})
 
+	require.NoError(t, err)
 	require.Equal(t, expectedCalldata, calldata)
 }
 
