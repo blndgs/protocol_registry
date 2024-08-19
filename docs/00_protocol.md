@@ -8,9 +8,6 @@ package protocols
 
 // DeFiProtocol defines a generic interface for all types of DeFi protocols.
 type Protocol interface {
-    // Initialize prepares the protocol with necessary configurations and network connections.
-    Initialize(ctx context.Context, config ProtocolConfig) error
-
     // GenerateCalldata creates the necessary blockchain transaction data.
     GenerateCalldata(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) (string, error)
 
@@ -26,7 +23,7 @@ type Protocol interface {
     // IsSupportedAsset checks if the specified asset is supported on the given chain.
     IsSupportedAsset(ctx context.Context, chainID *big.Int, asset common.Address) bool
 
-    // GetProtocolConfig returns the protocol config for a specific chain.    
+    // GetProtocolConfig returns the protocol config for a specific chain.
     GetProtocolConfig(chainID *big.Int) ProtocolConfig
 
     // GetABI returns the ABI of the protocol's contract, allowing dynamic interaction.
@@ -44,8 +41,6 @@ type Protocol interface {
     // GetContractAddress returns the contract address for a specific chain.
     GetContractAddress(chainID *big.Int) common.Address
 
-   // GetBeneficiaryOwner determines the ultimate beneficiary owner for the token to be minted.
-    GetBeneficiaryOwner(params TransactionParams) common.Address
 }
 
 // ProtocolConfig contains configuration data for initializing a protocol.
@@ -74,11 +69,14 @@ type TransactionParams struct {
 
 ## Implementation Considerations
 
-1. Flexibility: By providing an `Initialize` method, each protocol can perform necessary setup actions, which might include establishing network connections, fetching contract addresses, or loading ABIs.
+1. Flexibility: each protocol can perform necessary setup actions in their constructors as they wish, which might
+   include establishing network connections, fetching contract addresses, or loading ABIs.
 
-2. Dynamic Interaction: The `GetABI` method allows client code to interact dynamically with the protocol’s contract without hardcoding function calls, making the interface adaptable to future changes in the contract.
+2. Dynamic Interaction: The `GetABI` method allows client code to interact dynamically with the protocol’s contract
+   without hardcoding function calls, making the interface adaptable to future changes in the contract.
 
-3. Action and Validation: `GenerateCalldata` and `Validate` take an action and parameters, offering the flexibility to support a wide range of operations without changing the interface. This approach accommodates custom actions that may be specific to certain protocols.
+3. Action and Validation: `GenerateCalldata` and `Validate` take an action and parameters, offering the flexibility to
+   support a wide range of operations without changing the interface. This approach accommodates custom actions that may be specific to certain protocols.
 
 4. Supported Assets: By including a method `GetSupportedAssets` to fetch supported assets per chain, `IsSupportedAsset` validates if the asset is supported and balance function `GetBalance` to provide the balance of an address per protocol can provide necessary information for client applications or other services that need to display or utilize asset data dynamically.
 
@@ -131,7 +129,7 @@ type LidoOperation struct {
     contract  common.Address
     chainID   *big.Int
     version   string
-    // additional fields 
+    // additional fields
 }
 
 // Initialize prepares the Lido protocol with necessary configurations and network connections
@@ -203,7 +201,7 @@ func (l *LidoOperation) GetProtocolConfig(chainID *big.Int) ProtocolConfig {
     ChainID:  chainID,
     Contract: l.contract,
     ABI:      l.parsedABI,
-    Type:     TypeStake, 
+    Type:     TypeStake,
     }
 }
 
