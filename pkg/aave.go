@@ -55,14 +55,53 @@ const aaveV3ABI = `
  ]
 	`
 
+const aaveDataProviderABI = `
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "asset",
+        "type": "address"
+      }
+    ],
+    "name": "getReserveTokensAddresses",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "aTokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "stableDebtTokenAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "variableDebtTokenAddress",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]`
+
+var (
+	aaveDataProviderContract  = common.HexToAddress("0x7B4EB56E7CD4b454BA8ff71E4518426369a138a3")
+	sparklendProviderContract = common.HexToAddress("0xFc21d6d146E6086B8359705C8b28512a983db0cb")
+)
+
 // AaveOperation implements the Protocol interface for Aave
 type AaveOperation struct {
-	parsedABI abi.ABI
-	contract  common.Address
-	chainID   *big.Int
-	version   string
-	fork      AaveProtocolFork
-	erc20ABI  abi.ABI
+	parsedABI       abi.ABI
+	dataProviderABI abi.ABI
+	contract        common.Address
+	chainID         *big.Int
+	version         string
+	fork            AaveProtocolFork
+	erc20ABI        abi.ABI
 
 	client *ethclient.Client
 }
@@ -73,19 +112,25 @@ func NewAaveOperation(client *ethclient.Client, chainID *big.Int, fork AaveProto
 		return nil, err
 	}
 
+	dataProviderABI, err := abi.JSON(strings.NewReader(aaveDataProviderABI))
+	if err != nil {
+		return nil, err
+	}
+
 	erc20ABI, err := abi.JSON(strings.NewReader(erc20BalanceOfABI))
 	if err != nil {
 		return nil, err
 	}
 
 	return &AaveOperation{
-		parsedABI: parsedABI,
-		contract:  AaveV3ContractAddress,
-		chainID:   chainID,
-		version:   "3",
-		client:    client,
-		erc20ABI:  erc20ABI,
-		fork:      fork,
+		parsedABI:       parsedABI,
+		contract:        AaveV3ContractAddress,
+		chainID:         chainID,
+		version:         "3",
+		client:          client,
+		erc20ABI:        erc20ABI,
+		fork:            fork,
+		dataProviderABI: dataProviderABI,
 	}, nil
 }
 
@@ -128,6 +173,32 @@ func (a *AaveOperation) GenerateCalldata(ctx context.Context, chainID *big.Int,
 	return HexPrefix + hex.EncodeToString(calldata), nil
 }
 
+func (l *AaveOperation) getAToken(ctx context.Context, asset common.Address) (common.Address, error) {
+
+	calldata, err := l.dataProviderABI.Pack("getReserveTokensAddresses", asset)
+	if err != nil {
+		return common.Address{}, err
+	}
+
+	var toContract = aaveDataProviderContract
+	if l.fork == AaveProtocolForkSpark {
+		toContract = sparklendProviderContract
+	}
+
+	result, err := l.client.CallContract(context.Background(), ethereum.CallMsg{
+		To:   &toContract,
+		Data: calldata,
+	}, nil)
+	if err != nil {
+		return common.Address{}, err
+	}
+
+	addr := common.Address{}
+	// dummy value we just need to unpack successfully
+	value := common.Address{}
+	return addr, l.dataProviderABI.UnpackIntoInterface(&[]interface{}{&addr, &value, &value}, "getReserveTokensAddresses", result)
+}
+
 // Validate checks if the provided parameters are valid for the specified action
 func (l *AaveOperation) Validate(ctx context.Context,
 	chainID *big.Int, action ContractAction, params TransactionParams) error {
@@ -148,7 +219,17 @@ func (l *AaveOperation) Validate(ctx context.Context,
 		return errors.New("amount must be greater than zero")
 	}
 
-	balance, err := l.GetBalance(ctx, l.chainID, params.Sender, params.Asset)
+	asset := params.Asset
+
+	if action == LoanWithdraw {
+		var err error
+		asset, err = l.getAToken(ctx, asset)
+		if err != nil {
+			return err
+		}
+	}
+
+	balance, err := l.GetBalance(ctx, l.chainID, params.Sender, asset)
 	if err != nil {
 		return err
 	}

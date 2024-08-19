@@ -40,6 +40,47 @@ func TestAave_IsSupportedAsset(t *testing.T) {
 	})
 }
 
+func TestAave_GetAToken(t *testing.T) {
+
+	tt := []struct {
+		name                  string
+		asset, expectedAToken common.Address
+		fork                  AaveProtocolFork
+	}{
+		{
+			asset:          common.HexToAddress("0xae78736cd615f374d3085123a210448e74fc6393"),
+			name:           "Rocketpool ETH on Aave",
+			expectedAToken: common.HexToAddress("0xCc9EE9483f662091a1de4795249E24aC0aC2630f"),
+			fork:           AaveProtocolForkAave,
+		},
+		{
+			name:           "USDC on Aave",
+			asset:          common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
+			expectedAToken: common.HexToAddress("0x98C23E9d8f34FEFb1B7BD6a91B7FF122F4e16F5c"),
+			fork:           AaveProtocolForkAave,
+		},
+		{
+			name:           "USDC on sparklend",
+			asset:          common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
+			expectedAToken: common.HexToAddress("0x377C3bd93f2a2984E1E7bE6A5C22c525eD4A4815"),
+			fork:           AaveProtocolForkSpark,
+		},
+	}
+
+	for _, v := range tt {
+		t.Run(v.name, func(t *testing.T) {
+
+			protocol, err := NewAaveOperation(getTestClient(t), big.NewInt(1), v.fork)
+			require.NoError(t, err)
+
+			aToken, err := protocol.getAToken(context.Background(), v.asset)
+			require.NoError(t, err)
+
+			require.Equal(t, v.expectedAToken, aToken)
+		})
+	}
+}
+
 func TestAave_Validate(t *testing.T) {
 
 	aave, err := NewAaveOperation(getTestClient(t), big.NewInt(1), AaveProtocolForkAave)
@@ -49,6 +90,17 @@ func TestAave_Validate(t *testing.T) {
 
 		err = aave.Validate(context.Background(), big.NewInt(1), LoanSupply, TransactionParams{
 			Amount: big.NewInt(0),
+			Asset:  common.HexToAddress("0xae78736cd615f374d3085123a210448e74fc6393"),
+			Sender: common.HexToAddress(nativeDenomAddress),
+		})
+
+		require.Error(t, err)
+	})
+
+	t.Run("zero value supplied when withdrawing. atoken balance not enough", func(t *testing.T) {
+
+		err = aave.Validate(context.Background(), big.NewInt(1), LoanWithdraw, TransactionParams{
+			Amount: big.NewInt(1),
 			Asset:  common.HexToAddress("0xae78736cd615f374d3085123a210448e74fc6393"),
 			Sender: common.HexToAddress(nativeDenomAddress),
 		})
