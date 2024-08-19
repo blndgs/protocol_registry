@@ -157,7 +157,13 @@ func (l *CompoundOperation) Validate(ctx context.Context,
 		return errors.New("amount must be greater than zero")
 	}
 
-	balance, err := l.GetBalance(ctx, l.chainID, params.Sender, params.Asset)
+	asset := params.Asset
+
+	if action == LoanWithdraw {
+		asset = l.contract
+	}
+
+	balance, err := l.GetBalance(ctx, l.chainID, params.Sender, asset)
 	if err != nil {
 		return err
 	}
@@ -183,7 +189,7 @@ func (l *CompoundOperation) GetBalance(ctx context.Context, chainID *big.Int, ac
 	}
 
 	result, err := l.client.CallContract(context.Background(), ethereum.CallMsg{
-		To:   &l.contract,
+		To:   &asset,
 		Data: callData,
 	}, nil)
 	if err != nil {

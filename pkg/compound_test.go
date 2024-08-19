@@ -103,50 +103,42 @@ func TestCompound_GetBalance(t *testing.T) {
 	require.NotNil(t, bal)
 }
 
-// func TestCompoundV3_Validate_ETH_Market(t *testing.T) {
-//
-// 	compoundImpl, err := NewCompoundOperation(getTestClient(t), big.NewInt(1),
-// 		common.HexToAddress("0xa17581a9e3356d9a858b789d68b4d866e593ae94"))
-//
-// 	require.NoError(t, err)
-// 	require.NotNil(t, compoundImpl)
-//
-// 	tt := []struct {
-// 		name     string
-// 		address  string
-// 		hasError bool
-// 	}{
-// 		{
-// 			name:    "CBeth can be supplied",
-// 			address: "0xBe9895146f7AF43049ca1c1AE358B0541Ea49704",
-// 		},
-// 		{
-// 			name:    "lido wrapped eth can be supplied",
-// 			address: "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
-// 		},
-// 		{
-// 			name:    "rEth can be supplied",
-// 			address: "0xae78736Cd615f374D3085123A210448E74Fc6393",
-// 		},
-// 		{
-// 			name:     "wbtc cannot be supplied",
-// 			address:  "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
-// 			hasError: true,
-// 		},
-// 	}
-//
-// 	for _, v := range tt {
-// 		err = compoundImpl.Validate(context.Background(), big.NewInt(1), LoanSupply, TransactionParams{
-// 			Amount: big.NewInt(1 * 1e8),
-// 			Asset:  common.HexToAddress(v.address),
-// 			Sender: hotWallet,
-// 		})
-//
-// 		if v.hasError {
-// 			require.Error(t, err)
-// 			continue
-// 		}
-//
-// 		require.NoError(t, err)
-// 	}
-// }
+func TestCompoundV3_Validate_ETH_Market(t *testing.T) {
+
+	compoundImpl, err := NewCompoundOperation(getTestClient(t), big.NewInt(1),
+		common.HexToAddress("0xa17581a9e3356d9a858b789d68b4d866e593ae94"))
+
+	require.NoError(t, err)
+	require.NotNil(t, compoundImpl)
+
+	tt := []struct {
+		name     string
+		address  string
+		hasError bool
+	}{
+		{
+			name:    "lido wrapped eth can be supplied",
+			address: "0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0",
+		},
+		{
+			name:     "wbtc cannot be supplied",
+			address:  "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+			hasError: true,
+		},
+	}
+
+	for _, v := range tt {
+		err = compoundImpl.Validate(context.Background(), big.NewInt(1), LoanSupply, TransactionParams{
+			Amount: big.NewInt(1 * 1e8),
+			Asset:  common.HexToAddress(v.address),
+			Sender: hotWallet,
+		})
+
+		if v.hasError {
+			require.Error(t, err)
+			continue
+		}
+
+		require.NoError(t, err)
+	}
+}
