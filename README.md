@@ -12,6 +12,7 @@ The Protocol Registry is a Go library that provides a flexible and extensible wa
 - Retrieval of protocol operations based on protocol name and action
 - Generation of calldata for specific operations
 - Extensible design to accommodate new protocols and actions
+- Whitelisted token support for each blockchain network
 
 ## Installation
 
@@ -32,29 +33,39 @@ import "github.com/blndgs/protocol_registry/pkg"
 ## Create a Protocol Registry
 
 ```go
-registry := pkg.NewProtocolRegistry()
+    chainConfigs := []protocols.ChainConfig{
+        {
+            ChainID: big.NewInt(1),
+            RPCURL:  "https://mainnet.infura.io/v3/YOUR-PROJECT-ID",
+        },
+        {
+            ChainID: big.NewInt(56),
+            RPCURL:  "https://bsc-dataseed.binance.org/",
+        },
+    }
+    registry, err := protocols.NewProtocolRegistry(chainConfigs)
+    if err != nil {
+        log.Fatalf("Failed to create protocol registry: %v", err)
+    }
 ```
 
 ### Registry new Protocol Operation
 
-To register a new protocol operation, you can use the `RegisterProtocolOperation` function:
+To register a new protocol operation, you can use the `RegisterProtocol` function:
 
 ```go
-registry.RegisterProtocolOperation(protocol.Name, protocol.Action, protocol.ChainID, &pkg.GenericProtocolOperation{
-    DynamicOperation: pkg.DynamicOperation{
-        Protocol: protocol.Name,
-        Action:   pkg.SupplyAction,
-        ChainID:  big.NewInt(1),
-    },
-})
+    err := registry.RegisterProtocol(big.NewInt(1), common.HexToAddress("0xProtocolAddress"), protocolInstance)
+    if err != nil {
+        log.Fatalf("Failed to register protocol: %v", err)
+    }
 ```
 
 ### Retrieving Protocol Operations
 
-To retrieve a protocol operation, you can use the `GetProtocolOperation` function:
+To retrieve a protocol operation, you can use the `GetProtocol` function:
 
 ```go
-operation, err := registry.GetProtocolOperation(pkg.AaveV3, pkg.SupplyAction, big.NewInt(1))
+protocol, err := registry.GetProtocol(big.NewInt(1), common.HexToAddress("0xProtocolAddress"))
 if err != nil {
     // Handle the error
 }
@@ -65,95 +76,89 @@ if err != nil {
 To generate calldata for a specific operation, you can use the `GenerateCalldata` method of the retrieved operation:
 
 ```go
-args := []interface{}{
-    common.HexToAddress("0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"),
-    big.NewInt(1000000000000000000),
-    common.HexToAddress("0x0000000000000000000000000000000000000000"),
-    uint16(10),
-   }
-calldata, err := operation.GenerateCalldata(pkg.LoanKind, args)
+params := protocols.TransactionParams{
+    FromAddress: common.HexToAddress("0xAddress1"),
+    ToAddress:   common.HexToAddress("0xAddress2"),
+    AmountIn:    big.NewInt(1000000000000),
+    // Set other necessary parameters
+}
+calldata, err := protocol.GenerateCalldata(context.Background(), big.NewInt(1), protocols.NativeStake, params)
 if err != nil {
     // Handle the error
 }
 ```
 
-## Adding New Protocols and Operations
+## Protocol Interface
 
-To add support for a new protocol and its operations, follow these steps:
-
-- Define the protocol details in the `SupportedProtocols` map in the `pkg` package:
+The `Protocol` interface defines the methods that each protocol must implement:
 
 ```go
-var SupportedProtocols = map[protocolType][]Protocol{
-    TypeLoan: {
-        {
-        Name:    "YourProtocol",
-        Action:  SupplyAction,
-        ChainID: big.NewInt(1),
-        Address: "0x...",
-        ABI:     `[...]`,
-    },
-    },
+type Protocol interface {
+    Initialize(ctx context.Context, config ProtocolConfig) error
+    GenerateCalldata(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) (string, error)
+    Validate(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) error
+    GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (*big.Int, error)
+    GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error)
+    IsSupportedAsset(ctx context.Context, chainID *big.Int, asset common.Address) bool
+    GetProtocolConfig(chainID *big.Int) ProtocolConfig
+    GetABI(chainID *big.Int) abi.ABI
+    GetType() ProtocolType
+    GetName() string
+    GetVersion() string
+    GetContractAddress(chainID *big.Int) common.Address
+    GetBeneficiaryOwner(params TransactionParams) common.Address
 }
 ```
 
-- Register the protocol operations using the `RegisterProtocolOperation` function:
+For more details on the [Protocol interface and its implementation](./docs/00_protocol.md), refer to the Protocol documentation.
+
+## Registry Interface
+
+The `ProtocolRegistry` interface defines the methods for managing and accessing DeFi protocols:
 
 ```go
-registry.RegisterProtocolOperation("YourProtocol", pkg.YourAction, big.NewInt(1), &pkg.GenericProtocolOperation{
-    DynamicOperation: pkg.DynamicOperation{
-        Protocol: "YourProtocol",
-        Action:   pkg.YourAction,
-        ChainID:  big.NewInt(1),
+type ProtocolRegistry interface {
+    GetChainConfig(chainID *big.Int) (ChainConfig, error)
+    RegisterProtocol(chainID *big.Int, address common.Address, protocol Protocol) error
+    GetProtocol(chainID *big.Int, address common.Address) (Protocol, error)
+    ListProtocols(chainID *big.Int) []Protocol
+    ListProtocolsByType(chainID *big.Int, protocolType ProtocolType) []Protocol
+}
+```
+
+For more details on the [ProtocolRegistry interface and its implementation](./docs/01_registry.md), refer to the Registry documentation.
+
+## Working with Whitelisted Tokens
+
+The Protocol Registry supports whitelisted tokens for each blockchain network. These tokens are defined in JSON files named after their respective chain IDs (e.g., 1.json for Ethereum mainnet).
+
+The whitelisted tokens are stored in the following format:
+
+```json
+{
+  "tokens": [
+    {
+      "token_address": "0xdcee70654261af21c44c093c300ed3bb97b78192"
     },
-})
+    {
+      "token_address": "0xd2af830e8cbdfed6cc11bab697bb25496ed6fa62"
+    }
+  ]
+}
 ```
 
-- Implement the necessary logic for generating calldata in the `GenerateCalldata` method of the `GenericProtocolOperation` struct, if required.
+To use whitelisted tokens in your application:
 
-## Supported protocols
+- Load the appropriate JSON file based on the chain ID you're working with.
+- Parse the JSON to extract the list of token addresses.
+- Use this list to validate or filter tokens in your application logic.
 
-- Lido
-- Aave3
-- SparkLend
-- Rocketpool
-
-## Command-Line Tool
-
-The Protocol Registry Package also includes a command-line tool for demonstration and testing purposes. To use the command-line tool, follow these steps:
-
-- Navigate to the cmd directory:
-
-```sh
-cd cmd
-```
-
-- Build the command-line tool:
-
-```sh
-go build -o protocol main.go
-```
-
-- Run the command-line tool with the desired flags:
-
-```sh
-./protocol -protocol aave_v3 -action supply
-```
-
-Example output:
-
-```sh
-Enter the args for the operation (comma-separated):
-0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984,1000000000000000000,0x0000000000000000000000000000000000000000,0
-Generated calldata: 0x...
-```
-
-For more information on the available flags and usage examples, refer to the command-line tool's help information:
-
-```sh
-./protocol -help
-```
+For more information on the whitelisted token standard and management, please refer to the [Whitelisted Token documentation](./tokens/README.md).
 
 ## Contributing
 
 Contributions to the Protocol Registry Package are welcome! If you find any issues or have suggestions for improvements, please open an issue or submit a pull request on the GitHub repository.
+
+## License
+
+This project is licensed under the terms of the license file in the root directory. See the [LICENSE](./LICENSE) file for details.

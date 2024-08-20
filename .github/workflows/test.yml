@@ -21,7 +21,7 @@ jobs:
           check-latest: true
 
       - name: Run tests
-        run: go test ./... -coverprofile=coverage.txt
+        run: go test ./... -race -coverprofile=coverage.txt -covermode=atomic
         env:
           TEST_ETH_RPC_URL: "https://eth.public-rpc.com"
       
@@ -33,3 +33,4 @@ jobs:
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: true
+          verbose: true
