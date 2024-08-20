@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,6 +16,71 @@ func TestRocketPoolOperation_GenerateCallData_UnsupportedAction(t *testing.T) {
 
 	_, err = rp.GenerateCalldata(context.Background(), big.NewInt(1), LoanSupply, TransactionParams{})
 	require.Error(t, err)
+}
+
+func TestRocketPoolOperation_GetBalance(t *testing.T) {
+
+	rp, err := NewRocketpoolOperation(getTestClient(t), big.NewInt(1))
+	require.NoError(t, err)
+
+	t.Run("native token", func(t *testing.T) {
+		got, err := rp.GetBalance(context.Background(), big.NewInt(1), emptyTestWallet, common.HexToAddress(nativeDenomAddress))
+		require.NoError(t, err)
+		require.Empty(t, got.Int64())
+	})
+
+	t.Run("rEth token", func(t *testing.T) {
+		got, err := rp.GetBalance(context.Background(), big.NewInt(1), emptyTestWallet, common.Address{})
+		require.NoError(t, err)
+		require.Empty(t, got.Int64())
+	})
+}
+
+func TestRocketPoolOperation_Validate(t *testing.T) {
+
+	rp, err := NewRocketpoolOperation(getTestClient(t), big.NewInt(1))
+	require.NoError(t, err)
+
+	t.Run("unsupported chain", func(t *testing.T) {
+		err := rp.Validate(context.Background(), big.NewInt(100), LoanSupply, TransactionParams{
+			Amount: big.NewInt(1),
+		})
+		require.Error(t, err)
+	})
+
+	t.Run("unsupported action", func(t *testing.T) {
+		err := rp.Validate(context.Background(), big.NewInt(1), LoanSupply, TransactionParams{
+			Amount: big.NewInt(1),
+			Asset:  common.HexToAddress(nativeDenomAddress),
+		})
+		require.Error(t, err)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		err := rp.Validate(context.Background(), big.NewInt(1), NativeStake, TransactionParams{
+			Amount: big.NewInt(1),
+			Asset:  common.HexToAddress(nativeDenomAddress),
+		})
+		t.Log(err)
+		require.Error(t, err)
+	})
+}
+
+func TestRocketPoolOperation_IsSupportedAsset(t *testing.T) {
+
+	rp, err := NewRocketpoolOperation(getTestClient(t), big.NewInt(1))
+	require.NoError(t, err)
+
+	t.Run("native token", func(t *testing.T) {
+		got := rp.IsSupportedAsset(context.Background(), big.NewInt(1), common.HexToAddress(nativeDenomAddress))
+		require.True(t, got)
+	})
+
+	t.Run("rEth", func(t *testing.T) {
+		got := rp.IsSupportedAsset(context.Background(), big.NewInt(1),
+			common.HexToAddress("0xae78736cd615f374d3085123a210448e74fc6393"))
+		require.True(t, got)
+	})
 }
 
 func TestRocketPoolOperation_GenerateCallData_SupportedAction(t *testing.T) {

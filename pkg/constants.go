@@ -20,10 +20,11 @@ var ErrChainUnsupported = errors.New("chain not supported")
 
 type (
 	ProtocolName    = string
-	ContractAction  = int64
 	ProtocolMethod  = string
 	ContractAddress = common.Address
 )
+
+type ContractAction int64
 
 type ProtocolType string
 
@@ -145,6 +146,21 @@ const (
 	ERC20Stake
 	ERC20UnStake
 )
+
+func (a ContractAction) String() string {
+	switch a {
+	case LoanSupply:
+		return "loan_supply"
+	case LoanWithdraw:
+		return "loan_withdraw"
+	case NativeStake:
+		return "native_stake"
+	case NativeUnStake:
+		return "native_unstake"
+	default:
+		return ""
+	}
+}
 
 const (
 	TypeLoan  ProtocolType = "Loan"
