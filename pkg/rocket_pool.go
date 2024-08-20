@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rocket-pool/rocketpool-go/rocketpool"
+	"github.com/rocket-pool/rocketpool-go/tokens"
 )
 
 const (
@@ -53,10 +54,14 @@ const (
      `
 )
 
-// RocketPoolOperation implements an implementation for generating calldata for staking and unstaking with Rocketpool
-// It also implements dynamic retrival of Rocketpool's dynamic deposit and token contract addresses
-type RocketPoolOperation struct {
-	DynamicOperation
+// RocketpoolOperation implements the Protocol interface for Ankr
+type RocketpoolOperation struct {
+	parsedABI abi.ABI
+	chainID   *big.Int
+	version   string
+
+	client *ethclient.Client
+
 	// main deposit pool. this contract takes in the ETH
 	contract *rocketpool.Contract
 	// for unstaking
@@ -65,39 +70,12 @@ type RocketPoolOperation struct {
 	// but the settings contract allows us check for the minimum amount of eth that
 	// can be staked
 	depositSettingsContract *rocketpool.Contract
-	action                  ContractAction
-	parsedABI               abi.ABI
+
+	rp *rocketpool.RocketPool
 }
 
-// GenerateCalldata dynamically generates the calldata for deposit and withdrawal actions
-func (r *RocketPoolOperation) GenerateCalldata(args []interface{}) (string, error) {
-	switch r.Method {
-	case rocketPoolStake:
-		return r.deposit(args)
-	case rocketPoolUnStake:
-		return r.withdraw(args)
-	}
-	return "", errors.New("unsupported action")
-}
-
-// Register registers the RocketPoolOperation client into the protocol registry so it can be used by any user of
-// the registry library
-func (r *RocketPoolOperation) Register(registry *ProtocolRegistry) {
-	registry.RegisterProtocolOperation(r.Address, r.action, r.ChainID, r)
-}
-
-// NewRocketPool initializes a RocketPool client
-func NewRocketPool(rpcURL string, contractAddress ContractAddress, action ContractAction, method ProtocolMethod) (*RocketPoolOperation, error) {
-	if method != rocketPoolStake && method != rocketPoolUnStake {
-		return nil, errors.New("unsupported action")
-	}
-
-	ethClient, err := ethclient.Dial(rpcURL)
-	if err != nil {
-		return nil, err
-	}
-
-	rp, err := rocketpool.NewRocketPool(ethClient, contractAddress)
+func NewRocketpoolOperation(client *ethclient.Client, chainID *big.Int) (*RocketpoolOperation, error) {
+	rp, err := rocketpool.NewRocketPool(client, RocketPoolStorageAddress)
 	if err != nil {
 		return nil, err
 	}
@@ -145,97 +123,169 @@ func NewRocketPool(rpcURL string, contractAddress ContractAddress, action Contra
 		return nil, err
 	}
 
-	p := &RocketPoolOperation{
-		DynamicOperation: DynamicOperation{
-			Protocol: RocketPool,
-			Method:   method,
-			ChainID:  big.NewInt(1),
-			Address:  contractAddress,
-		},
+	return &RocketpoolOperation{
+		client:                  client,
+		chainID:                 big.NewInt(1),
+		version:                 "1",
 		contract:                contract,
 		rethContract:            rethContract,
 		depositSettingsContract: depositSettingsContract,
-		action:                  action,
 		parsedABI:               parsedABI,
-	}
-
-	return p, nil
+		rp:                      rp,
+	}, nil
 }
 
-func (r *RocketPoolOperation) withdraw(args []interface{}) (string, error) {
-
-	_, exists := r.parsedABI.Methods["transfer"]
-	if !exists {
-		return "", errors.New("unsupported action")
+// GenerateCalldata creates the necessary blockchain transaction data
+func (a *RocketpoolOperation) GenerateCalldata(ctx context.Context, chainID *big.Int,
+	action ContractAction, params TransactionParams) (string, error) {
+	if chainID.Int64() != 1 {
+		return "", ErrChainUnsupported
 	}
 
-	calldata, err := r.parsedABI.Pack("transfer", args...)
+	switch action {
+	case NativeStake:
+		return a.deposit(params)
+	case NativeUnStake:
+		return a.withdraw(params)
+
+	default:
+		return "", errors.New("unsupported action")
+	}
+}
+
+func (r *RocketpoolOperation) withdraw(opts TransactionParams) (string, error) {
+
+	calldata, err := r.parsedABI.Pack("transfer", opts.GetBeneficiaryOwner(), opts.Amount)
 	if err != nil {
-		return "", fmt.Errorf("failed to generate calldata for %s: %w", r.Method, err)
+		return "", fmt.Errorf("failed to generate calldata for %s: %w", "withdraw", err)
 	}
 
-	calldataHex := HexPrefix + hex.EncodeToString(calldata)
-	return calldataHex, nil
+	return HexPrefix + hex.EncodeToString(calldata), nil
 }
 
-func (r *RocketPoolOperation) deposit(args []interface{}) (string, error) {
+func (r *RocketpoolOperation) deposit(opts TransactionParams) (string, error) {
 
-	_, exists := r.parsedABI.Methods["deposit"]
-	if !exists {
-		return "", errors.New("unsupported action")
+	calldata, err := r.parsedABI.Pack("deposit")
+	if err != nil {
+		return "", fmt.Errorf("failed to generate calldata for %s: %w", "deposit", err)
+	}
+
+	return HexPrefix + hex.EncodeToString(calldata), nil
+}
+
+// Validate checks if the provided parameters are valid for the specified action
+func (l *RocketpoolOperation) Validate(ctx context.Context,
+	chainID *big.Int, action ContractAction, params TransactionParams) error {
+
+	if chainID.Int64() != 1 {
+		return ErrChainUnsupported
+	}
+
+	if !l.IsSupportedAsset(ctx, l.chainID, params.Asset) {
+		return fmt.Errorf("asset not supported %s", params.Asset)
+	}
+
+	if action != NativeStake && action != NativeUnStake {
+		return errors.New("action not supported")
+	}
+
+	if params.Amount.Cmp(big.NewInt(0)) <= 0 {
+		return errors.New("amount must be greater than zero")
 	}
 
 	amount := big.NewInt(0)
 
-	if err := r.contract.Call(&bind.CallOpts{}, &amount, "getMaximumDepositAmount"); err != nil {
-		return "", err
+	if err := l.contract.Call(&bind.CallOpts{}, &amount, "getMaximumDepositAmount"); err != nil {
+		return err
 	}
 
-	amountToDeposit, ok := args[0].(*big.Int)
-	if !ok {
-		return "", errors.New("arg is not of type *big.Int")
-	}
-
-	if val := amount.Cmp(amountToDeposit); val == -1 {
-		return "", errors.New("rocketpool not accepting this much eth deposit at this time")
+	if val := amount.Cmp(params.Amount); val == -1 {
+		return errors.New("rocketpool not accepting this much eth deposit at this time")
 	}
 
 	amount = big.NewInt(0)
 
-	if err := r.depositSettingsContract.Call(&bind.CallOpts{}, &amount, "getMinimumDeposit"); err != nil {
-		return "", err
+	if err := l.depositSettingsContract.Call(&bind.CallOpts{}, &amount, "getMinimumDeposit"); err != nil {
+		return err
 	}
 
-	if val := amount.Cmp(amountToDeposit); val == 1 {
-		return "", errors.New("eth value too low to deposit to Rocketpool at this time")
+	if val := amount.Cmp(params.Amount); val == 1 {
+		return errors.New("eth value too low to deposit to Rocketpool at this time")
 	}
 
-	calldata, err := r.parsedABI.Pack("deposit")
+	asset := nativeDenomAddress
+	if action == NativeUnStake {
+		// will default to fetching RETH balance
+		asset = ""
+	}
+
+	balance, err := l.GetBalance(ctx, l.chainID, params.Sender, common.HexToAddress(asset))
 	if err != nil {
-		return "", fmt.Errorf("failed to generate calldata for %s: %w", r.Method, err)
+		return err
 	}
 
-	calldataHex := HexPrefix + hex.EncodeToString(calldata)
-	return calldataHex, nil
+	if balance.Cmp(params.Amount) == -1 {
+		return errors.New("balance not enough")
+	}
+
+	return nil
 }
 
-// GetContractAddress dynamically returns the correct contract address for the operation
-func (r *RocketPoolOperation) GetContractAddress(
-	_ context.Context) (common.Address, error) {
-	switch r.action {
-	case NativeStake:
-		return *r.contract.Address, nil
-	case NativeUnStake:
-		return *r.rethContract.Address, nil
-	default:
-		return common.Address{}, fmt.Errorf("action %d not supported for the rocket pool protocol", r.action)
+// GetBalance retrieves the balance for a specified account and asset
+func (l *RocketpoolOperation) GetBalance(ctx context.Context, chainID *big.Int, account,
+	asset common.Address) (*big.Int, error) {
+
+	if chainID.Int64() != 1 {
+		return nil, ErrChainUnsupported
+	}
+
+	if strings.ToLower(asset.Hex()) == nativeDenomAddress {
+		return l.client.BalanceAt(ctx, account, nil)
+	}
+
+	return tokens.GetRETHBalance(l.rp, account, nil)
+}
+
+// GetSupportedAssets returns a list of assets supported by the protocol on the specified chain
+func (l *RocketpoolOperation) GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error) {
+	return []common.Address{
+		common.HexToAddress(nativeDenomAddress),
+	}, nil
+}
+
+// IsSupportedAsset checks if the specified asset is supported on the given chain
+func (l *RocketpoolOperation) IsSupportedAsset(ctx context.Context, chainID *big.Int, asset common.Address) bool {
+	if chainID.Int64() != 1 {
+		return false
+	}
+
+	// native token or Reth
+	return IsNativeToken(asset) || asset.Hex() == common.HexToAddress("0xae78736cd615f374d3085123a210448e74fc6393").Hex()
+}
+
+// GetProtocolConfig returns the protocol config for a specific chain
+func (l *RocketpoolOperation) GetProtocolConfig(chainID *big.Int) ProtocolConfig {
+	return ProtocolConfig{
+		ChainID:  l.chainID,
+		Contract: *l.contract.Address,
+		ABI:      l.parsedABI,
+		Type:     TypeStake,
 	}
 }
 
-func (r *RocketPoolOperation) Validate(asset common.Address) error {
-	if IsNativeToken(asset) {
-		return nil
-	}
+// GetABI returns the ABI of the protocol's contract
+func (l *RocketpoolOperation) GetABI(chainID *big.Int) abi.ABI { return l.parsedABI }
 
-	return fmt.Errorf("unsupported asset for rocket pool staking (%s)", asset.Hex())
+// GetType returns the protocol type
+func (l *RocketpoolOperation) GetType() ProtocolType { return TypeStake }
+
+// GetContractAddress returns the contract address for a specific chain
+func (l *RocketpoolOperation) GetContractAddress(chainID *big.Int) common.Address {
+	return *l.contract.Address
 }
+
+// Name returns the human readable name for the protocol
+func (l *RocketpoolOperation) GetName() string { return RocketPool }
+
+// GetVersion returns the version of the protocol
+func (l *RocketpoolOperation) GetVersion() string { return l.version }

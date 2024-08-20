@@ -1,36 +1,47 @@
 package pkg
 
 import (
+	"context"
+	"errors"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )
 
+const (
+	ReferralAddress = "0x000000000000000000000000000000000000dEaD"
+)
+
 // Hex prefix
 const HexPrefix = "0x"
 
+var ErrChainUnsupported = errors.New("chain not supported")
+
 type (
 	ProtocolName    = string
-	ProtocolType    = string
-	ContractAction  = int64
 	ProtocolMethod  = string
 	ContractAddress = common.Address
 )
-type Protocol struct {
-	Name      ProtocolName
-	Action    ContractAction
-	Method    ProtocolMethod
-	ChainID   *big.Int
-	Address   ContractAddress
-	ABI       string
-	ParsedABI abi.ABI
-}
 
-const (
-	TypeLoan  ProtocolType = "Loan"
-	TypeStake ProtocolType = "Stake"
-)
+type ContractAction int64
+
+type ProtocolType string
+
+type Protocol interface {
+	// Initialize(ctx context.Context, config ProtocolConfig) error
+	GenerateCalldata(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) (string, error)
+	Validate(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) error
+	GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (*big.Int, error)
+	GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error)
+	IsSupportedAsset(ctx context.Context, chainID *big.Int, asset common.Address) bool
+	GetProtocolConfig(chainID *big.Int) ProtocolConfig
+	GetABI(chainID *big.Int) abi.ABI
+	GetType() ProtocolType
+	GetName() string
+	GetVersion() string
+	GetContractAddress(chainID *big.Int) common.Address
+}
 
 const (
 	AaveV3     ProtocolName = "aave_v3"
@@ -40,15 +51,6 @@ const (
 	Ankr       ProtocolName = "ankr"
 	Renzo      ProtocolName = "renzo"
 	Compound   ProtocolName = "compound"
-)
-
-const (
-	LoanSupply ContractAction = iota
-	LoanWithdraw
-	NativeStake
-	NativeUnStake
-	ERC20Stake
-	// ERC20UnStake
 )
 
 const (
@@ -75,95 +77,110 @@ var (
 )
 
 const (
-	AaveV3SupplyABI       = `[{"name":"supply","type":"function","inputs":[{"type":"address"},{"type":"uint256"},{"type":"address"},{"type":"uint16"}]}]`
-	AaveV3WithdrawABI     = `[{"name":"withdraw","type":"function","inputs":[{"type":"address"},{"type":"uint256"},{"type":"address"}]}]`
-	SparkSupplyABI        = AaveV3SupplyABI
-	SparkWithdrawABI      = AaveV3WithdrawABI
-	LidoSubmitABI         = `[{"name": "submit", "type": "function","inputs": [{"type": "address"}]}]`
-	AnkrSupplyABI         = `[{"name":"stakeAndClaimAethC","type":"function","inputs":[]}]`
-	AnkrWithdrawABI       = `[{"name":"unstakeAETH","type":"function","inputs":[{"internalType":"uint256","name":"shares","type":"uint256"}]}]`
-	RenzoDepositETHABI    = `[{"name":"depositETH","type":"function","inputs":[]}]`
-	RenzoDepositERC20ABI  = `[{"name":"deposit","type":"function","inputs":[{"type":"address"},{"type":"uint256"}]}]`
-	CompoundV3SupplyABI   = `[{"name":"supply","type":"function","inputs":[{"type":"address"},{"type":"uint256"}]}]`
-	CompoundV3WithdrawABI = `[{"name":"withdraw","type":"function","inputs":[{"type":"address"},{"type":"uint256"}]}]`
+	compoundv3ABI = `
+ [
+   {
+     "name": "withdraw",
+     "type": "function",
+     "inputs": [
+       {
+         "type": "address"
+       },
+       {
+         "type": "uint256"
+       }
+     ]
+   },
+   {
+     "name": "supply",
+     "type": "function",
+     "inputs": [
+       {
+         "type": "address"
+       },
+       {
+         "type": "uint256"
+       }
+     ]
+   }
+ ]
+ 	`
+	erc20BalanceOfABI = `[{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"}]`
 )
 
-// Predefined protocols
-var staticProtocols = map[ProtocolType][]Protocol{
-	TypeLoan: {
-		{
-			Name:    AaveV3,
-			Action:  LoanSupply,
-			Method:  aaveSupply,
-			ChainID: big.NewInt(1),
-			Address: AaveV3ContractAddress,
-			ABI:     AaveV3SupplyABI,
-		},
-		{
-			Name:    AaveV3,
-			Action:  LoanWithdraw,
-			Method:  aaveWithdraw,
-			ChainID: big.NewInt(1),
-			Address: AaveV3ContractAddress,
-			ABI:     AaveV3WithdrawABI,
-		},
-		{
-			Name:    SparkLend,
-			Action:  LoanSupply,
-			Method:  sparkLendSupply,
-			ChainID: big.NewInt(1),
-			Address: SparkLendContractAddress,
-			ABI:     SparkSupplyABI,
-		},
-		{
-			Name:    SparkLend,
-			Action:  LoanWithdraw,
-			Method:  sparkLendWithdraw,
-			ChainID: big.NewInt(1),
-			Address: SparkLendContractAddress,
-			ABI:     SparkWithdrawABI,
-		},
-	},
-	TypeStake: {
-		{
-			Name:    Lido,
-			Action:  NativeStake,
-			Method:  lidoStake,
-			ChainID: big.NewInt(1),
-			Address: LidoContractAddress,
-			ABI:     LidoSubmitABI,
-		},
-		{
-			Name:    Ankr,
-			Action:  NativeStake,
-			Method:  ankrStake,
-			ChainID: big.NewInt(1),
-			Address: AnkrContractAddress,
-			ABI:     AnkrSupplyABI,
-		},
-		{
-			Name:    Ankr,
-			Action:  NativeUnStake,
-			Method:  ankrUnstake,
-			ChainID: big.NewInt(1),
-			Address: AnkrContractAddress,
-			ABI:     AnkrWithdrawABI,
-		},
-		{
-			Name:    Renzo,
-			Action:  NativeStake,
-			Method:  renzoStakeETH,
-			ChainID: big.NewInt(1),
-			Address: RenzoManagerAddress,
-			ABI:     RenzoDepositETHABI,
-		},
-		{
-			Name:    Renzo,
-			Action:  ERC20Stake,
-			Method:  renzoStakeERC20,
-			ChainID: big.NewInt(1),
-			Address: RenzoManagerAddress,
-			ABI:     RenzoDepositERC20ABI,
-		},
-	},
+// ProtocolConfig contains configuration data for initializing a protocol.
+type ProtocolConfig struct {
+	RPCURL  string
+	ChainID *big.Int
+
+	Name     string
+	Version  string
+	Contract common.Address
+	ABI      abi.ABI
+	Type     ProtocolType
+}
+
+// TransactionParams encapsulates parameters needed to generate calldata for transactions.
+type TransactionParams struct {
+	Amount       *big.Int
+	Sender       common.Address
+	Recipient    common.Address
+	Asset        common.Address
+	ReferralCode any
+	ExtraData    map[string]interface{}
+}
+
+func (params TransactionParams) GetBeneficiaryOwner() common.Address {
+	if params.Recipient.Hex() == "0x0000000000000000000000000000000000000000" {
+		return params.Sender
+	}
+
+	return params.Recipient
+}
+
+const (
+	LoanSupply ContractAction = iota
+	LoanWithdraw
+	NativeStake
+	NativeUnStake
+	ERC20Stake
+	ERC20UnStake
+)
+
+func (a ContractAction) String() string {
+	switch a {
+	case LoanSupply:
+		return "loan_supply"
+	case LoanWithdraw:
+		return "loan_withdraw"
+	case NativeStake:
+		return "native_stake"
+	case NativeUnStake:
+		return "native_unstake"
+	default:
+		return ""
+	}
+}
+
+const (
+	TypeLoan  ProtocolType = "Loan"
+	TypeStake ProtocolType = "Stake"
+)
+
+// ProtocolRegistry defines methods for managing and accessing DeFi
+type ProtocolRegistry interface {
+	// GetChainConfig retrieves the configuration for a specific chain
+	GetChainConfig(chainID *big.Int) (ChainConfig, error)
+
+	// RegisterProtocol adds a new protocol to the registry for a specific chain
+	RegisterProtocol(chainID *big.Int, address common.Address, protocol Protocol) error
+
+	// GetProtocol retrieves a protocol by its contract address and chain ID
+	GetProtocol(chainID *big.Int, address common.Address) (Protocol, error)
+
+	// ListProtocols returns a list of all registered protocols for a specific chain
+	ListProtocols(chainID *big.Int) []Protocol
+
+	// ListProtocolsByType lists all protocols of a specific type for a given chain
+	ListProtocolsByType(chainID *big.Int, protocolType ProtocolType) []Protocol
 }

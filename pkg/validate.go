@@ -25,6 +25,8 @@ var tokenSupportedMap = map[int64]map[ProtocolName][]string{
 			"0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2", // Maker
 			"0xBe9895146f7AF43049ca1c1AE358B0541Ea49704", // Coinbase Ether
 			"0xf1C9acDc66974dFB6dEcB12aA385b9cD01190E38", // osETH
+			"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", // WETH
+			"0xae78736cd615f374d3085123a210448e74fc6393", // RocketPool ETH
 		},
 		SparkLend: {
 			"0x83f20f44975d03b1b09e64809b757c47f942beea", // savingsDAI

@@ -8,8 +8,10 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 // chainID -> Contract address -> ERC20s that can be used as collateral
@@ -36,138 +38,218 @@ var compoundSupportedAssets = map[int64]map[string][]string{
 	},
 }
 
-type CompoundV3Operation struct {
-	// current chain
-	chainID int64
-	// Compound has different deployments for each single market
-	proxyContract string
-	// assets that are supported in this pool
-	supportedAssets []string
-	// make sure to parse the abi only once
-	parsedABI abi.ABI
-
-	// current lending action
-	action ContractAction
-}
-
 // dynamically registers all supported pools
-func registerCompoundRegistry(registry *ProtocolRegistry) {
+func registerCompoundRegistry(registry ProtocolRegistry, client *ethclient.Client) error {
 	for chainID, v := range compoundSupportedAssets {
 		for poolAddr := range v {
-			for _, action := range []ContractAction{LoanSupply, LoanWithdraw} {
-				c, err := NewCompoundV3(big.NewInt(chainID), common.HexToAddress(poolAddr), action)
-				if err != nil {
-					panic(fmt.Sprintf("Failed to create compound client for %s", poolAddr))
-				}
+			c, err := NewCompoundOperation(client, big.NewInt(chainID), common.HexToAddress(poolAddr))
+			if err != nil {
+				return err
+			}
 
-				c.Register(registry)
+			if err := registry.RegisterProtocol(big.NewInt(chainID), common.HexToAddress(poolAddr), c); err != nil {
+				return err
 			}
 		}
 	}
+
+	return nil
 }
 
-// NewCompoundV3 creates a new compound v3 instance
-func NewCompoundV3(chainID *big.Int,
-	proxyContractAddress common.Address, action ContractAction) (*CompoundV3Operation, error) {
+// CompoundOperation implements the Protocol interface for Ankr
+type CompoundOperation struct {
+	parsedABI abi.ABI
+	contract  common.Address
+	chainID   *big.Int
+	version   string
+	erc20ABI  abi.ABI
+	// assets that are supported in this pool
+	supportedAssets []string
+
+	client *ethclient.Client
+}
+
+func NewCompoundOperation(client *ethclient.Client, chainID *big.Int,
+	marketPool common.Address) (*CompoundOperation, error) {
+
+	parsedABI, err := abi.JSON(strings.NewReader(compoundv3ABI))
+	if err != nil {
+		return nil, err
+	}
+
+	erc20ABI, err := abi.JSON(strings.NewReader(erc20BalanceOfABI))
+	if err != nil {
+		return nil, err
+	}
 
 	supportedChain, ok := compoundSupportedAssets[chainID.Int64()]
 	if !ok {
 		return nil, errors.New("unsupported chain for Compound in Protocol registry")
 	}
 
-	supportedAssets, ok := supportedChain[strings.ToLower(proxyContractAddress.Hex())]
+	supportedAssets, ok := supportedChain[strings.ToLower(marketPool.Hex())]
 	if !ok {
 		return nil, errors.New("unsupported Compound pool address")
 	}
 
-	if action != LoanSupply && action != LoanWithdraw {
-		return nil, errors.New("unsupported action for Compound")
-	}
-
-	var abiDefinition = CompoundV3SupplyABI
-	if action == LoanWithdraw {
-		abiDefinition = CompoundV3WithdrawABI
-	}
-
-	parsedABI, err := abi.JSON(strings.NewReader(abiDefinition))
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse ABI for %s: %v", Compound, err)
-	}
-
-	return &CompoundV3Operation{
-		proxyContract:   strings.ToLower(proxyContractAddress.Hex()),
-		chainID:         chainID.Int64(),
+	return &CompoundOperation{
 		supportedAssets: supportedAssets,
 		parsedABI:       parsedABI,
-		action:          action,
+		contract:        marketPool,
+		chainID:         chainID,
+		version:         "3",
+		client:          client,
+		erc20ABI:        erc20ABI,
 	}, nil
 }
 
-// Register registers the CompoundV3Operation client into the protocol registry so it can be used by any user of
-// the registry library
-func (c *CompoundV3Operation) Register(registry *ProtocolRegistry) {
-	registry.RegisterProtocolOperation(common.HexToAddress(c.proxyContract), c.action, big.NewInt(c.chainID), c)
+// GenerateCalldata creates the necessary blockchain transaction data
+func (a *CompoundOperation) GenerateCalldata(ctx context.Context, chainID *big.Int,
+	action ContractAction, params TransactionParams) (string, error) {
+	if chainID.Int64() != 1 {
+		return "", ErrChainUnsupported
+	}
+
+	switch action {
+	case LoanSupply:
+		return a.supply(params)
+	case LoanWithdraw:
+		return a.withdraw(params)
+	default:
+		return "", errors.New("unsupported operation")
+	}
 }
 
-// GetContractAddress retrieves the current lending market contract
-func (c *CompoundV3Operation) GetContractAddress(_ context.Context) (common.Address, error) {
-	return common.HexToAddress(c.proxyContract), nil
-}
-
-// Validate ensures the current asset can be supplied to the market
-func (c *CompoundV3Operation) Validate(asset common.Address) error {
-
-	for _, addr := range c.supportedAssets {
-		if strings.EqualFold(strings.ToLower(asset.Hex()), strings.ToLower(addr)) {
-			return nil
-		}
-	}
-
-	return fmt.Errorf("unsupported asset for %s ( %s )", Compound, asset)
-}
-
-// GenerateCalldata creates a dynamic calldata that can be sent onchain
-// to carry out lending operations
-func (c *CompoundV3Operation) GenerateCalldata(args []interface{}) (string, error) {
-
-	if len(args) > 2 {
-		return "", errors.New("provided args more than supported abi arguments. there can only be 2 args")
-	}
-
-	tokenAddress, ok := args[0].(common.Address)
-	if !ok {
-		return "", errors.New("argument 1 must be of type common.Address")
-	}
-
-	amount, ok := args[1].(*big.Int)
-	if !ok {
-		return "", errors.New("argument 2 must be of type *big.Int")
-	}
-
-	if c.action == LoanSupply {
-		return c.supply(tokenAddress, amount)
-	}
-
-	return c.withdraw(tokenAddress, amount)
-}
-
-func (c *CompoundV3Operation) withdraw(tokenAddress common.Address, amount *big.Int) (string, error) {
-	calldata, err := c.parsedABI.Pack("withdraw", tokenAddress, amount)
+func (c *CompoundOperation) withdraw(opts TransactionParams) (string, error) {
+	calldata, err := c.parsedABI.Pack("withdraw", opts.Asset, opts.Amount)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate calldata for %s: %w", "withdraw", err)
 	}
 
-	calldataHex := HexPrefix + hex.EncodeToString(calldata)
-	return calldataHex, nil
+	return HexPrefix + hex.EncodeToString(calldata), nil
 }
 
-func (c *CompoundV3Operation) supply(tokenAddress common.Address, amount *big.Int) (string, error) {
+func (c *CompoundOperation) supply(opts TransactionParams) (string, error) {
 
-	calldata, err := c.parsedABI.Pack("supply", tokenAddress, amount)
+	calldata, err := c.parsedABI.Pack("supply", opts.Asset, opts.Amount)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate calldata for %s: %w", "supply", err)
 	}
 
-	calldataHex := HexPrefix + hex.EncodeToString(calldata)
-	return calldataHex, nil
+	return HexPrefix + hex.EncodeToString(calldata), nil
 }
+
+// Validate checks if the provided parameters are valid for the specified action
+func (l *CompoundOperation) Validate(ctx context.Context,
+	chainID *big.Int, action ContractAction, params TransactionParams) error {
+
+	if chainID.Int64() != 1 {
+		return ErrChainUnsupported
+	}
+
+	if !l.IsSupportedAsset(ctx, l.chainID, params.Asset) {
+		return fmt.Errorf("asset not supported %s", params.Asset)
+	}
+
+	if action != LoanSupply && action != LoanWithdraw {
+		return errors.New("action not supported")
+	}
+
+	if params.Amount.Cmp(big.NewInt(0)) <= 0 {
+		return errors.New("amount must be greater than zero")
+	}
+
+	asset := params.Asset
+
+	if action == LoanWithdraw {
+		asset = l.contract
+	}
+
+	balance, err := l.GetBalance(ctx, l.chainID, params.Sender, asset)
+	if err != nil {
+		return err
+	}
+
+	if balance.Cmp(params.Amount) == -1 {
+		return errors.New("balance not enough")
+	}
+
+	return nil
+}
+
+// GetBalance retrieves the balance for a specified account and asset
+func (l *CompoundOperation) GetBalance(ctx context.Context, chainID *big.Int, account,
+	asset common.Address) (*big.Int, error) {
+
+	if chainID.Int64() != 1 {
+		return nil, ErrChainUnsupported
+	}
+
+	callData, err := l.erc20ABI.Pack("balanceOf", account)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := l.client.CallContract(context.Background(), ethereum.CallMsg{
+		To:   &asset,
+		Data: callData,
+	}, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	balance := new(big.Int)
+	err = l.erc20ABI.UnpackIntoInterface(&balance, "balanceOf", result)
+	return balance, err
+}
+
+// GetSupportedAssets returns a list of assets supported by the protocol on the specified chain
+func (c *CompoundOperation) GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error) {
+	var addrs = make([]common.Address, 0, len(c.supportedAssets))
+
+	for _, v := range c.supportedAssets {
+		addrs = append(addrs, common.HexToAddress(v))
+	}
+
+	return addrs, nil
+}
+
+// IsSupportedAsset checks if the specified asset is supported on the given chain
+func (c *CompoundOperation) IsSupportedAsset(ctx context.Context, chainID *big.Int, asset common.Address) bool {
+	if chainID.Int64() != 1 {
+		return false
+	}
+
+	for _, addr := range c.supportedAssets {
+		if strings.EqualFold(strings.ToLower(asset.Hex()), strings.ToLower(addr)) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// GetProtocolConfig returns the protocol config for a specific chain
+func (l *CompoundOperation) GetProtocolConfig(chainID *big.Int) ProtocolConfig {
+	return ProtocolConfig{
+		ChainID:  l.chainID,
+		Contract: l.contract,
+		ABI:      l.parsedABI,
+		Type:     TypeStake,
+	}
+}
+
+// GetABI returns the ABI of the protocol's contract
+func (l *CompoundOperation) GetABI(chainID *big.Int) abi.ABI { return l.parsedABI }
+
+// GetType returns the protocol type
+func (l *CompoundOperation) GetType() ProtocolType { return TypeLoan }
+
+// GetContractAddress returns the contract address for a specific chain
+func (l *CompoundOperation) GetContractAddress(chainID *big.Int) common.Address { return l.contract }
+
+// Name returns the human readable name for the protocol
+func (l *CompoundOperation) GetName() string { return Compound }
+
+// GetVersion returns the version of the protocol
+func (l *CompoundOperation) GetVersion() string { return l.version }

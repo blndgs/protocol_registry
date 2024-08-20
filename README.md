@@ -77,12 +77,11 @@ To generate calldata for a specific operation, you can use the `GenerateCalldata
 
 ```go
 params := protocols.TransactionParams{
-    FromAddress: common.HexToAddress("0xAddress1"),
-    ToAddress:   common.HexToAddress("0xAddress2"),
-    AmountIn:    big.NewInt(1000000000000),
-    // Set other necessary parameters
+    Asset: common.HexToAddress("0xAddress1"),
+    Sender:   common.HexToAddress("0xAddress2"),
+    Amount:    big.NewInt(1000000000000),
 }
-calldata, err := protocol.GenerateCalldata(context.Background(), big.NewInt(1), protocols.NativeStake, params)
+calldata, err := protocol.GenerateCalldata(context.Background(), big.NewInt(1), pkg.NativeStake, params)
 if err != nil {
     // Handle the error
 }
@@ -94,7 +93,6 @@ The `Protocol` interface defines the methods that each protocol must implement:
 
 ```go
 type Protocol interface {
-    Initialize(ctx context.Context, config ProtocolConfig) error
     GenerateCalldata(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) (string, error)
     Validate(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) error
     GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (*big.Int, error)
@@ -106,7 +104,6 @@ type Protocol interface {
     GetName() string
     GetVersion() string
     GetContractAddress(chainID *big.Int) common.Address
-    GetBeneficiaryOwner(params TransactionParams) common.Address
 }
 ```
 
