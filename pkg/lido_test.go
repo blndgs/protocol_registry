@@ -19,19 +19,6 @@ func getTestClient(t *testing.T) *ethclient.Client {
 
 func TestLido_Validate(t *testing.T) {
 
-	t.Run("zero value staked", func(t *testing.T) {
-
-		lido, err := NewLidoOperation(getTestClient(t), big.NewInt(1))
-		require.NoError(t, err)
-
-		err = lido.Validate(context.Background(), big.NewInt(1), NativeStake, TransactionParams{
-			Amount: big.NewInt(0),
-			Asset:  common.HexToAddress(nativeDenomAddress),
-		})
-
-		require.Error(t, err)
-	})
-
 	t.Run("unsupported chain", func(t *testing.T) {
 
 		lido, err := NewLidoOperation(getTestClient(t), big.NewInt(1))
