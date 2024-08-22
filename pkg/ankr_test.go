@@ -49,14 +49,15 @@ func TestAnkr_Validate(t *testing.T) {
 	ankr, err := NewAnkrOperation(getTestClient(t), big.NewInt(1))
 	require.NoError(t, err)
 
-	t.Run("zero value staked", func(t *testing.T) {
+	t.Run("zero value unstaked", func(t *testing.T) {
 
-		err = ankr.Validate(context.Background(), big.NewInt(1), NativeStake, TransactionParams{
+		err = ankr.Validate(context.Background(), big.NewInt(1), NativeUnStake, TransactionParams{
 			Amount: big.NewInt(0),
 			Asset:  common.HexToAddress(nativeDenomAddress),
 			Sender: emptyTestWallet,
 		})
 
+		t.Log(err)
 		require.Error(t, err)
 	})
 

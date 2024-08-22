@@ -119,10 +119,11 @@ func (l *AnkrOperation) Validate(ctx context.Context,
 	asset := nativeDenomAddress
 	if action == NativeUnStake {
 		asset = ankrEthER20Account.Hex()
-	}
 
-	if params.Amount.Cmp(big.NewInt(0)) <= 0 {
-		return errors.New("amount must be greater than zero")
+		// only validate amount during withdrawal
+		if params.Amount.Cmp(big.NewInt(0)) <= 0 {
+			return errors.New("amount must be greater than zero")
+		}
 	}
 
 	balance, err := l.GetBalance(ctx, l.chainID, params.Sender, common.HexToAddress(asset))
