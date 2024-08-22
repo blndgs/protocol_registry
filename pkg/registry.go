@@ -156,6 +156,7 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 	val, ok := r.chainConfigs["1"]
 	if !ok {
 		return errors.New("please provide ETH chain config")
+	}
 
 	client, err := ethclient.Dial(val.RPCURL)
 	if err != nil {
