@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"errors"
 	"fmt"
 	"math/big"
 	"sync"
@@ -152,7 +153,12 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 		return nil
 	}
 
-	client, err := ethclient.Dial("https://eth.public-rpc.com")
+	val, ok := r.chainConfigs["1"]
+	if !ok {
+		return errors.New("please ETH chain config")
+	}
+
+	client, err := ethclient.Dial(val.RPCURL)
 	if err != nil {
 		return err
 	}
