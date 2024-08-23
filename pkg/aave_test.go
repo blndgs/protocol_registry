@@ -130,6 +130,17 @@ func TestAave_Validate(t *testing.T) {
 		require.Error(t, err)
 	})
 
+	t.Run("user without balance balance cannot stake", func(t *testing.T) {
+
+		err = aave.Validate(context.Background(), big.NewInt(1), LoanSupply, TransactionParams{
+			Amount: big.NewInt(1),
+			Asset:  common.HexToAddress("0xdac17f958d2ee523a2206206994597c13d831ec7"),
+			Sender: common.HexToAddress(nativeDenomAddress),
+		})
+
+		require.NoError(t, err)
+	})
+
 	t.Run("user with usdt balance can supply", func(t *testing.T) {
 
 		err = aave.Validate(context.Background(), big.NewInt(1), LoanSupply, TransactionParams{
