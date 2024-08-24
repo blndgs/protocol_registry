@@ -7,9 +7,15 @@
       "decimals": 18
     },
     {
-      "token_address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-      "name": "Wrapped Ether",
-      "symbol": "WETH",
+      "token_address": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
+      "name": "Maker",
+      "symbol": "MKR",
+      "decimals": 18
+    },
+    {
+      "token_address": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+      "name": "Wrapped liquid staked Ether 2.0",
+      "symbol": "wstETH",
       "decimals": 18
     },
     {
@@ -25,9 +31,15 @@
       "decimals": 6
     },
     {
-      "token_address": "0x6b175474e89094c44da98b954eedeac495271d0f",
-      "name": "Dai Stablecoin",
-      "symbol": "DAI",
+      "token_address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "name": "Tether USD",
+      "symbol": "USDT",
+      "decimals": 6
+    },
+    {
+      "token_address": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+      "name": "Wrapped eETH",
+      "symbol": "weETH",
       "decimals": 18
     },
     {
@@ -37,9 +49,27 @@
       "decimals": 18
     },
     {
+      "token_address": "0xae78736cd615f374d3085123a210448e74fc6393",
+      "name": "Rocket Pool ETH",
+      "symbol": "rETH",
+      "decimals": 18
+    },
+    {
+      "token_address": "0x6b175474e89094c44da98b954eedeac495271d0f",
+      "name": "Dai Stablecoin",
+      "symbol": "DAI",
+      "decimals": 18
+    },
+    {
       "token_address": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
-      "name": "Aave",
+      "name": "Aave Token",
       "symbol": "AAVE",
+      "decimals": 18
+    },
+    {
+      "token_address": "0x83f20f44975d03b1b09e64809b757c47f942beea",
+      "name": "Savings Dai",
+      "symbol": "sDAI",
       "decimals": 18
     },
     {
@@ -49,39 +79,27 @@
       "decimals": 18
     },
     {
-      "token_address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
-      "name": "Tether USD",
-      "symbol": "USDT",
-      "decimals": 6
-    },
-    {
-      "token_address": "0x5f98805a4e8be255a32880fdec7f6728c6568ba0",
-      "name": "Liquity USD",
-      "symbol": "LUSD",
+      "token_address": "0xf1c9acdc66974dfb6decb12aa385b9cd01190e38",
+      "name": "Staked ETH",
+      "symbol": "osETH",
       "decimals": 18
     },
     {
-      "token_address": "0xd533a949740bb3306d119cc777fa900ba034cd52",
-      "name": "Curve DAO Token",
-      "symbol": "CRV",
+      "token_address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "name": "Wrapped Ether",
+      "symbol": "WETH",
       "decimals": 18
     },
     {
-      "token_address": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
-      "name": "Maker",
-      "symbol": "MKR",
+      "token_address": "0x514910771af9ca656af840dff83e8264ecf986ca",
+      "name": "ChainLink Token",
+      "symbol": "LINK",
       "decimals": 18
     },
     {
-      "token_address": "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f",
-      "name": "Synthetix Network Token",
-      "symbol": "SNX",
-      "decimals": 18
-    },
-    {
-      "token_address": "0xba100000625a3754423978a60c9317c58a424e3d",
-      "name": "Balancer",
-      "symbol": "BAL",
+      "token_address": "0xc00e94cb662c3520282e6f5717214004a7f26888",
+      "name": "Compound",
+      "symbol": "COMP",
       "decimals": 18
     },
     {
@@ -91,60 +109,177 @@
       "decimals": 18
     },
     {
-      "token_address": "0x5a98fcbea516cf06857215779fd812ca3bef1b32",
-      "name": "Lido DAO",
-      "symbol": "LDO",
+      "token_address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
+      "name": "Wrapped BTC",
+      "symbol": "WBTC",
+      "decimals": 8
+    },
+    {
+      "token_address": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
+      "name": "Wrapped liquid staked Ether 2.0",
+      "symbol": "wstETH",
       "decimals": 18
     },
     {
-      "token_address": "0xc18360217d8f7ab5e7c516566761ea12ce7f9d72",
-      "name": "Ethereum Name Service",
-      "symbol": "ENS",
+      "token_address": "0xae78736cd615f374d3085123a210448e74fc6393",
+      "name": "Rocket Pool ETH",
+      "symbol": "rETH",
       "decimals": 18
-    },
-    {
-      "token_address": "0x111111111117dc0aa78b770fa6a738034120c302",
-      "name": "1inch",
-      "symbol": "1INCH",
-      "decimals": 18
-    },
-    {
-      "token_address": "0x853d955acef822db058eb8505911ed77f175b99e",
-      "name": "Frax",
-      "symbol": "FRAX",
-      "decimals": 18
-    },
-    {
-      "token_address": "0xaf5191b0de278c7286d6c7cc6ab6bb8a73ba2cd6",
-      "name": "Stargate Finance",
-      "symbol": "STG",
-      "decimals": 18
-    },
-    {
-      "token_address": "0x3432b6a60d23ca0dfca7761b7ab56459d9c964d0",
-      "name": "Frax Share",
-      "symbol": "FXS",
-      "decimals": 18
-    },
-    {
-      "token_address": "0x6c3ea9036406852006290770bedfcaba0e23a0e8",
-      "name": "PayPal USD",
-      "symbol": "PYUSD",
-      "decimals": 6
     }
   ],
   "protocols": [
     {
-      "address": "...",
-      "name": "Aave",
+      "address": "0x84db6ee82b7cf3b47e8f19270abde5718b936670",
+      "name": "Ankr",
       "source": true,
       "destination": true,
       "tokens": [
         {
-          "token_address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599" // WBTC
+          "token_address": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        }
+      ]
+    },
+    {
+      "address": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
+      "name": "Lido",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        {
+          "token_address": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        }
+      ]
+    },
+    {
+      "address": "0x1d8f8f00cfa6758d7bE78336684788Fb0ee0Fa46",
+      "name": "Rocketpool",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        {
+          "token_address": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
         },
         {
-          "token_address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48" //USDC
+          "token_address": "0xae78736cd615f374d3085123a210448e74fc6393"
+        }
+      ]
+    },
+    {
+      "address": "0xC13e21B648A5Ee794902342038FF3aDAB66BE987",
+      "name": "SparkLend",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        {
+          "token_address": "0x83f20f44975d03b1b09e64809b757c47f942beea"
+        },
+        {
+          "token_address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
+        },
+        {
+          "token_address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "token_address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "token_address": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+        },
+        {
+          "token_address": "0xae78736cd615f374d3085123a210448e74fc6393"
+        },
+        {
+          "token_address": "0xdac17f958d2ee523a2206206994597c13d831ec7"
+        }
+      ]
+    },
+    {
+      "address": "0xa17581a9e3356d9a858b789d68b4d866e593ae94",
+      "name": "Compound ETH Pool",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        {
+          "token_address": "0xbe9895146f7af43049ca1c1ae358b0541ea49704"
+        },
+        {
+          "token_address": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+        },
+        {
+          "token_address": "0xae78736cd615f374d3085123a210448e74fc6393"
+        },
+        {
+          "token_address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        }
+      ]
+    },
+    {
+      "address": "0xc3d688b66703497daa19211eedff47f25384cdc3",
+      "name": "Compound USDC Pool",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        {
+          "token_address": "0x514910771af9ca656af840dff83e8264ecf986ca"
+        },
+        {
+          "token_address": "0xc00e94cb662c3520282e6f5717214004a7f26888"
+        },
+        {
+          "token_address": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
+        },
+        {
+          "token_address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
+        }
+      ]
+    },
+    {
+      "address": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
+      "name": "AaveV3",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        {
+          "token_address": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0"
+        },
+        {
+          "token_address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
+        },
+        {
+          "token_address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        },
+        {
+          "token_address": "0xdac17f958d2ee523a2206206994597c13d831ec7"
+        },
+        {
+          "token_address": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee"
+        },
+        {
+          "token_address": "0x514910771af9ca656af840dff83e8264ecf986ca"
+        },
+        {
+          "token_address": "0xae78736cd615f374d3085123a210448e74fc6393"
+        },
+        {
+          "token_address": "0x6b175474e89094c44da98b954eedeac495271d0f"
+        },
+        {
+          "token_address": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9"
+        },
+        {
+          "token_address": "0x83f20f44975d03b1b09e64809b757c47f942beea"
+        },
+        {
+          "token_address": "0xbe9895146f7af43049ca1c1ae358b0541ea49704"
+        },
+        {
+          "token_address": "0xf1c9acdc66974dfb6decb12aa385b9cd01190e38"
+        },
+        {
+          "token_address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+        },
+        {
+          "token_address": "0xae78736cd615f374d3085123a210448e74fc6393"
         }
       ]
     }
