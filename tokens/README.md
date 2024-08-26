@@ -15,9 +15,9 @@ Each supported blockchain network has its own JSON file named after its chain ID
 
 For example:
 
-* `1.json` for Ethereum Mainnet
-* `56.json` for Binance Smart Chain
-* `137.json` for Polygon
+- `1.json` for Ethereum Mainnet
+- `56.json` for Binance Smart Chain
+- `137.json` for Polygon
 
 ## JSON Structure
 
@@ -28,13 +28,29 @@ The JSON file follows this structure:
   "tokens": [
     {
       "token_address": "0xdcee70654261af21c44c093c300ed3bb97b78192"
-    },
-    {
-      "token_address": "0xd2af830e8cbdfed6cc11bab697bb25496ed6fa62"
+      "name" : "Token NAMe",
+      "symbol" : "MKKKK",
+      "decimals" : 18
     }
+  ],
+  "protocols": [
+    {
+      "address": "0x84db6ee82b7cf3b47e8f19270abde5718b936670",
+      "name": "Ankr",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+      ]
+    },
   ]
 }
 ```
+
+> In the protocols array, `source` determines if a user can define an intent with the protocol as the first action.
+> That is withdraw from X protocol and do something else.
+
+> `destination` determines if the protocol can be deposited into
 
 ## Token Selection Criteria
 
