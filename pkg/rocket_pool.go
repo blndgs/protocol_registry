@@ -163,7 +163,7 @@ func (r *RocketpoolOperation) withdraw(opts TransactionParams) (string, error) {
 	return HexPrefix + hex.EncodeToString(calldata), nil
 }
 
-func (r *RocketpoolOperation) deposit(opts TransactionParams) (string, error) {
+func (r *RocketpoolOperation) deposit(_ TransactionParams) (string, error) {
 
 	calldata, err := r.parsedABI.Pack("deposit")
 	if err != nil {
@@ -187,10 +187,6 @@ func (l *RocketpoolOperation) Validate(ctx context.Context,
 
 	if action != NativeStake && action != NativeUnStake {
 		return errors.New("action not supported")
-	}
-
-	if params.Amount.Cmp(big.NewInt(0)) <= 0 {
-		return errors.New("amount must be greater than zero")
 	}
 
 	amount := big.NewInt(0)
@@ -217,6 +213,11 @@ func (l *RocketpoolOperation) Validate(ctx context.Context,
 	if action == NativeUnStake {
 		// will default to fetching RETH balance
 		asset = ""
+
+		// validate amount only during unstaking
+		if params.Amount.Cmp(big.NewInt(0)) <= 0 {
+			return errors.New("amount must be greater than zero")
+		}
 	}
 
 	balance, err := l.GetBalance(ctx, l.chainID, params.Sender, common.HexToAddress(asset))
