@@ -219,14 +219,13 @@ func (l *AaveOperation) Validate(ctx context.Context,
 		return errors.New("amount must be greater than zero")
 	}
 
-	asset := params.Asset
+	if action == LoanSupply {
+		return nil
+	}
 
-	if action == LoanWithdraw {
-		var err error
-		asset, err = l.getAToken(ctx, asset)
-		if err != nil {
-			return err
-		}
+	asset, err := l.getAToken(ctx, params.Asset)
+	if err != nil {
+		return err
 	}
 
 	balance, err := l.GetBalance(ctx, l.chainID, params.Sender, asset)

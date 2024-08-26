@@ -155,6 +155,10 @@ func (l *CompoundOperation) Validate(ctx context.Context,
 		return errors.New("action not supported")
 	}
 
+	if action == LoanSupply {
+		return nil
+	}
+
 	if params.Amount.Cmp(big.NewInt(0)) <= 0 {
 		return errors.New("amount must be greater than zero")
 	}

@@ -94,6 +94,10 @@ The `Protocol` interface defines the methods that each protocol must implement:
 ```go
 type Protocol interface {
     GenerateCalldata(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) (string, error)
+    // Validate ideally should run checks for the balance
+    // Currently for LoanSuplly usecase, we do not run any checks
+    // because sometimes on the clientside, the usecase might be a multicall that swaps an asset
+    // for another one which is then supplied into the protocol hence validation will always fail
     Validate(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) error
     GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (*big.Int, error)
     GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error)
