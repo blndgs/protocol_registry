@@ -89,8 +89,9 @@ const aaveDataProviderABI = `
 ]`
 
 var (
-	aaveDataProviderContract  = common.HexToAddress("0x7B4EB56E7CD4b454BA8ff71E4518426369a138a3")
-	sparklendProviderContract = common.HexToAddress("0xFc21d6d146E6086B8359705C8b28512a983db0cb")
+	ethAaveDataProviderContract  = common.HexToAddress("0x7B4EB56E7CD4b454BA8ff71E4518426369a138a3")
+	ethSparklendProviderContract = common.HexToAddress("0xFc21d6d146E6086B8359705C8b28512a983db0cb")
+	bnbAaveDataProviderContract  = common.HexToAddress("0x41585C50524fb8c3899B43D7D797d9486AAc94DB")
 )
 
 // AaveOperation implements the Protocol interface for Aave
@@ -106,7 +107,35 @@ type AaveOperation struct {
 	client *ethclient.Client
 }
 
+func isAaveChainSupported(chainID *big.Int, fork AaveProtocolFork) error {
+
+	if !IsBnb(chainID) && !IsEth(chainID) {
+		return errors.New("only eth and bnb chains are supported")
+	}
+
+	if IsBnb(chainID) && fork == AaveProtocolForkSpark {
+		return errors.New("Spark finance is not supported on Bnb chain. Only Ethereum")
+	}
+
+	return nil
+}
+
 func NewAaveOperation(client *ethclient.Client, chainID *big.Int, fork AaveProtocolFork) (*AaveOperation, error) {
+
+	if err := isAaveChainSupported(chainID, fork); err != nil {
+		return nil, err
+	}
+
+	networkID, err := client.NetworkID(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("client.NetworkID: could not fetch network id.%v", err)
+	}
+
+	if networkID.Int64() != chainID.Int64() {
+		return nil, fmt.Errorf("network id of client(%d) does not match chainID provided (%d).",
+			networkID.Int64(), chainID.Int64())
+	}
+
 	parsedABI, err := abi.JSON(strings.NewReader(aaveV3ABI))
 	if err != nil {
 		return nil, err
@@ -137,8 +166,9 @@ func NewAaveOperation(client *ethclient.Client, chainID *big.Int, fork AaveProto
 // GenerateCalldata creates the necessary blockchain transaction data
 func (a *AaveOperation) GenerateCalldata(ctx context.Context, chainID *big.Int,
 	action ContractAction, params TransactionParams) (string, error) {
-	if chainID.Int64() != 1 {
-		return "", ErrChainUnsupported
+
+	if err := isAaveChainSupported(chainID, a.fork); err != nil {
+		return "", err
 	}
 
 	var calldata []byte
@@ -180,9 +210,22 @@ func (l *AaveOperation) getAToken(ctx context.Context, asset common.Address) (co
 		return common.Address{}, err
 	}
 
-	var toContract = aaveDataProviderContract
-	if l.fork == AaveProtocolForkSpark {
-		toContract = sparklendProviderContract
+	var toContract common.Address
+	switch {
+	case IsEth(l.chainID):
+		toContract = ethAaveDataProviderContract
+		if l.fork == AaveProtocolForkSpark {
+			toContract = ethSparklendProviderContract
+		}
+
+	case IsBnb(l.chainID):
+		if l.fork == AaveProtocolForkSpark {
+			return common.HexToAddress(""), errors.New("BSC: spark finance is not supported on Aave")
+		}
+
+		toContract = bnbAaveDataProviderContract
+	default:
+		return common.HexToAddress(""), errors.New("unsupported chain")
 	}
 
 	result, err := l.client.CallContract(context.Background(), ethereum.CallMsg{
@@ -203,8 +246,8 @@ func (l *AaveOperation) getAToken(ctx context.Context, asset common.Address) (co
 func (l *AaveOperation) Validate(ctx context.Context,
 	chainID *big.Int, action ContractAction, params TransactionParams) error {
 
-	if chainID.Int64() != 1 {
-		return ErrChainUnsupported
+	if err := isAaveChainSupported(chainID, l.fork); err != nil {
+		return err
 	}
 
 	if !l.IsSupportedAsset(ctx, l.chainID, params.Asset) {
@@ -242,8 +285,8 @@ func (l *AaveOperation) Validate(ctx context.Context,
 
 // GetBalance retrieves the balance for a specified account and asset
 func (l *AaveOperation) GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (*big.Int, error) {
-	if chainID.Int64() != 1 {
-		return nil, ErrChainUnsupported
+	if err := isAaveChainSupported(chainID, l.fork); err != nil {
+		return nil, err
 	}
 
 	callData, err := l.erc20ABI.Pack("balanceOf", account)
@@ -266,9 +309,14 @@ func (l *AaveOperation) GetBalance(ctx context.Context, chainID *big.Int, accoun
 
 // GetSupportedAssets returns a list of assets supported by the protocol on the specified chain
 func (l *AaveOperation) GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error) {
-	assets := make([]common.Address, 0, len(tokenSupportedMap[1][AaveV3]))
+	var s = AaveV3
+	if l.fork == AaveProtocolForkSpark {
+		s = SparkLend
+	}
 
-	for _, v := range tokenSupportedMap[1][AaveV3] {
+	assets := make([]common.Address, 0, len(tokenSupportedMap[chainID.Int64()][s]))
+
+	for _, v := range tokenSupportedMap[chainID.Int64()][s] {
 		assets = append(assets, common.HexToAddress(v))
 	}
 
@@ -277,10 +325,11 @@ func (l *AaveOperation) GetSupportedAssets(ctx context.Context, chainID *big.Int
 
 // IsSupportedAsset checks if the specified asset is supported on the given chain
 func (l *AaveOperation) IsSupportedAsset(ctx context.Context, chainID *big.Int, asset common.Address) bool {
-	if chainID.Int64() != 1 {
+	if err := isAaveChainSupported(chainID, l.fork); err != nil {
 		return false
 	}
-	protocols, ok := tokenSupportedMap[1]
+
+	protocols, ok := tokenSupportedMap[chainID.Int64()]
 	if !ok {
 		return false
 	}
@@ -296,10 +345,6 @@ func (l *AaveOperation) IsSupportedAsset(ctx context.Context, chainID *big.Int, 
 	}
 
 	if len(addrs) == 0 {
-		if strings.EqualFold(strings.ToLower(asset.Hex()), nativeDenomAddress) {
-			return false
-		}
-
 		return false
 	}
 

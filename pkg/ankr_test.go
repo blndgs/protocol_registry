@@ -17,7 +17,7 @@ func TestAnkr_GenerateCalldata_Supply(t *testing.T) {
 	// 0x9fa65c56
 	expectedCalldata := "0x9fa65c56"
 
-	ankr, err := NewAnkrOperation(getTestClient(t), big.NewInt(1))
+	ankr, err := NewAnkrOperation(getTestClient(t, ChainETH), big.NewInt(1))
 	require.NoError(t, err)
 
 	calldata, err := ankr.GenerateCalldata(context.Background(), big.NewInt(1), NativeStake, TransactionParams{})
@@ -32,7 +32,7 @@ func TestAnkr_GenerateCalldata_Withdraw(t *testing.T) {
 
 	expectedCalldata := "0xc957619d00000000000000000000000000000000000000000000000037567b29aa5b4600"
 
-	ankr, err := NewAnkrOperation(getTestClient(t), big.NewInt(1))
+	ankr, err := NewAnkrOperation(getTestClient(t, ChainETH), big.NewInt(1))
 	require.NoError(t, err)
 
 	calldata, err := ankr.GenerateCalldata(context.Background(), big.NewInt(1), NativeUnStake, TransactionParams{
@@ -46,7 +46,7 @@ func TestAnkr_GenerateCalldata_Withdraw(t *testing.T) {
 
 func TestAnkr_Validate(t *testing.T) {
 
-	ankr, err := NewAnkrOperation(getTestClient(t), big.NewInt(1))
+	ankr, err := NewAnkrOperation(getTestClient(t, ChainETH), big.NewInt(1))
 	require.NoError(t, err)
 
 	t.Run("zero value unstaked", func(t *testing.T) {
@@ -106,7 +106,7 @@ func TestAnkr_Validate(t *testing.T) {
 
 func TestAnkr_IsSupportedAsset(t *testing.T) {
 
-	ankr, err := NewAnkrOperation(getTestClient(t), big.NewInt(1))
+	ankr, err := NewAnkrOperation(getTestClient(t, ChainETH), big.NewInt(1))
 	require.NoError(t, err)
 
 	t.Run("unsupported chain", func(t *testing.T) {
@@ -127,7 +127,7 @@ func TestAnkr_IsSupportedAsset(t *testing.T) {
 
 func TestAnkr_GetBalance(t *testing.T) {
 
-	ankr, err := NewAnkrOperation(getTestClient(t), big.NewInt(1))
+	ankr, err := NewAnkrOperation(getTestClient(t, ChainETH), big.NewInt(1))
 	require.NoError(t, err)
 
 	bal, err := ankr.GetBalance(context.Background(), big.NewInt(1), emptyTestWallet,

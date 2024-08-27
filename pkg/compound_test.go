@@ -12,7 +12,7 @@ import (
 func TestCompoundV3_New(t *testing.T) {
 
 	t.Run("unsupported chain", func(t *testing.T) {
-		compoundImpl, err := NewCompoundOperation(getTestClient(t), big.NewInt(100),
+		compoundImpl, err := NewCompoundOperation(getTestClient(t, ChainETH), big.NewInt(100),
 			common.HexToAddress("0xa17581a9e3356d9a858b789d68b4d866e593ae94"))
 
 		require.Error(t, err)
@@ -21,7 +21,7 @@ func TestCompoundV3_New(t *testing.T) {
 
 	t.Run("unsupported pool market", func(t *testing.T) {
 
-		compoundImpl, err := NewCompoundOperation(getTestClient(t), big.NewInt(1),
+		compoundImpl, err := NewCompoundOperation(getTestClient(t, ChainETH), big.NewInt(1),
 			common.HexToAddress(nativeDenomAddress))
 
 		require.Error(t, err)
@@ -35,7 +35,7 @@ func TestCompound_GenerateCalldata_Supply(t *testing.T) {
 	// 0xf2b9fdb8000000000000000000000000514910771af9ca656af840dff83e8264ecf986ca0000000000000000000000000000000000000000000000000de0b6b3a7640000
 	expectedCalldata := "0xf2b9fdb8000000000000000000000000514910771af9ca656af840dff83e8264ecf986ca0000000000000000000000000000000000000000000000000de0b6b3a7640000"
 
-	compoundClient, err := NewCompoundOperation(getTestClient(t), big.NewInt(1),
+	compoundClient, err := NewCompoundOperation(getTestClient(t, ChainETH), big.NewInt(1),
 		common.HexToAddress("0xc3d688b66703497daa19211eedff47f25384cdc3"))
 	require.NoError(t, err)
 
@@ -54,7 +54,7 @@ func TestCompound_GenerateCalldata_Withdraw(t *testing.T) {
 	// 0xf3fef3a3000000000000000000000000514910771af9ca656af840dff83e8264ecf986ca0000000000000000000000000000000000000000000000000de0b6b3a764000
 	expectedCalldata := "0xf3fef3a3000000000000000000000000514910771af9ca656af840dff83e8264ecf986ca0000000000000000000000000000000000000000000000000de0b6b3a7640000"
 
-	compoundClient, err := NewCompoundOperation(getTestClient(t), big.NewInt(1),
+	compoundClient, err := NewCompoundOperation(getTestClient(t, ChainETH), big.NewInt(1),
 		common.HexToAddress("0xc3d688b66703497daa19211eedff47f25384cdc3"))
 	require.NoError(t, err)
 
@@ -69,7 +69,7 @@ func TestCompound_GenerateCalldata_Withdraw(t *testing.T) {
 
 func TestCompound_IsSupportedAsset(t *testing.T) {
 
-	compoundImpl, err := NewCompoundOperation(getTestClient(t), big.NewInt(1),
+	compoundImpl, err := NewCompoundOperation(getTestClient(t, ChainETH), big.NewInt(1),
 		common.HexToAddress("0xa17581a9e3356d9a858b789d68b4d866e593ae94"))
 
 	require.NoError(t, err)
@@ -92,7 +92,7 @@ func TestCompound_IsSupportedAsset(t *testing.T) {
 
 func TestCompound_GetBalance(t *testing.T) {
 
-	compoundImpl, err := NewCompoundOperation(getTestClient(t), big.NewInt(1),
+	compoundImpl, err := NewCompoundOperation(getTestClient(t, ChainETH), big.NewInt(1),
 		common.HexToAddress("0xa17581a9e3356d9a858b789d68b4d866e593ae94"))
 
 	require.NoError(t, err)
@@ -106,7 +106,7 @@ func TestCompound_GetBalance(t *testing.T) {
 
 func TestCompoundV3_Validate_ETH_Market(t *testing.T) {
 
-	compoundImpl, err := NewCompoundOperation(getTestClient(t), big.NewInt(1),
+	compoundImpl, err := NewCompoundOperation(getTestClient(t, ChainETH), big.NewInt(1),
 		common.HexToAddress("0xa17581a9e3356d9a858b789d68b4d866e593ae94"))
 
 	require.NoError(t, err)

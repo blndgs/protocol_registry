@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"os"
 	"strings"
@@ -12,11 +13,18 @@ import (
 )
 
 // getTestRPCURL helper function that gets the rpc url from env.
-func getTestRPCURL(t *testing.T) string {
+func getTestRPCURL(t *testing.T, c Chain) string {
 	t.Helper()
-	u := os.Getenv("TEST_ETH_RPC_URL")
+
+	u := os.Getenv(fmt.Sprintf("TEST_%s_RPC_URL", c.String()))
+
 	if len(strings.TrimSpace(u)) == 0 {
-		u = "https://eth.public-rpc.com"
+		switch c {
+		case ChainETH:
+			u = "https://eth.public-rpc.com"
+		case ChainBSC:
+			u = "https://bsc-dataseed1.binance.org/"
+		}
 	}
 
 	require.NotEmpty(t, u)
@@ -28,7 +36,7 @@ func TestProtocolRegistry_Validate(t *testing.T) {
 	registry, err := NewProtocolRegistry([]ChainConfig{
 		{
 			ChainID: big.NewInt(1),
-			RPCURL:  getTestRPCURL(t),
+			RPCURL:  getTestRPCURL(t, ChainETH),
 		},
 	})
 
@@ -61,7 +69,7 @@ func TestProtocolRegistry(t *testing.T) {
 	registry, err := NewProtocolRegistry([]ChainConfig{
 		{
 			ChainID: big.NewInt(1),
-			RPCURL:  getTestRPCURL(t),
+			RPCURL:  getTestRPCURL(t, ChainETH),
 		},
 	})
 
@@ -91,7 +99,7 @@ func TestProtocolOperations(t *testing.T) {
 	registry, err := NewProtocolRegistry([]ChainConfig{
 		{
 			ChainID: big.NewInt(1),
-			RPCURL:  getTestRPCURL(t),
+			RPCURL:  getTestRPCURL(t, ChainETH),
 		},
 	})
 

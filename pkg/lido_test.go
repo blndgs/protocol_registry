@@ -10,8 +10,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func getTestClient(t *testing.T) *ethclient.Client {
-	client, err := ethclient.Dial(getTestRPCURL(t))
+// ENUM(ETH,BSC)
+type Chain string
+
+func getTestClient(t *testing.T, c Chain) *ethclient.Client {
+	client, err := ethclient.Dial(getTestRPCURL(t, c))
 	require.NoError(t, err)
 
 	return client
@@ -21,7 +24,7 @@ func TestLido_Validate(t *testing.T) {
 
 	t.Run("unsupported chain", func(t *testing.T) {
 
-		lido, err := NewLidoOperation(getTestClient(t), big.NewInt(1))
+		lido, err := NewLidoOperation(getTestClient(t, ChainETH), big.NewInt(1))
 		require.NoError(t, err)
 
 		err = lido.Validate(context.Background(), big.NewInt(100), NativeStake, TransactionParams{
@@ -34,7 +37,7 @@ func TestLido_Validate(t *testing.T) {
 
 	t.Run("unsupported action", func(t *testing.T) {
 
-		lido, err := NewLidoOperation(getTestClient(t), big.NewInt(1))
+		lido, err := NewLidoOperation(getTestClient(t, ChainETH), big.NewInt(1))
 		require.NoError(t, err)
 
 		err = lido.Validate(context.Background(), big.NewInt(1), LoanSupply, TransactionParams{
@@ -47,7 +50,7 @@ func TestLido_Validate(t *testing.T) {
 
 	t.Run("user without eth balance cannot stake", func(t *testing.T) {
 
-		lido, err := NewLidoOperation(getTestClient(t), big.NewInt(1))
+		lido, err := NewLidoOperation(getTestClient(t, ChainETH), big.NewInt(1))
 		require.NoError(t, err)
 
 		err = lido.Validate(context.Background(), big.NewInt(1), NativeStake, TransactionParams{
@@ -61,7 +64,7 @@ func TestLido_Validate(t *testing.T) {
 
 	t.Run("user with eth balance can stake", func(t *testing.T) {
 
-		lido, err := NewLidoOperation(getTestClient(t), big.NewInt(1))
+		lido, err := NewLidoOperation(getTestClient(t, ChainETH), big.NewInt(1))
 		require.NoError(t, err)
 
 		err = lido.Validate(context.Background(), big.NewInt(1), NativeStake, TransactionParams{
@@ -76,7 +79,7 @@ func TestLido_Validate(t *testing.T) {
 
 func TestLido_GetBalance(t *testing.T) {
 
-	lido, err := NewLidoOperation(getTestClient(t), big.NewInt(1))
+	lido, err := NewLidoOperation(getTestClient(t, ChainETH), big.NewInt(1))
 	require.NoError(t, err)
 
 	account := common.HexToAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6")
@@ -93,7 +96,7 @@ func TestLido_GenerateCalldata(t *testing.T) {
 
 	expectedCalldata := "0xa1903eab000000000000000000000000b4fbf271143f4fbf7b91a5ded31805e42b2208d6"
 
-	lido, err := NewLidoOperation(getTestClient(t), big.NewInt(1))
+	lido, err := NewLidoOperation(getTestClient(t, ChainETH), big.NewInt(1))
 	require.NoError(t, err)
 
 	calldata, err := lido.GenerateCalldata(context.Background(), big.NewInt(1), NativeStake, TransactionParams{
