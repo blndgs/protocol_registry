@@ -14,7 +14,7 @@ import (
 
 func TestRocketPoolOperation_GenerateCallData_UnsupportedAction(t *testing.T) {
 
-	rp, err := NewRocketpoolOperation(getTestClient(t), big.NewInt(1))
+	rp, err := NewRocketpoolOperation(getTestClient(t, ChainETH), big.NewInt(1))
 	require.NoError(t, err)
 
 	_, err = rp.GenerateCalldata(context.Background(), big.NewInt(1), LoanSupply, TransactionParams{})
@@ -23,7 +23,7 @@ func TestRocketPoolOperation_GenerateCallData_UnsupportedAction(t *testing.T) {
 
 func TestRocketPoolOperation_GetBalance(t *testing.T) {
 
-	rp, err := NewRocketpoolOperation(getTestClient(t), big.NewInt(1))
+	rp, err := NewRocketpoolOperation(getTestClient(t, ChainETH), big.NewInt(1))
 	require.NoError(t, err)
 
 	t.Run("native token", func(t *testing.T) {
@@ -41,7 +41,7 @@ func TestRocketPoolOperation_GetBalance(t *testing.T) {
 
 func TestRocketPoolOperation_Validate(t *testing.T) {
 
-	rp, err := NewRocketpoolOperation(getTestClient(t), big.NewInt(1))
+	rp, err := NewRocketpoolOperation(getTestClient(t, ChainETH), big.NewInt(1))
 	require.NoError(t, err)
 
 	t.Run("unsupported chain", func(t *testing.T) {
@@ -71,7 +71,7 @@ func TestRocketPoolOperation_Validate(t *testing.T) {
 
 func TestRocketPoolOperation_IsSupportedAsset(t *testing.T) {
 
-	rp, err := NewRocketpoolOperation(getTestClient(t), big.NewInt(1))
+	rp, err := NewRocketpoolOperation(getTestClient(t, ChainETH), big.NewInt(1))
 	require.NoError(t, err)
 
 	t.Run("native token", func(t *testing.T) {
@@ -88,7 +88,7 @@ func TestRocketPoolOperation_IsSupportedAsset(t *testing.T) {
 
 func TestRocketPoolOperation_GenerateCallData_SupportedAction(t *testing.T) {
 
-	rp, err := NewRocketpoolOperation(getTestClient(t), big.NewInt(1))
+	rp, err := NewRocketpoolOperation(getTestClient(t, ChainETH), big.NewInt(1))
 	require.NoError(t, err)
 
 	_, err = rp.GenerateCalldata(context.Background(), big.NewInt(1), NativeStake, TransactionParams{})
@@ -153,7 +153,7 @@ func TestRocketPoolOperation_GenerateCallData(t *testing.T) {
 
 		t.Run(v.name, func(t *testing.T) {
 
-			rp, err := NewRocketpoolOperation(getTestClient(t), big.NewInt(1))
+			rp, err := NewRocketpoolOperation(getTestClient(t, ChainETH), big.NewInt(1))
 			require.NoError(t, err)
 
 			err = rp.Validate(context.Background(), big.NewInt(1), v.action, v.args)

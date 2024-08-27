@@ -13,6 +13,14 @@ const (
 	ReferralAddress = "0x000000000000000000000000000000000000dEaD"
 )
 
+var chainConfig = map[string]int64{
+	"ETH": 1,
+	"BSC": 56,
+}
+
+func IsEth(chainID *big.Int) bool { return chainID.Int64() == 1 }
+func IsBnb(chainID *big.Int) bool { return chainID.Int64() == 56 }
+
 // Hex prefix
 const HexPrefix = "0x"
 
