@@ -167,7 +167,7 @@ func NewAaveOperation(client *ethclient.Client, chainID *big.Int, fork AaveProto
 func (a *AaveOperation) GenerateCalldata(ctx context.Context, chainID *big.Int,
 	action ContractAction, params TransactionParams) (string, error) {
 
-	if err := isAaveChainSupported(chainID, a.fork); err != nil {
+	if err := isAaveChainSupported(a.chainID, a.fork); err != nil {
 		return "", err
 	}
 
@@ -246,7 +246,7 @@ func (l *AaveOperation) getAToken(ctx context.Context, asset common.Address) (co
 func (l *AaveOperation) Validate(ctx context.Context,
 	chainID *big.Int, action ContractAction, params TransactionParams) error {
 
-	if err := isAaveChainSupported(chainID, l.fork); err != nil {
+	if err := isAaveChainSupported(l.chainID, l.fork); err != nil {
 		return err
 	}
 
@@ -285,7 +285,7 @@ func (l *AaveOperation) Validate(ctx context.Context,
 
 // GetBalance retrieves the balance for a specified account and asset
 func (l *AaveOperation) GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (*big.Int, error) {
-	if err := isAaveChainSupported(chainID, l.fork); err != nil {
+	if err := isAaveChainSupported(l.chainID, l.fork); err != nil {
 		return nil, err
 	}
 
@@ -310,7 +310,7 @@ func (l *AaveOperation) GetBalance(ctx context.Context, chainID *big.Int, accoun
 // GetSupportedAssets returns a list of assets supported by the protocol on the specified chain
 func (l *AaveOperation) GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error) {
 
-	if err := isAaveChainSupported(chainID, l.fork); err != nil {
+	if err := isAaveChainSupported(l.chainID, l.fork); err != nil {
 		return []common.Address{}, err
 	}
 
@@ -330,7 +330,7 @@ func (l *AaveOperation) GetSupportedAssets(ctx context.Context, chainID *big.Int
 
 // IsSupportedAsset checks if the specified asset is supported on the given chain
 func (l *AaveOperation) IsSupportedAsset(ctx context.Context, chainID *big.Int, asset common.Address) bool {
-	if err := isAaveChainSupported(chainID, l.fork); err != nil {
+	if err := isAaveChainSupported(l.chainID, l.fork); err != nil {
 		return false
 	}
 

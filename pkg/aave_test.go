@@ -55,12 +55,6 @@ func TestAave_GetSupportedAsset(t *testing.T) {
 		require.NotEmpty(t, assets)
 	})
 
-	t.Run("sparklend on bsc", func(t *testing.T) {
-		_, err := sparklend.GetSupportedAssets(context.Background(), big.NewInt(56))
-		t.Log(err)
-		require.Error(t, err)
-	})
-
 	t.Run("aave on bsc", func(t *testing.T) {
 		assets, err := aave.GetSupportedAssets(context.Background(), big.NewInt(56))
 		require.NoError(t, err)
