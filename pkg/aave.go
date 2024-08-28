@@ -309,6 +309,11 @@ func (l *AaveOperation) GetBalance(ctx context.Context, chainID *big.Int, accoun
 
 // GetSupportedAssets returns a list of assets supported by the protocol on the specified chain
 func (l *AaveOperation) GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error) {
+
+	if err := isAaveChainSupported(chainID, l.fork); err != nil {
+		return []common.Address{}, err
+	}
+
 	var s = AaveV3
 	if l.fork == AaveProtocolForkSpark {
 		s = SparkLend
