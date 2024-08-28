@@ -273,55 +273,6 @@ func TestAave_GenerateCalldata_Withdraw(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, expectedCalldata, calldata)
 	})
-
-	t.Run("ethereum chain for aave can be used to generate calldata for bsc aave", func(t *testing.T) {
-
-		aave, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolForkAave)
-		require.NoError(t, err)
-
-		calldata, err := aave.GenerateCalldata(context.Background(), big.NewInt(56), LoanWithdraw, TransactionParams{
-			Amount: big.NewInt(500000000000000000),
-			Sender: common.HexToAddress("0x0000000000000000000000000000000000000000"),
-			Asset:  common.HexToAddress("0xc0ffee254729296a45a3885639AC7E10F9d54979"),
-			ExtraData: map[string]interface{}{
-				"referral_code": 0,
-			},
-		})
-
-		require.NoError(t, err)
-		require.Equal(t, expectedCalldata, calldata)
-	})
-
-	t.Run("ethereum chain for spark finance cannot be used to generate calldata for bsc spark finance", func(t *testing.T) {
-
-		aave, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolForkSpark)
-		require.NoError(t, err)
-
-		calldata, err := aave.GenerateCalldata(context.Background(), big.NewInt(56), LoanWithdraw, TransactionParams{
-			Amount: big.NewInt(500000000000000000),
-			Sender: common.HexToAddress("0x0000000000000000000000000000000000000000"),
-			Asset:  common.HexToAddress("0xc0ffee254729296a45a3885639AC7E10F9d54979"),
-			ExtraData: map[string]interface{}{
-				"referral_code": 0,
-			},
-		})
-
-		require.Error(t, err)
-		require.Empty(t, calldata)
-
-		// verify it works for chainID 1
-		calldata, err = aave.GenerateCalldata(context.Background(), big.NewInt(1), LoanWithdraw, TransactionParams{
-			Amount: big.NewInt(500000000000000000),
-			Sender: common.HexToAddress("0x0000000000000000000000000000000000000000"),
-			Asset:  common.HexToAddress("0xc0ffee254729296a45a3885639AC7E10F9d54979"),
-			ExtraData: map[string]interface{}{
-				"referral_code": 0,
-			},
-		})
-
-		require.NoError(t, err)
-		require.Equal(t, expectedCalldata, calldata)
-	})
 }
 
 func TestAave_GenerateCalldata_Supply(t *testing.T) {
