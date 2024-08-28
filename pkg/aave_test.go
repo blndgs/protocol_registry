@@ -35,6 +35,44 @@ func TestAave_New(t *testing.T) {
 	})
 }
 
+func TestAave_GetSupportedAsset(t *testing.T) {
+
+	aave, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolForkAave)
+	require.NoError(t, err)
+
+	sparklend, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolForkSpark)
+	require.NoError(t, err)
+
+	t.Run("aave on eth", func(t *testing.T) {
+		assets, err := aave.GetSupportedAssets(context.Background(), big.NewInt(1))
+		require.NoError(t, err)
+		require.NotEmpty(t, assets)
+
+		// WETH
+		require.Contains(t, assets, common.HexToAddress("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"))
+	})
+
+	t.Run("sparklend on eth", func(t *testing.T) {
+		assets, err := sparklend.GetSupportedAssets(context.Background(), big.NewInt(1))
+		require.NoError(t, err)
+		require.NotEmpty(t, assets)
+	})
+
+	t.Run("sparklend on bsc", func(t *testing.T) {
+		_, err := sparklend.GetSupportedAssets(context.Background(), big.NewInt(56))
+		t.Log(err)
+		require.Error(t, err)
+	})
+
+	t.Run("aave on bsc", func(t *testing.T) {
+		assets, err := aave.GetSupportedAssets(context.Background(), big.NewInt(56))
+		require.NoError(t, err)
+		require.NotEmpty(t, assets)
+		// WBNB
+		require.Contains(t, assets, common.HexToAddress("0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"))
+	})
+}
+
 func TestAave_IsSupportedAsset(t *testing.T) {
 
 	aave, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolForkAave)

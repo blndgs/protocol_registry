@@ -39,6 +39,16 @@ var tokenSupportedMap = map[int64]map[ProtocolName][]string{
 		},
 		Lido: {},
 	},
+	56: {
+		AaveV3: {
+			"0x2170ed0880ac9a755fd29b2688956bd959f933f8", // ETH ( Binance pegged ETH )
+			"0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c", // BTC ( Binance pegged BTC )
+			"0x55d398326f99059fF775485246999027B3197955", // USDT ( Binance pegged USDT )
+			"0xc5f0f7b66764F6ec8C8Dff7BA683102295E16409", // FDSD
+			"0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", // USDC ( Binance pegged USDC )
+			"0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c", // WBNB
+		},
+	},
 }
 
 // IsNativeToken checks if the token is ETH
