@@ -25,6 +25,12 @@ func TestAave_New(t *testing.T) {
 		require.Contains(t, err.Error(), "Spark finance is not supported on Bnb chain")
 	})
 
+	t.Run("network id check fails", func(t *testing.T) {
+		_, err := NewAaveOperation(getTestClient(t, ChainBSC), big.NewInt(1), AaveProtocolForkAave)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "network id of client")
+	})
+
 	t.Run("network id of bsc network client does not match eth chain", func(t *testing.T) {
 		_, err := NewAaveOperation(getTestClient(t, ChainBSC), big.NewInt(1), AaveProtocolForkAave)
 		require.Error(t, err)
