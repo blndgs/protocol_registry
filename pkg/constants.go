@@ -13,14 +13,6 @@ const (
 	ReferralAddress = "0x000000000000000000000000000000000000dEaD"
 )
 
-// var chainConfig = map[string]int64{
-// 	"ETH": 1,
-// 	"BSC": 56,
-// }
-
-func IsEth(chainID *big.Int) bool { return chainID.Int64() == 1 }
-func IsBnb(chainID *big.Int) bool { return chainID.Int64() == 56 }
-
 // Hex prefix
 const HexPrefix = "0x"
 
@@ -53,12 +45,13 @@ type Protocol interface {
 
 const (
 	AaveV3     ProtocolName = "aave_v3"
-	SparkLend  ProtocolName = "spark_lend"
-	Lido       ProtocolName = "lido"
-	RocketPool ProtocolName = "rocket_pool"
-	Ankr       ProtocolName = "ankr"
-	Renzo      ProtocolName = "renzo"
-	Compound   ProtocolName = "compound"
+	SparkLend               = "spark_lend"
+	Lido                    = "lido"
+	RocketPool              = "rocket_pool"
+	Ankr                    = "ankr"
+	Renzo                   = "renzo"
+	Compound                = "compound"
+	ListaDao                = "lista_dao"
 )
 
 const (
@@ -153,6 +146,8 @@ const (
 	NativeUnStake
 	ERC20Stake
 	ERC20UnStake
+	LoanBorrow
+	LoanRepay
 )
 
 func (a ContractAction) String() string {
@@ -192,3 +187,9 @@ type ProtocolRegistry interface {
 	// ListProtocolsByType lists all protocols of a specific type for a given chain
 	ListProtocolsByType(chainID *big.Int, protocolType ProtocolType) []Protocol
 }
+
+// IsBnb checks if the provided chain matches the BSC chain id
+func IsBnb(chainID *big.Int) bool { return chainID.Cmp(big.NewInt(56)) == 0 }
+
+// IsEth checks if the provided chain matches the ethereum chain id
+func IsEth(chainID *big.Int) bool { return chainID.Cmp(big.NewInt(1)) == 0 }
