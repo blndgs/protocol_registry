@@ -46,8 +46,10 @@ jobs:
         id: generate-notes
         run: |
           echo "Release notes for version ${{ steps.nextver.outputs.new_tag }}" > changelog.txt
-          git log "$(git describe --tags --abbrev=0)..HEAD" --oneline >> changelog.txt
-          echo "changelog=$(<changelog.txt)" >> $GITHUB_OUTPUT
+          git log "$(git describe --tags --abbrev=0)..HEAD" --pretty=format:"%h %s" >> changelog.txt
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          cat changelog.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
       
       - name: Create Release
         id: create_release
