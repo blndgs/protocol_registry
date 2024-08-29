@@ -1,3 +1,23 @@
+codecov:
+  branch: main
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+        if_ci_failed: error
+        only_pulls: false
+        paths:
+          - "src/"
+    patch:
+      default:
+        target: auto
+        threshold: 1%
+        if_ci_failed: error
+        only_pulls: true
+        
 comment:                  # this is a top-level key
   layout: " diff, flags, files"
   behavior: default

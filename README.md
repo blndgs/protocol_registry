@@ -163,3 +163,8 @@ Contributions to the Protocol Registry Package are welcome! If you find any issu
 ## License
 
 This project is licensed under the terms of the license file in the root directory. See the [LICENSE](./LICENSE) file for details.
+
+## Release
+
+| Version | Release Notes |
+|---------|---------------|
