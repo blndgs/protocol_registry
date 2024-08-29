@@ -71,10 +71,10 @@ func TestListaStaking_Validate(t *testing.T) {
 
 func TestListaStaking_GetBalance(t *testing.T) {
 
-	listaStaking, err := NewListaStakingOperation(getTestClient(t, ChainETH), big.NewInt(1))
+	listaStaking, err := NewListaStakingOperation(getTestClient(t, ChainBSC), big.NewInt(56))
 	require.NoError(t, err)
 
-	bal, err := listaStaking.GetBalance(context.Background(), big.NewInt(1), hotWallet,
+	bal, err := listaStaking.GetBalance(context.Background(), big.NewInt(56), hotWallet,
 		common.HexToAddress("0xdac17f958d2ee523a2206206994597c13d831ec7"))
 
 	require.NoError(t, err)
@@ -87,10 +87,10 @@ func TestListaStaking_GenerateCalldata_Supply(t *testing.T) {
 
 	expectedCalldata := "0xd0e30db0"
 
-	aave, err := NewListaStakingOperation(getTestClient(t, ChainBSC), big.NewInt(56))
+	staking, err := NewListaStakingOperation(getTestClient(t, ChainBSC), big.NewInt(56))
 	require.NoError(t, err)
 
-	calldata, err := aave.GenerateCalldata(context.Background(), big.NewInt(56), NativeStake, TransactionParams{
+	calldata, err := staking.GenerateCalldata(context.Background(), big.NewInt(56), NativeStake, TransactionParams{
 		Asset:  common.HexToAddress("0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"),
 		Amount: big.NewInt(1000000000000000000),
 		Sender: common.HexToAddress("0x0000000000000000000000000000000000000000"),
