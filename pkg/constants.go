@@ -45,13 +45,13 @@ type Protocol interface {
 
 const (
 	AaveV3     ProtocolName = "aave_v3"
-	SparkLend               = "spark_lend"
-	Lido                    = "lido"
-	RocketPool              = "rocket_pool"
-	Ankr                    = "ankr"
-	Renzo                   = "renzo"
-	Compound                = "compound"
-	ListaDao                = "lista_dao"
+	SparkLend  ProtocolName = "spark_lend"
+	Lido       ProtocolName = "lido"
+	RocketPool ProtocolName = "rocket_pool"
+	Ankr       ProtocolName = "ankr"
+	Renzo      ProtocolName = "renzo"
+	Compound   ProtocolName = "compound"
+	ListaDao   ProtocolName = "lista_dao"
 )
 
 const (
