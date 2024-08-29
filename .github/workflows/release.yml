@@ -37,21 +37,22 @@ jobs:
 
       - name: Calculate next version tag
         id: nextver
-        uses: mathieudutour/github-tag-action@v6.1
+        uses: mathieudutour/github-tag-action@v5.6
         with:
           github_token: ${{ steps.app-token.outputs.token }}
           default_bump: minor
-      
+
       - name: Generate release notes
         id: generate-notes
         run: |
           echo "Release notes for version ${{ steps.nextver.outputs.new_tag }}" > changelog.txt
           git log "$(git describe --tags --abbrev=0)..HEAD" --pretty=format:"%h %s" >> changelog.txt
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          cat changelog.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-        shell: bash
-      
+          CHANGELOG=$(cat changelog.txt)
+          CHANGELOG="${CHANGELOG//'%'/'%25'}"
+          CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
+          CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
+          echo "changelog=$CHANGELOG" >> $GITHUB_OUTPUT
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
