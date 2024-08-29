@@ -37,7 +37,7 @@ jobs:
 
       - name: Calculate next version tag
         id: nextver
-        uses: mathieudutour/github-tag-action@v5.6
+        uses: mathieudutour/github-tag-action@v6.1
         with:
           github_token: ${{ steps.app-token.outputs.token }}
           default_bump: minor
@@ -50,6 +50,7 @@ jobs:
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           cat changelog.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+        shell: bash
       
       - name: Create Release
         id: create_release
@@ -59,13 +60,16 @@ jobs:
         with:
           tag_name: ${{ steps.nextver.outputs.new_tag }}
           release_name: Release ${{ steps.nextver.outputs.new_tag }}
+          body: ${{ steps.generate-notes.outputs.changelog }}
 
       - name: Update README.md
         run: |
-            NEW_LINE="| ${{ steps.nextver.outputs.new_tag }} | [Release notes](https://github.com/blndgs/protocol_registry/releases/tag/${{ steps.nextver.outputs.new_tag }}) |"
-            sed -i "s/^| Version | Release Notes |$/| Version | Release Notes |\n$NEW_LINE/" README.md
-            git config --global user.name 'github-actions'
-            git config --global user.email 'github-actions@github.com'
-            git add README.md
-            git commit -m "Update README.md with release ${{ steps.nextver.outputs.new_tag }}"
-            git push
+          NEW_LINE="| ${{ steps.nextver.outputs.new_tag }} | [Release notes](https://github.com/blndgs/protocol_registry/releases/tag/${{ steps.nextver.outputs.new_tag }}) |"
+          sed -i "s/^| Version | Release Notes |$/| Version | Release Notes |\n$NEW_LINE/" README.md
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+          git add README.md
+          git commit -m "Update README.md with release ${{ steps.nextver.outputs.new_tag }}"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
