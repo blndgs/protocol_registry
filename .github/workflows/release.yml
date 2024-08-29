@@ -41,18 +41,14 @@ jobs:
         with:
           github_token: ${{ steps.app-token.outputs.token }}
           default_bump: minor
-
+      
       - name: Generate release notes
         id: generate-notes
         run: |
-            echo "Release notes for version ${{ steps.nextver.outputs.new_tag }}" > changelog.txt
-            git log "$(git describe --tags --abbrev=0)..HEAD" --pretty=format:"%h %s" >> changelog.txt
-            CHANGELOG=$(cat changelog.txt)
-            echo "changelog<<EOF" >> $GITHUB_OUTPUT
-            echo "$CHANGELOG" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-        shell: bash
-
+          echo "Release notes for version ${{ steps.nextver.outputs.new_tag }}" > changelog.txt
+          git log $(git describe --tags --abbrev=0)..HEAD --oneline >> changelog.txt
+          echo "::set-output name=changelog::$(<changelog.txt)"
+      
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -66,14 +62,9 @@ jobs:
       - name: Update README.md
         run: |
             NEW_LINE="| ${{ steps.nextver.outputs.new_tag }} | [Release notes](https://github.com/blndgs/protocol_registry/releases/tag/${{ steps.nextver.outputs.new_tag }}) |"
-            sed -i '1,/^| Version | Release Notes |$/ {
-              /^| Version | Release Notes |$/ a\
-              '"$NEW_LINE"'
-            }' README.md
+            sed -i "s/^| Version | Release Notes |$/| Version | Release Notes |\n$NEW_LINE/" README.md
             git config --global user.name 'github-actions'
             git config --global user.email 'github-actions@github.com'
             git add README.md
             git commit -m "Update README.md with release ${{ steps.nextver.outputs.new_tag }}"
             git push
-        env:
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
