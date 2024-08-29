@@ -70,6 +70,7 @@ const (
 
 var (
 	AaveV3ContractAddress    ContractAddress = common.HexToAddress("0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2")
+	BnbV3ContractAddress     ContractAddress = common.HexToAddress("0x6807dc923806fE8Fd134338EABCA509979a7e0cB")
 	SparkLendContractAddress ContractAddress = common.HexToAddress("0xC13e21B648A5Ee794902342038FF3aDAB66BE987")
 	LidoContractAddress      ContractAddress = common.HexToAddress("0xae7ab96520de3a18e5e111b5eaab095312d7fe84")
 	RocketPoolStorageAddress ContractAddress = common.HexToAddress("0x1d8f8f00cfa6758d7bE78336684788Fb0ee0Fa46")
