@@ -126,6 +126,10 @@ func NewAaveOperation(client *ethclient.Client, chainID *big.Int, fork AaveProto
 		return nil, err
 	}
 
+	if !fork.IsValid() {
+		return nil, errors.New("invalid Aave fork")
+	}
+
 	networkID, err := client.NetworkID(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("client.NetworkID: could not fetch network id.%v", err)
@@ -151,9 +155,14 @@ func NewAaveOperation(client *ethclient.Client, chainID *big.Int, fork AaveProto
 		return nil, err
 	}
 
+	var contract = AaveV3ContractAddress
+	if fork == AaveProtocolForkSpark {
+		contract = BnbV3ContractAddress
+	}
+
 	return &AaveOperation{
 		parsedABI:       parsedABI,
-		contract:        AaveV3ContractAddress,
+		contract:        contract,
 		chainID:         chainID,
 		version:         "3",
 		client:          client,
