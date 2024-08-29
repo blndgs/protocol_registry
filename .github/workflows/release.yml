@@ -62,8 +62,7 @@ jobs:
           tag_name: ${{ steps.nextver.outputs.new_tag }}
           release_name: Release ${{ steps.nextver.outputs.new_tag }}
           body: ${{ steps.generate-notes.outputs.changelog }}
-
-          
+     
       - name: Update README.md
         run: |
             NEW_LINE="| ${{ steps.nextver.outputs.new_tag }} | [Release notes](https://github.com/blndgs/protocol_registry/releases/tag/${{ steps.nextver.outputs.new_tag }}) |"
