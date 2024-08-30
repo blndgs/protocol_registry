@@ -16,15 +16,18 @@ const (
 	AaveProtocolForkAave AaveProtocolFork = iota
 	// AaveProtocolForkSpark is a AaveProtocolFork of type Spark.
 	AaveProtocolForkSpark
+	// AaveProtocolForkAvalonFinance is a AaveProtocolFork of type Avalon_finance.
+	AaveProtocolForkAvalonFinance
 )
 
 var ErrInvalidAaveProtocolFork = errors.New("not a valid AaveProtocolFork")
 
-const _AaveProtocolForkName = "aavespark"
+const _AaveProtocolForkName = "aavesparkavalon_finance"
 
 var _AaveProtocolForkMap = map[AaveProtocolFork]string{
-	AaveProtocolForkAave:  _AaveProtocolForkName[0:4],
-	AaveProtocolForkSpark: _AaveProtocolForkName[4:9],
+	AaveProtocolForkAave:          _AaveProtocolForkName[0:4],
+	AaveProtocolForkSpark:         _AaveProtocolForkName[4:9],
+	AaveProtocolForkAvalonFinance: _AaveProtocolForkName[9:23],
 }
 
 // String implements the Stringer interface.
@@ -43,8 +46,9 @@ func (x AaveProtocolFork) IsValid() bool {
 }
 
 var _AaveProtocolForkValue = map[string]AaveProtocolFork{
-	_AaveProtocolForkName[0:4]: AaveProtocolForkAave,
-	_AaveProtocolForkName[4:9]: AaveProtocolForkSpark,
+	_AaveProtocolForkName[0:4]:  AaveProtocolForkAave,
+	_AaveProtocolForkName[4:9]:  AaveProtocolForkSpark,
+	_AaveProtocolForkName[9:23]: AaveProtocolForkAvalonFinance,
 }
 
 // ParseAaveProtocolFork attempts to convert a string to a AaveProtocolFork.
