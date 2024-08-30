@@ -14,7 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-// ENUM(aave,spark)
+// ENUM(aave,spark,avalon_finance)
 type AaveProtocolFork uint8
 
 const aaveV3ABI = `
@@ -120,7 +120,11 @@ func isAaveChainSupported(chainID *big.Int, fork AaveProtocolFork) error {
 	return nil
 }
 
-func NewAaveOperation(client *ethclient.Client, chainID *big.Int, fork AaveProtocolFork) (*AaveOperation, error) {
+func NewAaveOperation(
+	client *ethclient.Client,
+	chainID *big.Int,
+	fork AaveProtocolFork,
+) (*AaveOperation, error) {
 
 	if err := isAaveChainSupported(chainID, fork); err != nil {
 		return nil, err
@@ -132,10 +136,10 @@ func NewAaveOperation(client *ethclient.Client, chainID *big.Int, fork AaveProto
 
 	networkID, err := client.NetworkID(context.Background())
 	if err != nil {
-		return nil, fmt.Errorf("client.NetworkID: could not fetch network id.%v", err)
+		return nil, fmt.Errorf("client.NetworkID: could not fetch network id... %w", err)
 	}
 
-	if networkID.Int64() != chainID.Int64() {
+	if networkID.Cmp(chainID) != 0 {
 		return nil, fmt.Errorf("network id of client(%d) does not match chainID provided (%d).",
 			networkID.Int64(), chainID.Int64())
 	}
@@ -155,20 +159,31 @@ func NewAaveOperation(client *ethclient.Client, chainID *big.Int, fork AaveProto
 		return nil, err
 	}
 
-	var contract = AaveV3ContractAddress
-	if fork == AaveProtocolForkSpark {
-		contract = BnbV3ContractAddress
+	var contract common.Address
+
+	switch fork {
+	case AaveProtocolForkAave:
+		contract = AaveV3ContractAddress
+	case AaveProtocolForkAvalonFinance:
+		contract = AvalonFinanceContractAddress
+	case AaveProtocolForkSpark:
+		contract = SparkLendContractAddress
+	}
+
+	var version string = "3"
+	if fork == AaveProtocolForkAvalonFinance {
+		version = "2"
 	}
 
 	return &AaveOperation{
+		dataProviderABI: dataProviderABI,
 		parsedABI:       parsedABI,
+		erc20ABI:        erc20ABI,
 		contract:        contract,
 		chainID:         chainID,
-		version:         "3",
+		version:         version,
 		client:          client,
-		erc20ABI:        erc20ABI,
 		fork:            fork,
-		dataProviderABI: dataProviderABI,
 	}, nil
 }
 
