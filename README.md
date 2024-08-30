@@ -1,7 +1,8 @@
 # Protocol Registry
 
 ![codecov](https://codecov.io/gh/blndgs/protocol_registry/graph/badge.svg?token=O42114OGRQ)
-![Go Release](https://img.shields.io/github/v/release/blndgs/protocol_registry?logo=go)
+![version](https://img.shields.io/github/v/release/blndgs/protocol_registry?logo=go)
+[![release](https://github.com/blndgs/protocol_registry/actions/workflows/release.yml/badge.svg)](https://github.com/blndgs/protocol_registry/actions/workflows/release.yml)
 
 The Protocol Registry is a Go library that provides a flexible and extensible way to manage and interact with different protocols and their operations. It allows you to register protocol operations, retrieve them based on protocol name and action, and generate calldata for specific operations.
 
@@ -163,3 +164,8 @@ Contributions to the Protocol Registry Package are welcome! If you find any issu
 ## License
 
 This project is licensed under the terms of the license file in the root directory. See the [LICENSE](./LICENSE) file for details.
+
+## Release
+
+| Version | Release Notes |
+|---------|---------------|
