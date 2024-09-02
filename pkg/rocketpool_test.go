@@ -114,7 +114,7 @@ func TestRocketPoolOperation_GenerateCallData(t *testing.T) {
 		{
 			name:   "Supply action ( failure, staked amount too low)",
 			action: NativeStake,
-			method: rocketPoolStake,
+			method: "deposit",
 			// cast calldata "deposit()"
 			// 0xd0e30db0
 			expected: "0xd0e30db0",
@@ -126,7 +126,7 @@ func TestRocketPoolOperation_GenerateCallData(t *testing.T) {
 		{
 			name:   "Supply action ( failure, staked amount too high)",
 			action: NativeStake,
-			method: rocketPoolStake,
+			method: "deposit",
 			// cast calldata "deposit()"
 			// 0xd0e30db0
 			expected: "0xd0e30db0",
