@@ -88,6 +88,17 @@ if err != nil {
 }
 ```
 
+## Supported protocols
+
+- Aave V3 ( BSC and ETH )
+- Sparklend ( ETH )
+- Compound ( ETH )
+- Avalon Finance ( BSC )
+- Rocketpool ( ETH )
+- Lido ( ETH )
+- ListaDao ( BSC )
+- Ankr ( ETH )
+
 ## Protocol Interface
 
 The `Protocol` interface defines the methods that each protocol must implement:
