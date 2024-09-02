@@ -89,9 +89,10 @@ const aaveDataProviderABI = `
 ]`
 
 var (
-	ethAaveDataProviderContract  = common.HexToAddress("0x7B4EB56E7CD4b454BA8ff71E4518426369a138a3")
-	ethSparklendProviderContract = common.HexToAddress("0xFc21d6d146E6086B8359705C8b28512a983db0cb")
-	bnbAaveDataProviderContract  = common.HexToAddress("0x41585C50524fb8c3899B43D7D797d9486AAc94DB")
+	ethAaveDataProviderContract       = common.HexToAddress("0x7B4EB56E7CD4b454BA8ff71E4518426369a138a3")
+	ethSparklendProviderContract      = common.HexToAddress("0xFc21d6d146E6086B8359705C8b28512a983db0cb")
+	bnbAaveDataProviderContract       = common.HexToAddress("0x41585C50524fb8c3899B43D7D797d9486AAc94DB")
+	avalonFinanceDataProviderContract = common.HexToAddress("0x672b19DdA450120C505214D149Ee7F7B6DEd8C39")
 )
 
 // AaveOperation implements the Protocol interface for Aave
@@ -164,6 +165,9 @@ func NewAaveOperation(
 	switch fork {
 	case AaveProtocolForkAave:
 		contract = AaveV3ContractAddress
+		if chainID.Cmp(big.NewInt(56)) == 0 {
+			contract = AaveBnbV3ContractAddress
+		}
 	case AaveProtocolForkAvalonFinance:
 		contract = AvalonFinanceContractAddress
 	case AaveProtocolForkSpark:
@@ -248,11 +252,14 @@ func (l *AaveOperation) getAToken(ctx context.Context, asset common.Address) (co
 		}
 
 		toContract = bnbAaveDataProviderContract
+		if l.fork == AaveProtocolForkAvalonFinance {
+			toContract = avalonFinanceDataProviderContract
+		}
 	default:
 		return common.HexToAddress(""), errors.New("unsupported chain")
 	}
 
-	result, err := l.client.CallContract(context.Background(), ethereum.CallMsg{
+	result, err := l.client.CallContract(ctx, ethereum.CallMsg{
 		To:   &toContract,
 		Data: calldata,
 	}, nil)
@@ -263,7 +270,16 @@ func (l *AaveOperation) getAToken(ctx context.Context, asset common.Address) (co
 	addr := common.Address{}
 	// dummy value we just need to unpack successfully
 	value := common.Address{}
-	return addr, l.dataProviderABI.UnpackIntoInterface(&[]interface{}{&addr, &value, &value}, "getReserveTokensAddresses", result)
+	err = l.dataProviderABI.UnpackIntoInterface(&[]interface{}{&addr, &value, &value}, "getReserveTokensAddresses", result)
+	if err != nil {
+		return common.Address{}, err
+	}
+
+	if addr.Hex() == "0x0000000000000000000000000000000000000000" {
+		return common.Address{}, errors.New("asset not supported")
+	}
+
+	return addr, nil
 }
 
 // Validate checks if the provided parameters are valid for the specified action
@@ -338,14 +354,20 @@ func (l *AaveOperation) GetSupportedAssets(ctx context.Context, chainID *big.Int
 		return []common.Address{}, err
 	}
 
-	var s = AaveV3
-	if l.fork == AaveProtocolForkSpark {
-		s = SparkLend
+	var protocol = AaveV3
+
+	switch l.fork {
+	case AaveProtocolForkAave:
+		protocol = AaveV3
+	case AaveProtocolForkAvalonFinance:
+		protocol = AvalonFinance
+	case AaveProtocolForkSpark:
+		protocol = SparkLend
 	}
 
-	assets := make([]common.Address, 0, len(tokenSupportedMap[chainID.Int64()][s]))
+	assets := make([]common.Address, 0, len(tokenSupportedMap[l.chainID.Int64()][protocol]))
 
-	for _, v := range tokenSupportedMap[chainID.Int64()][s] {
+	for _, v := range tokenSupportedMap[l.chainID.Int64()][protocol] {
 		assets = append(assets, common.HexToAddress(v))
 	}
 
@@ -358,13 +380,19 @@ func (l *AaveOperation) IsSupportedAsset(ctx context.Context, chainID *big.Int, 
 		return false
 	}
 
-	protocols, ok := tokenSupportedMap[chainID.Int64()]
+	protocols, ok := tokenSupportedMap[l.chainID.Int64()]
 	if !ok {
 		return false
 	}
 
 	var protocol = AaveV3
-	if l.fork == AaveProtocolForkSpark {
+
+	switch l.fork {
+	case AaveProtocolForkAave:
+		protocol = AaveV3
+	case AaveProtocolForkAvalonFinance:
+		protocol = AvalonFinance
+	case AaveProtocolForkSpark:
 		protocol = SparkLend
 	}
 
@@ -373,6 +401,7 @@ func (l *AaveOperation) IsSupportedAsset(ctx context.Context, chainID *big.Int, 
 		return false
 	}
 
+	fmt.Println(addrs, protocol)
 	if len(addrs) == 0 {
 		return false
 	}
