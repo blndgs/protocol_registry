@@ -158,15 +158,24 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 		return errors.New("please provide ETH chain config")
 	}
 
+	bscConfig, ok := r.chainConfigs["56"]
+	if !ok {
+		return errors.New("please provide BSC chain config")
+	}
+
 	client, err := ethclient.Dial(val.RPCURL)
+	if err != nil {
+		return err
+	}
+
+	bscClient, err := ethclient.Dial(bscConfig.RPCURL)
 	if err != nil {
 		return err
 	}
 
 	// Register Lido protocol
 	err = registerProtocol(LidoContractAddress, big.NewInt(1), func(config ChainConfig) (Protocol, error) {
-		lido, err := NewLidoOperation(client, big.NewInt(1))
-		return lido, err
+		return NewLidoOperation(client, big.NewInt(1))
 	})
 	if err != nil {
 		return err
@@ -174,8 +183,31 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 
 	// Register Aave protocol
 	err = registerProtocol(AaveV3ContractAddress, big.NewInt(1), func(config ChainConfig) (Protocol, error) {
-		aave, err := NewAaveOperation(client, big.NewInt(1), AaveProtocolForkAave)
-		return aave, err
+		return NewAaveOperation(client, big.NewInt(1), AaveProtocolForkAave)
+	})
+	if err != nil {
+		return err
+	}
+
+	// Aave on BNB
+	err = registerProtocol(AaveBnbV3ContractAddress, big.NewInt(56), func(config ChainConfig) (Protocol, error) {
+		return NewAaveOperation(bscClient, big.NewInt(56), AaveProtocolForkAave)
+	})
+	if err != nil {
+		return err
+	}
+
+	// Avalon finance on BNB
+	err = registerProtocol(AvalonFinanceContractAddress, big.NewInt(56), func(config ChainConfig) (Protocol, error) {
+		return NewAaveOperation(bscClient, big.NewInt(56), AaveProtocolForkAvalonFinance)
+	})
+	if err != nil {
+		return err
+	}
+
+	// lista dao on BNB
+	err = registerProtocol(ListaDaoContractAddress, big.NewInt(56), func(config ChainConfig) (Protocol, error) {
+		return NewListaStakingOperation(bscClient, big.NewInt(56))
 	})
 	if err != nil {
 		return err
@@ -183,8 +215,7 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 
 	// Sparklend
 	err = registerProtocol(SparkLendContractAddress, big.NewInt(1), func(config ChainConfig) (Protocol, error) {
-		aave, err := NewAaveOperation(client, big.NewInt(1), AaveProtocolForkSpark)
-		return aave, err
+		return NewAaveOperation(client, big.NewInt(1), AaveProtocolForkSpark)
 	})
 	if err != nil {
 		return err
@@ -192,8 +223,7 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 
 	// ankr
 	err = registerProtocol(AnkrContractAddress, big.NewInt(1), func(config ChainConfig) (Protocol, error) {
-		ankr, err := NewAnkrOperation(client, big.NewInt(1))
-		return ankr, err
+		return NewAnkrOperation(client, big.NewInt(1))
 	})
 	if err != nil {
 		return err
@@ -201,8 +231,7 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 
 	// rocketpool
 	err = registerProtocol(RocketPoolStorageAddress, big.NewInt(1), func(config ChainConfig) (Protocol, error) {
-		rp, err := NewRocketpoolOperation(client, big.NewInt(1))
-		return rp, err
+		return NewRocketpoolOperation(client, big.NewInt(1))
 	})
 	if err != nil {
 		return err

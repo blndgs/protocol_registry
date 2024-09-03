@@ -27,10 +27,6 @@ const (
      `
 )
 
-var (
-	listaStakingManager ContractAddress = common.HexToAddress("0x1adB950d8bB3dA4bE104211D5AB038628e477fE6")
-)
-
 // ListaStakingOperation implements staking, lending and supply for the lista dao project
 // https://lista.org
 type ListaStakingOperation struct {
@@ -65,7 +61,7 @@ func NewListaStakingOperation(client *ethclient.Client,
 		parsedABI: parsedABI,
 		chainID:   chainID,
 		client:    client,
-		contract:  listaStakingManager,
+		contract:  ListaDaoContractAddress,
 	}, nil
 }
 

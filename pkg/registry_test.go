@@ -41,6 +41,10 @@ func TestProtocolRegistry_Validate(t *testing.T) {
 			ChainID: big.NewInt(1),
 			RPCURL:  getTestRPCURL(t, ChainETH),
 		},
+		{
+			ChainID: big.NewInt(56),
+			RPCURL:  getTestRPCURL(t, ChainBSC),
+		},
 	})
 
 	require.NoError(t, err)
@@ -74,6 +78,10 @@ func TestProtocolRegistry(t *testing.T) {
 			ChainID: big.NewInt(1),
 			RPCURL:  getTestRPCURL(t, ChainETH),
 		},
+		{
+			ChainID: big.NewInt(56),
+			RPCURL:  getTestRPCURL(t, ChainBSC),
+		},
 	})
 
 	require.NoError(t, err)
@@ -103,6 +111,10 @@ func TestProtocolOperations(t *testing.T) {
 		{
 			ChainID: big.NewInt(1),
 			RPCURL:  getTestRPCURL(t, ChainETH),
+		},
+		{
+			ChainID: big.NewInt(56),
+			RPCURL:  getTestRPCURL(t, ChainBSC),
 		},
 	})
 

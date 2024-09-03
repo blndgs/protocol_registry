@@ -64,6 +64,7 @@ var (
 	AnkrContractAddress          ContractAddress = common.HexToAddress("0x84db6ee82b7cf3b47e8f19270abde5718b936670")
 	RenzoManagerAddress          ContractAddress = common.HexToAddress("0x74a09653A083691711cF8215a6ab074BB4e99ef5")
 	AvalonFinanceContractAddress ContractAddress = common.HexToAddress("0xf9278C7c4AEfAC4dDfd0D496f7a1C39cA6BCA6d4")
+	ListaDaoContractAddress      ContractAddress = common.HexToAddress("0x1adB950d8bB3dA4bE104211D5AB038628e477fE6")
 )
 
 const (
