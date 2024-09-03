@@ -4,6 +4,9 @@
 // Build Date:
 // Built By:
 
+//go:build integration
+// +build integration
+//
 package pkg
 
 import (
