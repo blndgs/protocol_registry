@@ -1,6 +1,12 @@
 {
   "tokens": [
     {
+      "token_address": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "name": "Binance Coin",
+      "symbol": "BNB",
+      "decimals": 18
+    },
+    {
       "token_address": "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
       "name": "Ethereum Token",
       "symbol": "ETH",
@@ -90,6 +96,15 @@
         "0x53E63a31fD1077f949204b94F431bCaB98F72BCE",
         "0x4aae823a6a0b376De6A78e74eCC5b079d38cBCf7",
         "0x1346b618dC92810EC74163e4c27004c921D446a5"
+      ]
+    },
+    {
+      "address": "0x1adB950d8bB3dA4bE104211D5AB038628e477fE6",
+      "name": "ListaDAO",
+      "source": false,
+      "destination": true,
+      "tokens": [
+        "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
       ]
     }
   ]
