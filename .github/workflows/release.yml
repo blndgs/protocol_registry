@@ -42,6 +42,17 @@ jobs:
           github_token: ${{ steps.app-token.outputs.token }}
           default_bump: minor
 
+      - name: Generate release notes
+        id: generate-notes
+        run: |
+            echo "Release notes for version ${{ steps.nextver.outputs.new_tag }}" > changelog.txt
+            git log "$(git describe --tags --abbrev=0)..HEAD" --pretty=format:"%h %s" >> changelog.txt
+            CHANGELOG=$(cat changelog.txt)
+            echo "changelog<<EOF" >> $GITHUB_OUTPUT
+            echo "$CHANGELOG" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+        shell: bash
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -50,4 +61,4 @@ jobs:
         with:
           tag_name: ${{ steps.nextver.outputs.new_tag }}
           release_name: Release ${{ steps.nextver.outputs.new_tag }}
-
+          body: ${{ steps.generate-notes.outputs.changelog }}

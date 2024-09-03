@@ -21,7 +21,7 @@ jobs:
           check-latest: true
 
       - name: Run tests
-        run: go test ./... -race -coverprofile=coverage.txt -covermode=atomic
+        run: go test -tags integration ./... -race -coverprofile=coverage.txt -covermode=atomic
         env:
           TEST_ETH_RPC_URL: ${{ secrets.TEST_ETH_RPC_URL }}
           TEST_BSC_RPC_URL: ${{ secrets.TEST_BSC_RPC_URL }}

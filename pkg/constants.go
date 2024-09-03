@@ -65,20 +65,6 @@ const (
 	AvalonFinance ProtocolName = "avalon_finance"
 )
 
-const (
-	aaveSupply        ProtocolMethod = "supply"
-	aaveWithdraw      ProtocolMethod = "withdraw"
-	sparkLendSupply   ProtocolMethod = "supply"
-	sparkLendWithdraw ProtocolMethod = "withdraw"
-	lidoStake         ProtocolMethod = "submit"
-	ankrStake         ProtocolMethod = "stakeAndClaimAethC"
-	ankrUnstake       ProtocolMethod = "unstakeAETH"
-	rocketPoolStake   ProtocolMethod = "deposit"
-	rocketPoolUnStake ProtocolMethod = "transfer"
-	renzoStakeETH     ProtocolMethod = "depositETH"
-	renzoStakeERC20   ProtocolMethod = "deposit"
-)
-
 var (
 	AaveV3ContractAddress        ContractAddress = common.HexToAddress("0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2")
 	AaveBnbV3ContractAddress     ContractAddress = common.HexToAddress("0x6807dc923806fE8Fd134338EABCA509979a7e0cB")
