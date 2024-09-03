@@ -60,6 +60,6 @@ jobs:
               git config --global user.email 'github-actions@github.com'
               git add README.md
               git commit -m "Update README.md with release ${{ steps.nextver.outputs.new_tag }}"
-              git push
+              git push origin HEAD:${{ github.head_ref }}
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
