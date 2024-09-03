@@ -13,6 +13,16 @@ const (
 	ReferralAddress = "0x000000000000000000000000000000000000dEaD"
 )
 
+const (
+	ethChainStr = "1"
+	bscChainStr = "56"
+)
+
+var (
+	ethChainID = big.NewInt(1)
+	bscChainID = big.NewInt(56)
+)
+
 // Hex prefix
 const HexPrefix = "0x"
 

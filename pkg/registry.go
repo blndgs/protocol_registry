@@ -145,7 +145,7 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 			return fmt.Errorf("failed to create protocol at address %s: %v", address.Hex(), err)
 		}
 
-		err = r.RegisterProtocol(big.NewInt(1), address, protocol)
+		err = r.RegisterProtocol(ethChainID, address, protocol)
 		if err != nil {
 			return fmt.Errorf("failed to register protocol at address %s: %v", address.Hex(), err)
 		}
@@ -153,12 +153,12 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 		return nil
 	}
 
-	val, ok := r.chainConfigs["1"]
+	val, ok := r.chainConfigs[ethChainStr]
 	if !ok {
 		return errors.New("please provide ETH chain config")
 	}
 
-	bscConfig, ok := r.chainConfigs["56"]
+	bscConfig, ok := r.chainConfigs[bscChainStr]
 	if !ok {
 		return errors.New("please provide BSC chain config")
 	}
@@ -174,64 +174,64 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 	}
 
 	// Register Lido protocol
-	err = registerProtocol(LidoContractAddress, big.NewInt(1), func(config ChainConfig) (Protocol, error) {
-		return NewLidoOperation(client, big.NewInt(1))
+	err = registerProtocol(LidoContractAddress, ethChainID, func(config ChainConfig) (Protocol, error) {
+		return NewLidoOperation(client, ethChainID)
 	})
 	if err != nil {
 		return err
 	}
 
 	// Register Aave protocol
-	err = registerProtocol(AaveV3ContractAddress, big.NewInt(1), func(config ChainConfig) (Protocol, error) {
-		return NewAaveOperation(client, big.NewInt(1), AaveProtocolForkAave)
+	err = registerProtocol(AaveV3ContractAddress, ethChainID, func(config ChainConfig) (Protocol, error) {
+		return NewAaveOperation(client, ethChainID, AaveProtocolForkAave)
 	})
 	if err != nil {
 		return err
 	}
 
 	// Aave on BNB
-	err = registerProtocol(AaveBnbV3ContractAddress, big.NewInt(56), func(config ChainConfig) (Protocol, error) {
-		return NewAaveOperation(bscClient, big.NewInt(56), AaveProtocolForkAave)
+	err = registerProtocol(AaveBnbV3ContractAddress, bscChainID, func(config ChainConfig) (Protocol, error) {
+		return NewAaveOperation(bscClient, bscChainID, AaveProtocolForkAave)
 	})
 	if err != nil {
 		return err
 	}
 
 	// Avalon finance on BNB
-	err = registerProtocol(AvalonFinanceContractAddress, big.NewInt(56), func(config ChainConfig) (Protocol, error) {
-		return NewAaveOperation(bscClient, big.NewInt(56), AaveProtocolForkAvalonFinance)
+	err = registerProtocol(AvalonFinanceContractAddress, bscChainID, func(config ChainConfig) (Protocol, error) {
+		return NewAaveOperation(bscClient, bscChainID, AaveProtocolForkAvalonFinance)
 	})
 	if err != nil {
 		return err
 	}
 
 	// lista dao on BNB
-	err = registerProtocol(ListaDaoContractAddress, big.NewInt(56), func(config ChainConfig) (Protocol, error) {
-		return NewListaStakingOperation(bscClient, big.NewInt(56))
+	err = registerProtocol(ListaDaoContractAddress, bscChainID, func(config ChainConfig) (Protocol, error) {
+		return NewListaStakingOperation(bscClient, bscChainID)
 	})
 	if err != nil {
 		return err
 	}
 
 	// Sparklend
-	err = registerProtocol(SparkLendContractAddress, big.NewInt(1), func(config ChainConfig) (Protocol, error) {
-		return NewAaveOperation(client, big.NewInt(1), AaveProtocolForkSpark)
+	err = registerProtocol(SparkLendContractAddress, ethChainID, func(config ChainConfig) (Protocol, error) {
+		return NewAaveOperation(client, ethChainID, AaveProtocolForkSpark)
 	})
 	if err != nil {
 		return err
 	}
 
 	// ankr
-	err = registerProtocol(AnkrContractAddress, big.NewInt(1), func(config ChainConfig) (Protocol, error) {
-		return NewAnkrOperation(client, big.NewInt(1))
+	err = registerProtocol(AnkrContractAddress, ethChainID, func(config ChainConfig) (Protocol, error) {
+		return NewAnkrOperation(client, ethChainID)
 	})
 	if err != nil {
 		return err
 	}
 
 	// rocketpool
-	err = registerProtocol(RocketPoolStorageAddress, big.NewInt(1), func(config ChainConfig) (Protocol, error) {
-		return NewRocketpoolOperation(client, big.NewInt(1))
+	err = registerProtocol(RocketPoolStorageAddress, ethChainID, func(config ChainConfig) (Protocol, error) {
+		return NewRocketpoolOperation(client, ethChainID)
 	})
 	if err != nil {
 		return err

@@ -44,7 +44,7 @@ func NewListaStakingOperation(client *ethclient.Client,
 		return nil, err
 	}
 
-	if chainID.Cmp(big.NewInt(56)) != 0 {
+	if chainID.Cmp(bscChainID) != 0 {
 		return nil, ErrChainUnsupported
 	}
 
