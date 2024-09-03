@@ -165,7 +165,7 @@ func NewAaveOperation(
 	switch fork {
 	case AaveProtocolForkAave:
 		contract = AaveV3ContractAddress
-		if chainID.Cmp(big.NewInt(56)) == 0 {
+		if chainID.Cmp(bscChainID) == 0 {
 			contract = AaveBnbV3ContractAddress
 		}
 	case AaveProtocolForkAvalonFinance:
