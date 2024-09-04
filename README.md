@@ -144,29 +144,48 @@ For more details on the [ProtocolRegistry interface and its implementation](./do
 ## Working with Whitelisted Tokens
 
 The Protocol Registry supports whitelisted tokens for each blockchain network. These tokens are defined in JSON files named after their respective chain IDs (e.g., 1.json for Ethereum mainnet).
+These tokens are managed through the `github.com/blndgs/protocol_registry/tokens` package.
 
-The whitelisted tokens are stored in the following format:
+For more information on the whitelisted token standard and management, please refer to the [Whitelisted Token documentation](./tokens/README.md) and the [specifications](./docs/02_token.md).
 
-```json
-{
-  "tokens": [
-    {
-      "token_address": "0xdcee70654261af21c44c093c300ed3bb97b78192"
-    },
-    {
-      "token_address": "0xd2af830e8cbdfed6cc11bab697bb25496ed6fa62"
-    }
-  ]
+## Using the Token Registry
+
+To use the Token Registry in your application:
+
+### Import the package
+
+```go
+import "github.com/blndgs/protocol_registry/tokens"
+```
+
+### Create a new JSONTokenRegistry
+
+```go
+registry, err := tokens.NewJSONTokenRegistry()
+if err != nil {
+    log.Fatalf("Failed to create token registry: %v", err)
 }
 ```
 
-To use whitelisted tokens in your application:
+### Use the registry methods to access token and protocol data
 
-- Load the appropriate JSON file based on the chain ID you're working with.
-- Parse the JSON to extract the list of token addresses.
-- Use this list to validate or filter tokens in your application logic.
+```go
+// Get all tokens for a specific chain
+ethTokens, err := registry.GetTokens(pkg.EthChainID)
 
-For more information on the whitelisted token standard and management, please refer to the [Whitelisted Token documentation](./tokens/README.md).
+// Get a specific token by address
+token, err := registry.GetTokenByAddress(pkg.EthChainID, "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48")
+
+// Get all protocols for a specific chain
+ethProtocols, err := registry.GetProtocols(pkg.EthChainID)
+
+// Get a specific protocol by address
+protocol, err := registry.GetProtocolByAddress(pkg.EthChainID, "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2")
+```
+
+The Token Registry automatically loads data from JSON files named after their respective chain IDs (e.g., 1.json for Ethereum mainnet, 56.json for Binance Smart Chain) located in the same directory as the executable.
+
+For more detailed information on the Token Registry and its implementation, please refer to the Token Registry documentation.
 
 ## Contributing
 

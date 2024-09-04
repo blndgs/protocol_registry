@@ -14,6 +14,34 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
+const compoundv3ABI = `
+[
+  {
+	"name": "withdraw",
+	"type": "function",
+	"inputs": [
+	  {
+		"type": "address"
+	  },
+	  {
+		"type": "uint256"
+	  }
+	]
+  },
+  {
+	"name": "supply",
+	"type": "function",
+	"inputs": [
+	  {
+		"type": "address"
+	  },
+	  {
+		"type": "uint256"
+	  }
+	]
+  }
+]`
+
 // chainID -> Contract address -> ERC20s that can be used as collateral
 // Compound has different markets and each market only supports a
 // few assets as collateral
