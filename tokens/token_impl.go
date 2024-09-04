@@ -1,14 +1,16 @@
 package tokens
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
 	"math/big"
-	"os"
-	"path/filepath"
 
 	"github.com/blndgs/protocol_registry/pkg"
 )
+
+//go:embed *.json
+var jsonFiles embed.FS
 
 // NewJSONTokenRegistry creates a new JSONTokenRegistry.
 func NewJSONTokenRegistry() (*JSONTokenRegistry, error) {
@@ -30,8 +32,7 @@ func NewJSONTokenRegistry() (*JSONTokenRegistry, error) {
 }
 
 func loadJSONFile(fileName string) (*Data, error) {
-	filePath := filepath.Join(".", fileName)
-	content, err := os.ReadFile(filePath)
+	content, err := jsonFiles.ReadFile(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("error reading file %s: %w", fileName, err)
 	}

@@ -53,16 +53,16 @@ func TestNewJSONTokenRegistry(t *testing.T) {
 }
 
 func TestGetTokens(t *testing.T) {
-	registry := setupTestRegistry(t)
-
+	registry, err := NewJSONTokenRegistry()
+	require.NoError(t, err)
 	tests := []struct {
 		name    string
 		chainID *big.Int
 		want    int
 		wantErr bool
 	}{
-		{"Ethereum chain", pkg.EthChainID, 1, false},
-		{"BSC chain", pkg.BscChainID, 1, false},
+		{"Ethereum chain", pkg.EthChainID, 21, false},
+		{"BSC chain", pkg.BscChainID, 9, false},
 		{"Unknown chain", big.NewInt(999), 0, true},
 	}
 
@@ -80,7 +80,8 @@ func TestGetTokens(t *testing.T) {
 }
 
 func TestGetProtocols(t *testing.T) {
-	registry := setupTestRegistry(t)
+	registry, err := NewJSONTokenRegistry()
+	require.NoError(t, err)
 
 	tests := []struct {
 		name    string
@@ -88,8 +89,8 @@ func TestGetProtocols(t *testing.T) {
 		want    int
 		wantErr bool
 	}{
-		{"Ethereum chain", pkg.EthChainID, 1, false},
-		{"BSC chain", pkg.BscChainID, 1, false},
+		{"Ethereum chain", pkg.EthChainID, 7, false},
+		{"BSC chain", pkg.BscChainID, 3, false},
 		{"Unknown chain", big.NewInt(999), 0, true},
 	}
 
@@ -107,7 +108,8 @@ func TestGetProtocols(t *testing.T) {
 }
 
 func TestGetTokenByAddress(t *testing.T) {
-	registry := setupTestRegistry(t)
+	registry, err := NewJSONTokenRegistry()
+	require.NoError(t, err)
 
 	tests := []struct {
 		name    string
@@ -136,7 +138,8 @@ func TestGetTokenByAddress(t *testing.T) {
 }
 
 func TestGetProtocolByAddress(t *testing.T) {
-	registry := setupTestRegistry(t)
+	registry, err := NewJSONTokenRegistry()
+	require.NoError(t, err)
 
 	tests := []struct {
 		name    string
@@ -162,23 +165,6 @@ func TestGetProtocolByAddress(t *testing.T) {
 			}
 		})
 	}
-}
-
-func setupTestRegistry(t *testing.T) *JSONTokenRegistry {
-	tmpDir := t.TempDir()
-	createTempJSONFile(t, tmpDir, "1.json", sampleEthData)
-	createTempJSONFile(t, tmpDir, "56.json", sampleBscData)
-
-	oldWd, _ := os.Getwd()
-	err := os.Chdir(tmpDir)
-	require.NoError(t, err)
-	t.Cleanup(func() {
-		os.Chdir(oldWd)
-	})
-
-	registry, err := NewJSONTokenRegistry()
-	require.NoError(t, err)
-	return registry
 }
 
 func createTempJSONFile(t *testing.T, dir, filename, content string) {
