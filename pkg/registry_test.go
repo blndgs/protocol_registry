@@ -59,6 +59,16 @@ func TestProtocolRegistry_Validate(t *testing.T) {
 		}))
 	})
 
+	t.Run("ValidateListaDaoContractAddress", func(t *testing.T) {
+		operation, err := registry.GetProtocol(big.NewInt(56), ListaDaoContractAddress)
+		require.NoError(t, err)
+
+		require.NoError(t, operation.Validate(context.Background(), big.NewInt(56), NativeStake, TransactionParams{
+			Amount: big.NewInt(100),
+			Asset:  common.HexToAddress(nativeDenomAddress),
+		}))
+	})
+
 	t.Run("ValidateAave_NativeAsset", func(t *testing.T) {
 		operation, err := registry.GetProtocol(big.NewInt(1), AaveV3ContractAddress)
 		require.NoError(t, err)

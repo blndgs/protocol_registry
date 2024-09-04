@@ -32,8 +32,7 @@ const ankrABI = `
        }
      ]
    }
- ]
- 	`
+ ]`
 
 // AnkrOperation implements the Protocol interface for Ankr
 type AnkrOperation struct {

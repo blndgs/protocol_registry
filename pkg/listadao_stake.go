@@ -13,9 +13,8 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-const (
-	listaABI = `
-     [
+const listaABI = `
+	[
        {
          "inputs": [],
          "name": "deposit",
@@ -23,9 +22,7 @@ const (
          "stateMutability": "payable",
          "type": "function"
        }
-     ]
-     `
-)
+     ]`
 
 // ListaStakingOperation implements staking, lending and supply for the lista dao project
 // https://lista.org
@@ -38,13 +35,12 @@ type ListaStakingOperation struct {
 
 func NewListaStakingOperation(client *ethclient.Client,
 	chainID *big.Int) (*ListaStakingOperation, error) {
-
 	parsedABI, err := abi.JSON(strings.NewReader(listaABI))
 	if err != nil {
 		return nil, err
 	}
 
-	if chainID.Cmp(bscChainID) != 0 {
+	if chainID.Cmp(BscChainID) != 0 {
 		return nil, ErrChainUnsupported
 	}
 

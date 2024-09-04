@@ -49,7 +49,6 @@ The JSON file follows this structure:
 
 > In the protocols array, `source` determines if a user can define an intent with the protocol as the first action.
 > That is withdraw from X protocol and do something else.
-
 > `destination` determines if the protocol can be deposited into
 
 ## Token Selection Criteria
@@ -75,3 +74,5 @@ Maintaining a standardized, common list of whitelisted tokens is crucial for sev
 2. Regular updates to the lists should be made through pull requests to the repository.
 3. Clients should implement a mechanism to fetch and cache the latest token lists periodically.
 4. When interacting with tokens, always check against the whitelisted token list for the respective chain.
+
+for more details about the design follow [token.md](../docs/02_token.md)
