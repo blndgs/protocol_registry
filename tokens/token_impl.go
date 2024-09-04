@@ -104,8 +104,3 @@ func (r *JSONTokenRegistry) GetProtocolByAddress(chainID *big.Int, address strin
 	}
 	return nil, fmt.Errorf("protocol not found with address: %s for chain ID %d", address, chainID)
 }
-
-// GetDataRetriever returns a DataRetriever
-func GetDataRetriever() (*JSONTokenRegistry, error) {
-	return NewJSONTokenRegistry()
-}
