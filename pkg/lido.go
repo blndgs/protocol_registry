@@ -149,18 +149,18 @@ func (l *LidoOperation) Validate(ctx context.Context,
 }
 
 // GetBalance retrieves the balance for a specified account and asset
-func (l *LidoOperation) GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (*big.Int, error) {
-	if chainID.Int64() != 1 {
-		return nil, ErrChainUnsupported
-	}
+func (l *LidoOperation) GetBalance(ctx context.Context,
+	chainID *big.Int,
+	account, asset common.Address) (common.Address, *big.Int, error) {
 
-	if strings.ToLower(asset.Hex()) == nativeDenomAddress {
-		return l.client.BalanceAt(ctx, account, nil)
+	var address common.Address
+	if chainID.Int64() != 1 {
+		return address, nil, ErrChainUnsupported
 	}
 
 	callData, err := l.parsedABI.Pack("balanceOf", account)
 	if err != nil {
-		return nil, err
+		return address, nil, err
 	}
 
 	result, err := l.client.CallContract(context.Background(), ethereum.CallMsg{
@@ -168,12 +168,12 @@ func (l *LidoOperation) GetBalance(ctx context.Context, chainID *big.Int, accoun
 		Data: callData,
 	}, nil)
 	if err != nil {
-		return nil, err
+		return address, nil, err
 	}
 
 	balance := new(big.Int)
 	err = l.parsedABI.UnpackIntoInterface(&balance, "balanceOf", result)
-	return balance, err
+	return LidoContractAddress, balance, err
 }
 
 // GetSupportedAssets returns a list of assets supported by the protocol on the specified chain
