@@ -6,8 +6,11 @@ package pkg
 import (
 	"context"
 	"math/big"
+	"strings"
 	"testing"
 
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
 )
@@ -16,7 +19,7 @@ var emptyTestWallet = common.HexToAddress("0x6a22640F02F8c8b576a3193674c4aE97e0f
 
 func TestAnkr_GenerateCalldata_Supply(t *testing.T) {
 
-	// cast calldata "stakeAndClaimAethC()"
+	// cast calldata "stakeAndClaimankrETHC()"
 	// 0x9fa65c56
 	expectedCalldata := "0x9fa65c56"
 
@@ -133,14 +136,25 @@ func TestAnkr_GetBalance(t *testing.T) {
 	ankr, err := NewAnkrOperation(getTestClient(t, ChainETH), big.NewInt(1))
 	require.NoError(t, err)
 
-	bal, err := ankr.GetBalance(context.Background(), big.NewInt(1), emptyTestWallet,
-		common.HexToAddress(nativeDenomAddress))
+	token, bal, err := ankr.GetBalance(context.Background(), big.NewInt(1), emptyTestWallet)
 
 	require.NoError(t, err)
 	require.NotNil(t, bal)
 
-	bal, err = ankr.GetBalance(context.Background(), big.NewInt(1), emptyTestWallet, ankrEthER20Account)
-
+	parsedABI, err := abi.JSON(strings.NewReader(abiString))
 	require.NoError(t, err)
-	require.NotNil(t, bal)
+
+	callData, err := parsedABI.Pack("symbol")
+	require.NoError(t, err)
+
+	result, err := ankr.client.CallContract(context.Background(), ethereum.CallMsg{
+		To:   &token,
+		Data: callData,
+	}, nil)
+	require.NoError(t, err)
+
+	name := ""
+	err = parsedABI.UnpackIntoInterface(&name, "symbol", result)
+
+	require.Equal(t, "ankrETH", name)
 }

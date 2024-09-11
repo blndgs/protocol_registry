@@ -123,22 +123,9 @@ func (l *LidoOperation) Validate(ctx context.Context,
 		return errors.New("action not supported")
 	}
 
-	asset := nativeDenomAddress
-	if action == NativeUnStake {
-		// will default to fetching the balance from the contract
-		// not implemented right now as it is recommended for holders to
-		// swap their stEth on DEXs or CEXs instead of waiting 3-10 days for lido withdrawal
-		asset = ""
-
-		// validate amount only during unstaking
-		if params.Amount.Cmp(big.NewInt(0)) <= 0 {
-			return errors.New("amount must be greater than zero")
-		}
-	}
-
-	balance, err := l.GetBalance(ctx, l.chainID, params.Sender, common.HexToAddress(asset))
+	balance, err := l.client.BalanceAt(ctx, params.Sender, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not fetch ETH balance.. %s", err)
 	}
 
 	if balance.Cmp(params.Amount) == -1 {
@@ -150,8 +137,7 @@ func (l *LidoOperation) Validate(ctx context.Context,
 
 // GetBalance retrieves the balance for a specified account and asset
 func (l *LidoOperation) GetBalance(ctx context.Context,
-	chainID *big.Int,
-	account, asset common.Address) (common.Address, *big.Int, error) {
+	chainID *big.Int, account common.Address) (common.Address, *big.Int, error) {
 
 	var address common.Address
 	if chainID.Int64() != 1 {
