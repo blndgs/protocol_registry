@@ -275,7 +275,7 @@ func (l *AaveOperation) getAToken(ctx context.Context, asset common.Address) (co
 		return common.Address{}, err
 	}
 
-	if addr.Hex() == "0x0000000000000000000000000000000000000000" {
+	if addr.Hex() == zeroAddress {
 		return common.Address{}, errors.New("asset not supported")
 	}
 
@@ -324,7 +324,8 @@ func (l *AaveOperation) Validate(ctx context.Context,
 }
 
 // GetBalance retrieves the balance for a specified account and asset
-func (l *AaveOperation) GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (*big.Int, error) {
+func (l *AaveOperation) GetBalance(ctx context.Context,
+	chainID *big.Int, account, asset common.Address) (*big.Int, error) {
 	if err := isAaveChainSupported(l.chainID, l.fork); err != nil {
 		return nil, err
 	}

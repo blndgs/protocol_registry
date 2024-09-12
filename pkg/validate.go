@@ -6,6 +6,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+const zeroAddress = "0x0000000000000000000000000000000000000000"
+
 // nativeDenomAddress native denom token address.
 const nativeDenomAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
 

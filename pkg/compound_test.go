@@ -30,6 +30,12 @@ func TestCompoundV3_New(t *testing.T) {
 		require.Error(t, err)
 		require.Nil(t, compoundImpl)
 	})
+
+	t.Run("compund correctly setup", func(t *testing.T) {
+		_, err := NewCompoundOperation(getTestClient(t, ChainETH), big.NewInt(1),
+			common.HexToAddress("0xc3d688b66703497daa19211eedff47f25384cdc3"))
+		require.NoError(t, err)
+	})
 }
 
 func TestCompound_GenerateCalldata_Supply(t *testing.T) {
@@ -100,8 +106,10 @@ func TestCompound_GetBalance(t *testing.T) {
 
 	require.NoError(t, err)
 
-	bal, err := compoundImpl.GetBalance(context.Background(), big.NewInt(1), emptyTestWallet,
-		common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48")) // empty address since the erc20 interface is used
+	uniAsset := common.HexToAddress("0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984")
+
+	_, bal, err := compoundImpl.GetBalance(context.Background(), big.NewInt(1),
+		common.HexToAddress("0x94fa8efDD58e1721ad8Bf5D4001060e0E1C4d58e"), uniAsset)
 
 	require.NoError(t, err)
 	require.NotNil(t, bal)
