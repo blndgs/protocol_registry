@@ -13,6 +13,23 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const abiString = `
+  [{
+    "constant": true,
+    "inputs": [],
+    "name": "symbol",
+    "outputs": [
+      {
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "pure",
+    "type": "function"
+  }]
+		`
+
 // ENUM(ETH,BSC)
 type Chain string
 
@@ -82,15 +99,20 @@ func TestLido_Validate(t *testing.T) {
 
 func TestLido_GetBalance(t *testing.T) {
 
-	lido, err := NewLidoOperation(getTestClient(t, ChainETH), big.NewInt(1))
+	client := getTestClient(t, ChainETH)
+
+	lido, err := NewLidoOperation(client, big.NewInt(1))
 	require.NoError(t, err)
 
 	account := common.HexToAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6")
 
-	bal, err := lido.GetBalance(context.Background(), big.NewInt(1), account, common.Address{})
+	token, bal, err := lido.GetBalance(context.Background(), big.NewInt(1),
+		account, common.HexToAddress(""))
 
 	require.NoError(t, err)
 	require.NotNil(t, bal)
+
+	validateSymbolFromToken(t, client, token, "stETH")
 }
 
 func TestLido_GenerateCalldata(t *testing.T) {

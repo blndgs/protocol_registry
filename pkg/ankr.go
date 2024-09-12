@@ -34,6 +34,8 @@ const ankrABI = `
    }
  ]`
 
+var ankrEthER20Account = common.HexToAddress("0xE95A203B1a91a908F9B9CE46459d101078c2c3cb")
+
 // AnkrOperation implements the Protocol interface for Ankr
 type AnkrOperation struct {
 	parsedABI abi.ABI
@@ -111,49 +113,52 @@ func (l *AnkrOperation) Validate(ctx context.Context,
 		return fmt.Errorf("asset not supported %s", params.Asset)
 	}
 
-	if action != NativeStake && action != NativeUnStake {
-		return errors.New("action not supported")
-	}
+	var balance = new(big.Int)
+	var err error
 
-	asset := nativeDenomAddress
-	if action == NativeUnStake {
-		asset = ankrEthER20Account.Hex()
+	switch action {
+	case NativeUnStake:
 
 		// only validate amount during withdrawal
 		if params.Amount.Cmp(big.NewInt(0)) <= 0 {
-			return errors.New("amount must be greater than zero")
+			return errors.New("amount to unstake must be greater than zero")
 		}
-	}
 
-	balance, err := l.GetBalance(ctx, l.chainID, params.Sender, common.HexToAddress(asset))
+		_, balance, err = l.GetBalance(ctx, l.chainID, params.Sender, params.Asset)
+
+	case NativeStake:
+
+		balance, err = l.client.BalanceAt(ctx, params.Sender, nil)
+
+	default:
+
+		return errors.New("action not supported")
+
+	}
 	if err != nil {
 		return err
 	}
 
 	if balance.Cmp(params.Amount) == -1 {
-		return errors.New("balance not enough")
+		return errors.New("your balance is not enough")
 	}
 
 	return nil
 }
 
-var ankrEthER20Account = common.HexToAddress("0xE95A203B1a91a908F9B9CE46459d101078c2c3cb")
-
 // GetBalance retrieves the balance for a specified account and asset
-func (l *AnkrOperation) GetBalance(ctx context.Context, chainID *big.Int, account,
-	asset common.Address) (*big.Int, error) {
+func (l *AnkrOperation) GetBalance(ctx context.Context, chainID *big.Int,
+	account, _ common.Address) (common.Address, *big.Int, error) {
+
+	var address common.Address
 
 	if chainID.Int64() != 1 {
-		return nil, ErrChainUnsupported
-	}
-
-	if strings.ToLower(asset.Hex()) == nativeDenomAddress {
-		return l.client.BalanceAt(ctx, account, nil)
+		return address, nil, ErrChainUnsupported
 	}
 
 	callData, err := l.erc20ABI.Pack("balanceOf", account)
 	if err != nil {
-		return nil, err
+		return address, nil, err
 	}
 
 	result, err := l.client.CallContract(context.Background(), ethereum.CallMsg{
@@ -161,12 +166,12 @@ func (l *AnkrOperation) GetBalance(ctx context.Context, chainID *big.Int, accoun
 		Data: callData,
 	}, nil)
 	if err != nil {
-		return nil, err
+		return address, nil, err
 	}
 
 	balance := new(big.Int)
 	err = l.erc20ABI.UnpackIntoInterface(&balance, "balanceOf", result)
-	return balance, err
+	return ankrEthER20Account, balance, err
 }
 
 // GetSupportedAssets returns a list of assets supported by the protocol on the specified chain

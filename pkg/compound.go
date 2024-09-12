@@ -14,33 +14,57 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-const compoundv3ABI = `
+// Comptroller ABI
+// This also contains the cToken underlying ABI
+const comptrollerABI = `
 [
   {
-	"name": "withdraw",
-	"type": "function",
-	"inputs": [
-	  {
-		"type": "address"
-	  },
-	  {
-		"type": "uint256"
-	  }
-	]
+    "constant": true,
+    "inputs": [],
+    "name": "getAllMarkets",
+    "outputs": [
+      {
+        "internalType": "contract CToken[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
   },
   {
-	"name": "supply",
-	"type": "function",
-	"inputs": [
-	  {
-		"type": "address"
-	  },
-	  {
-		"type": "uint256"
-	  }
-	]
+    "constant": true,
+    "inputs": [],
+    "name": "underlying",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+	{
+    "constant": true,
+    "inputs": [],
+    "name": "symbol",
+    "outputs": [
+      {
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "pure",
+    "type": "function"
   }
-]`
+]
+	`
+
+var ethComptrollerAddress = common.HexToAddress("0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B")
 
 // chainID -> Contract address -> ERC20s that can be used as collateral
 // Compound has different markets and each market only supports a
@@ -95,6 +119,9 @@ type CompoundOperation struct {
 	supportedAssets []string
 
 	client *ethclient.Client
+
+	// no mutex since there are no writes ever
+	cTokenMap map[string]string
 }
 
 func NewCompoundOperation(client *ethclient.Client, chainID *big.Int,
@@ -120,6 +147,11 @@ func NewCompoundOperation(client *ethclient.Client, chainID *big.Int,
 		return nil, errors.New("unsupported Compound pool address")
 	}
 
+	cachedCTokens, err := getCTokens(client)
+	if err != nil {
+		return nil, err
+	}
+
 	return &CompoundOperation{
 		supportedAssets: supportedAssets,
 		parsedABI:       parsedABI,
@@ -128,7 +160,95 @@ func NewCompoundOperation(client *ethclient.Client, chainID *big.Int,
 		version:         "3",
 		client:          client,
 		erc20ABI:        erc20ABI,
+		cTokenMap:       cachedCTokens,
 	}, nil
+}
+
+func getCTokens(client *ethclient.Client) (map[string]string, error) {
+
+	parsedComptrollerABI, err := abi.JSON(strings.NewReader(comptrollerABI))
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := parsedComptrollerABI.Pack("getAllMarkets")
+	if err != nil {
+		return nil, err
+	}
+
+	msg := ethereum.CallMsg{
+		To:   &ethComptrollerAddress,
+		Data: data,
+	}
+
+	result, err := client.CallContract(context.Background(), msg, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var markets []common.Address
+	err = parsedComptrollerABI.UnpackIntoInterface(&markets, "getAllMarkets", result)
+	if err != nil {
+		return nil, err
+	}
+
+	var cachedCTokens = make(map[string]string)
+
+	underlyingCalldata, err := parsedComptrollerABI.Pack("underlying")
+	if err != nil {
+		return nil, err
+	}
+
+	for _, marketAddress := range markets {
+		msg := ethereum.CallMsg{
+			To:   &marketAddress,
+			Data: underlyingCalldata,
+		}
+
+		result, err := client.CallContract(context.Background(), msg, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		var underlying common.Address
+		err = parsedComptrollerABI.UnpackIntoInterface(&underlying, "underlying", result)
+		if err != nil {
+
+			// cETH does not have an underlying token
+			// so check if it is a token with the cETH symbol.
+			// If it is one, we have to add the nativeDenomAddress here too
+			symbolCalldata, err := parsedComptrollerABI.Pack("symbol")
+			if err != nil {
+				return nil, fmt.Errorf("could not pack symbol to check if cETH")
+			}
+
+			msg := ethereum.CallMsg{
+				To:   &marketAddress,
+				Data: symbolCalldata,
+			}
+
+			result, err := client.CallContract(context.Background(), msg, nil)
+			if err != nil {
+				return nil, err
+			}
+
+			var symbol string
+			err = parsedComptrollerABI.UnpackIntoInterface(&symbol, "symbol", result)
+			if err != nil {
+				return nil, err
+			}
+
+			if symbol == "cETH" {
+				cachedCTokens[common.HexToAddress(nativeDenomAddress).Hex()] = marketAddress.Hex()
+			}
+
+			continue
+		}
+
+		cachedCTokens[underlying.Hex()] = marketAddress.Hex()
+	}
+
+	return cachedCTokens, err
 }
 
 // GenerateCalldata creates the necessary blockchain transaction data
@@ -191,48 +311,50 @@ func (l *CompoundOperation) Validate(ctx context.Context,
 		return errors.New("amount must be greater than zero")
 	}
 
-	asset := params.Asset
-
-	if action == LoanWithdraw {
-		asset = l.contract
-	}
-
-	balance, err := l.GetBalance(ctx, l.chainID, params.Sender, asset)
+	_, balance, err := l.GetBalance(ctx, l.chainID, params.Sender, params.Asset)
 	if err != nil {
 		return err
 	}
 
 	if balance.Cmp(params.Amount) == -1 {
-		return errors.New("balance not enough")
+		return errors.New("your balance not enough")
 	}
 
 	return nil
 }
 
 // GetBalance retrieves the balance for a specified account and asset
-func (l *CompoundOperation) GetBalance(ctx context.Context, chainID *big.Int, account,
-	asset common.Address) (*big.Int, error) {
+func (l *CompoundOperation) GetBalance(ctx context.Context, chainID *big.Int,
+	account, asset common.Address) (common.Address, *big.Int, error) {
+
+	var address common.Address
 
 	if chainID.Int64() != 1 {
-		return nil, ErrChainUnsupported
+		return address, nil, ErrChainUnsupported
+	}
+
+	cToken, ok := l.cTokenMap[asset.Hex()]
+	if !ok {
+		return address, nil, errors.New("token does not have an equivalent cToken")
 	}
 
 	callData, err := l.erc20ABI.Pack("balanceOf", account)
 	if err != nil {
-		return nil, err
+		return address, nil, err
 	}
 
+	var assetHex = common.HexToAddress(cToken)
 	result, err := l.client.CallContract(context.Background(), ethereum.CallMsg{
-		To:   &asset,
+		To:   &assetHex,
 		Data: callData,
 	}, nil)
 	if err != nil {
-		return nil, err
+		return address, nil, err
 	}
 
 	balance := new(big.Int)
 	err = l.erc20ABI.UnpackIntoInterface(&balance, "balanceOf", result)
-	return balance, err
+	return assetHex, balance, err
 }
 
 // GetSupportedAssets returns a list of assets supported by the protocol on the specified chain
@@ -285,3 +407,4 @@ func (l *CompoundOperation) GetName() string { return Compound }
 
 // GetVersion returns the version of the protocol
 func (l *CompoundOperation) GetVersion() string { return l.version }
+

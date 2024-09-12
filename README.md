@@ -111,7 +111,7 @@ type Protocol interface {
     // because sometimes on the clientside, the usecase might be a multicall that swaps an asset
     // for another one which is then supplied into the protocol hence validation will always fail
     Validate(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) error
-    GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (*big.Int, error)
+    GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (common.Address,*big.Int, error)
     GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error)
     IsSupportedAsset(ctx context.Context, chainID *big.Int, asset common.Address) bool
     GetProtocolConfig(chainID *big.Int) ProtocolConfig

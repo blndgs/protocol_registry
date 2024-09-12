@@ -22,7 +22,6 @@ func TestListaStaking_New(t *testing.T) {
 
 	t.Run("only bnb supported", func(t *testing.T) {
 		_, err := NewListaStakingOperation(getTestClient(t, ChainBSC), big.NewInt(56))
-		t.Log(err)
 		require.NoError(t, err)
 	})
 
@@ -38,17 +37,6 @@ func TestListaStaking_Validate(t *testing.T) {
 	listaStaking, err := NewListaStakingOperation(getTestClient(t, ChainBSC), big.NewInt(56))
 	require.NoError(t, err)
 
-	t.Run("zero value supplied", func(t *testing.T) {
-
-		err = listaStaking.Validate(context.Background(), big.NewInt(56), NativeStake, TransactionParams{
-			Amount: big.NewInt(0),
-			Asset:  hotWallet,
-			Sender: common.HexToAddress(nativeDenomAddress),
-		})
-
-		require.Error(t, err)
-	})
-
 	t.Run("unsupported action", func(t *testing.T) {
 
 		err = listaStaking.Validate(context.Background(), big.NewInt(56), NativeUnStake, TransactionParams{
@@ -60,7 +48,7 @@ func TestListaStaking_Validate(t *testing.T) {
 		require.Error(t, err)
 	})
 
-	t.Run("user without balance balance cannot stake", func(t *testing.T) {
+	t.Run("user without balance cannot stake", func(t *testing.T) {
 
 		err = listaStaking.Validate(context.Background(), big.NewInt(56), NativeStake, TransactionParams{
 			Amount: big.NewInt(1),
@@ -70,18 +58,34 @@ func TestListaStaking_Validate(t *testing.T) {
 		require.Error(t, err)
 	})
 
+	t.Run("user with balance can stake", func(t *testing.T) {
+
+		err = listaStaking.Validate(context.Background(), big.NewInt(56), NativeStake, TransactionParams{
+			Amount: big.NewInt(1),
+			// Binance hot wallet would always have BNB
+			Sender: common.HexToAddress("0x8894E0a0c962CB723c1976a4421c95949bE2D4E3"),
+		})
+
+		require.NoError(t, err)
+	})
 }
 
 func TestListaStaking_GetBalance(t *testing.T) {
 
-	listaStaking, err := NewListaStakingOperation(getTestClient(t, ChainBSC), big.NewInt(56))
+	client := getTestClient(t, ChainBSC)
+
+	listaStaking, err := NewListaStakingOperation(client, big.NewInt(56))
 	require.NoError(t, err)
 
-	bal, err := listaStaking.GetBalance(context.Background(), big.NewInt(56), hotWallet,
-		common.HexToAddress("0xdac17f958d2ee523a2206206994597c13d831ec7"))
+	wallet := common.HexToAddress("0x6F28FeC449dbd2056b76ac666350Af8773E03873")
+
+	token, bal, err := listaStaking.GetBalance(context.Background(),
+		big.NewInt(56), wallet, common.HexToAddress(""))
 
 	require.NoError(t, err)
 	require.NotNil(t, bal)
+
+	validateSymbolFromToken(t, client, token, "slisBNB")
 }
 
 func TestListaStaking_GenerateCalldata_Supply(t *testing.T) {

@@ -269,14 +269,18 @@ func TestAave_Validate(t *testing.T) {
 
 func TestAave_GetBalance(t *testing.T) {
 
-	aave, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolForkAave)
+	client := getTestClient(t, ChainETH)
+
+	aave, err := NewAaveOperation(client, big.NewInt(1), AaveProtocolForkAave)
 	require.NoError(t, err)
 
-	bal, err := aave.GetBalance(context.Background(), big.NewInt(1), hotWallet,
+	token, bal, err := aave.GetBalance(context.Background(), big.NewInt(1), hotWallet,
 		common.HexToAddress("0xdac17f958d2ee523a2206206994597c13d831ec7"))
 
 	require.NoError(t, err)
 	require.NotNil(t, bal)
+
+	validateSymbolFromToken(t, client, token, "aEthUSDT")
 }
 
 func TestAave_GenerateCalldata_Withdraw(t *testing.T) {

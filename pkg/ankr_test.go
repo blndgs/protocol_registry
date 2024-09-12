@@ -16,7 +16,7 @@ var emptyTestWallet = common.HexToAddress("0x6a22640F02F8c8b576a3193674c4aE97e0f
 
 func TestAnkr_GenerateCalldata_Supply(t *testing.T) {
 
-	// cast calldata "stakeAndClaimAethC()"
+	// cast calldata "stakeAndClaimankrETHC()"
 	// 0x9fa65c56
 	expectedCalldata := "0x9fa65c56"
 
@@ -130,17 +130,16 @@ func TestAnkr_IsSupportedAsset(t *testing.T) {
 
 func TestAnkr_GetBalance(t *testing.T) {
 
-	ankr, err := NewAnkrOperation(getTestClient(t, ChainETH), big.NewInt(1))
+	client := getTestClient(t, ChainETH)
+
+	ankr, err := NewAnkrOperation(client, big.NewInt(1))
 	require.NoError(t, err)
 
-	bal, err := ankr.GetBalance(context.Background(), big.NewInt(1), emptyTestWallet,
-		common.HexToAddress(nativeDenomAddress))
-
-	require.NoError(t, err)
-	require.NotNil(t, bal)
-
-	bal, err = ankr.GetBalance(context.Background(), big.NewInt(1), emptyTestWallet, ankrEthER20Account)
+	token, bal, err := ankr.GetBalance(context.Background(), big.NewInt(1),
+		emptyTestWallet, common.HexToAddress(""))
 
 	require.NoError(t, err)
 	require.NotNil(t, bal)
+
+	validateSymbolFromToken(t, client, token, "ankrETH")
 }

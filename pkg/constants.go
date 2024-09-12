@@ -28,10 +28,6 @@ const HexPrefix = "0x"
 
 var ErrChainUnsupported = errors.New("chain not supported")
 
-const (
-	erc20BalanceOfABI = `[{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"}]`
-)
-
 type (
 	ProtocolName    = string
 	ProtocolMethod  = string
@@ -41,6 +37,21 @@ type (
 type ContractAction int64
 
 type ProtocolType string
+
+type Protocol interface {
+	// Initialize(ctx context.Context, config ProtocolConfig) error
+	GenerateCalldata(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) (string, error)
+	Validate(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) error
+	GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (common.Address, *big.Int, error)
+	GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error)
+	IsSupportedAsset(ctx context.Context, chainID *big.Int, asset common.Address) bool
+	GetProtocolConfig(chainID *big.Int) ProtocolConfig
+	GetABI(chainID *big.Int) abi.ABI
+	GetType() ProtocolType
+	GetName() string
+	GetVersion() string
+	GetContractAddress(chainID *big.Int) common.Address
+}
 
 const (
 	AaveV3        ProtocolName = "aave_v3"
@@ -53,21 +64,6 @@ const (
 	ListaDao      ProtocolName = "lista_dao"
 	AvalonFinance ProtocolName = "avalon_finance"
 )
-const (
-	LoanSupply ContractAction = iota
-	LoanWithdraw
-	NativeStake
-	NativeUnStake
-	ERC20Stake
-	ERC20UnStake
-	LoanBorrow
-	LoanRepay
-)
-
-const (
-	TypeLoan  ProtocolType = "Loan"
-	TypeStake ProtocolType = "Stake"
-)
 
 var (
 	AaveV3ContractAddress        ContractAddress = common.HexToAddress("0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2")
@@ -79,6 +75,38 @@ var (
 	RenzoManagerAddress          ContractAddress = common.HexToAddress("0x74a09653A083691711cF8215a6ab074BB4e99ef5")
 	AvalonFinanceContractAddress ContractAddress = common.HexToAddress("0xf9278C7c4AEfAC4dDfd0D496f7a1C39cA6BCA6d4")
 	ListaDaoContractAddress      ContractAddress = common.HexToAddress("0x1adB950d8bB3dA4bE104211D5AB038628e477fE6")
+)
+
+const (
+	compoundv3ABI = `
+ [
+   {
+     "name": "withdraw",
+     "type": "function",
+     "inputs": [
+       {
+         "type": "address"
+       },
+       {
+         "type": "uint256"
+       }
+     ]
+   },
+   {
+     "name": "supply",
+     "type": "function",
+     "inputs": [
+       {
+         "type": "address"
+       },
+       {
+         "type": "uint256"
+       }
+     ]
+   }
+ ]
+ 	`
+	erc20BalanceOfABI = `[{"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"balance","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"}]`
 )
 
 // ProtocolConfig contains configuration data for initializing a protocol.
@@ -102,40 +130,45 @@ type TransactionParams struct {
 	ReferralCode any
 	ExtraData    map[string]interface{}
 }
-type Protocol interface {
-	// GenerateCalldata creates the necessary blockchain transaction data.
-	GenerateCalldata(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) (string, error)
 
-	// Validate checks if the provided parameters are valid for the specified action.
-	Validate(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) error
+func (params TransactionParams) GetBeneficiaryOwner() common.Address {
+	if params.Recipient.Hex() == "0x0000000000000000000000000000000000000000" {
+		return params.Sender
+	}
 
-	// GetBalance retrieves the balance for a specified account and asset.
-	GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (*big.Int, error)
-
-	// GetSupportedAssets returns a list of assets supported by the protocol on the specified chain.
-	GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error)
-
-	// IsSupportedAsset checks if the specified asset is supported on the given chain.
-	IsSupportedAsset(ctx context.Context, chainID *big.Int, asset common.Address) bool
-
-	// GetProtocolConfig returns the protocol config for a specific chain.
-	GetProtocolConfig(chainID *big.Int) ProtocolConfig
-
-	// GetABI returns the ABI of the protocol's contract, allowing dynamic interaction.
-	GetABI(chainID *big.Int) abi.ABI
-
-	// GetType returns the protocol type.
-	GetType() ProtocolType
-
-	// GetName returns the human-readable name of the protocol.
-	GetName() string
-
-	// GetVersion returns the version of the protocol.
-	GetVersion() string
-
-	// GetContractAddress returns the contract address for a specific chain.
-	GetContractAddress(chainID *big.Int) common.Address
+	return params.Recipient
 }
+
+const (
+	LoanSupply ContractAction = iota
+	LoanWithdraw
+	NativeStake
+	NativeUnStake
+	ERC20Stake
+	ERC20UnStake
+	LoanBorrow
+	LoanRepay
+)
+
+func (a ContractAction) String() string {
+	switch a {
+	case LoanSupply:
+		return "loan_supply"
+	case LoanWithdraw:
+		return "loan_withdraw"
+	case NativeStake:
+		return "native_stake"
+	case NativeUnStake:
+		return "native_unstake"
+	default:
+		return ""
+	}
+}
+
+const (
+	TypeLoan  ProtocolType = "Loan"
+	TypeStake ProtocolType = "Stake"
+)
 
 // ProtocolRegistry defines methods for managing and accessing DeFi
 type ProtocolRegistry interface {
@@ -156,31 +189,8 @@ type ProtocolRegistry interface {
 }
 
 // IsBnb checks if the provided chain matches the BSC chain id
-func IsBnb(chainID *big.Int) bool { return chainID.Cmp(BscChainID) == 0 }
+func IsBnb(chainID *big.Int) bool { return chainID.Cmp(big.NewInt(56)) == 0 }
 
 // IsEth checks if the provided chain matches the ethereum chain id
-func IsEth(chainID *big.Int) bool { return chainID.Cmp(EthChainID) == 0 }
+func IsEth(chainID *big.Int) bool { return chainID.Cmp(big.NewInt(1)) == 0 }
 
-// GetBeneficiaryOwner return the beneficiary address.
-func (params TransactionParams) GetBeneficiaryOwner() common.Address {
-	if params.Recipient.Hex() == "0x0000000000000000000000000000000000000000" {
-		return params.Sender
-	}
-
-	return params.Recipient
-}
-
-func (a ContractAction) String() string {
-	switch a {
-	case LoanSupply:
-		return "loan_supply"
-	case LoanWithdraw:
-		return "loan_withdraw"
-	case NativeStake:
-		return "native_stake"
-	case NativeUnStake:
-		return "native_unstake"
-	default:
-		return ""
-	}
-}

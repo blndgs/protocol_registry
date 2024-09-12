@@ -8,21 +8,46 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-const listaABI = `
-	[
-       {
-         "inputs": [],
-         "name": "deposit",
-         "outputs": [],
-         "stateMutability": "payable",
-         "type": "function"
-       }
-     ]`
+const (
+	listaABI = `
+[
+  {
+    "inputs": [],
+    "name": "deposit",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
+     `
+)
+
+var slisBNBTokenAddress = common.HexToAddress("0xB0b84D294e0C75A6abe60171b70edEb2EFd14A1B")
 
 // ListaStakingOperation implements staking, lending and supply for the lista dao project
 // https://lista.org
@@ -35,6 +60,7 @@ type ListaStakingOperation struct {
 
 func NewListaStakingOperation(client *ethclient.Client,
 	chainID *big.Int) (*ListaStakingOperation, error) {
+
 	parsedABI, err := abi.JSON(strings.NewReader(listaABI))
 	if err != nil {
 		return nil, err
@@ -96,17 +122,13 @@ func (l *ListaStakingOperation) Validate(ctx context.Context,
 		return errors.New("unsupported action")
 	}
 
-	balance, err := l.GetBalance(ctx, l.chainID, params.Sender, common.HexToAddress(nativeDenomAddress))
+	balance, err := l.client.BalanceAt(ctx, params.Sender, nil)
 	if err != nil {
 		return err
 	}
 
-	if params.Amount.Cmp(big.NewInt(0)) == 0 {
-		return errors.New("please provide a non zero amount")
-	}
-
-	if balance.Cmp(params.Amount) == -1 {
-		return errors.New("balance not enough")
+	if balance.Cmp(big.NewInt(0)) == 0 {
+		return errors.New("you cannot stake with a zero BNB balance")
 	}
 
 	return nil
@@ -114,13 +136,30 @@ func (l *ListaStakingOperation) Validate(ctx context.Context,
 
 // GetBalance retrieves the balance for a specified account and asset
 func (l *ListaStakingOperation) GetBalance(ctx context.Context, chainID *big.Int,
-	account, asset common.Address) (*big.Int, error) {
+	account, _ common.Address) (common.Address, *big.Int, error) {
+
+	var address common.Address
 
 	if !l.isSupportedChain(chainID) {
-		return nil, ErrChainUnsupported
+		return common.Address{}, nil, ErrChainUnsupported
 	}
 
-	return l.client.BalanceAt(ctx, account, nil)
+	callData, err := l.parsedABI.Pack("balanceOf", account)
+	if err != nil {
+		return address, nil, err
+	}
+
+	result, err := l.client.CallContract(context.Background(), ethereum.CallMsg{
+		To:   &slisBNBTokenAddress,
+		Data: callData,
+	}, nil)
+	if err != nil {
+		return address, nil, err
+	}
+
+	balance := new(big.Int)
+	err = l.parsedABI.UnpackIntoInterface(&balance, "balanceOf", result)
+	return slisBNBTokenAddress, balance, err
 }
 
 // GetSupportedAssets returns a list of assets supported by the protocol on the specified chain
@@ -173,3 +212,4 @@ func (l *ListaStakingOperation) GetName() string { return ListaDao }
 
 // GetVersion returns the version of the protocol
 func (l *ListaStakingOperation) GetVersion() string { return "1" }
+
