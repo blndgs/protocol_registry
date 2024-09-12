@@ -14,13 +14,13 @@ const (
 )
 
 const (
-	ethChainStr = "1"
-	bscChainStr = "56"
+	EthChainStr = "1"
+	BscChainStr = "56"
 )
 
 var (
-	ethChainID = big.NewInt(1)
-	bscChainID = big.NewInt(56)
+	EthChainID = big.NewInt(1)
+	BscChainID = big.NewInt(56)
 )
 
 // Hex prefix
