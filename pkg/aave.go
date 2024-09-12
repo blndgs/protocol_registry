@@ -311,7 +311,7 @@ func (l *AaveOperation) Validate(ctx context.Context,
 		return err
 	}
 
-	balance, err := l.GetBalance(ctx, l.chainID, params.Sender, asset)
+	_, balance, err := l.GetBalance(ctx, l.chainID, params.Sender, asset)
 	if err != nil {
 		return err
 	}
@@ -325,27 +325,36 @@ func (l *AaveOperation) Validate(ctx context.Context,
 
 // GetBalance retrieves the balance for a specified account and asset
 func (l *AaveOperation) GetBalance(ctx context.Context,
-	chainID *big.Int, account, asset common.Address) (*big.Int, error) {
+	chainID *big.Int, account,
+	asset common.Address) (common.Address, *big.Int, error) {
+
+	var address common.Address
+
 	if err := isAaveChainSupported(l.chainID, l.fork); err != nil {
-		return nil, err
+		return address, nil, err
 	}
 
 	callData, err := l.erc20ABI.Pack("balanceOf", account)
 	if err != nil {
-		return nil, err
+		return address, nil, err
+	}
+
+	aToken, err := l.getAToken(ctx, asset)
+	if err != nil {
+		return address, nil, err
 	}
 
 	result, err := l.client.CallContract(context.Background(), ethereum.CallMsg{
-		To:   &asset,
+		To:   &aToken,
 		Data: callData,
 	}, nil)
 	if err != nil {
-		return nil, err
+		return address, nil, err
 	}
 
 	balance := new(big.Int)
 	err = l.erc20ABI.UnpackIntoInterface(&balance, "balanceOf", result)
-	return balance, err
+	return aToken, balance, err
 }
 
 // GetSupportedAssets returns a list of assets supported by the protocol on the specified chain
