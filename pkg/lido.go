@@ -55,8 +55,7 @@ const lidoABI = `
     "stateMutability": "view",
     "type": "function"
   }
-]
-`
+]`
 
 // LidoOperation implements the Protocol interface for Lido
 type LidoOperation struct {

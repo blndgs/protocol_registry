@@ -16,9 +16,8 @@ import (
 	"github.com/rocket-pool/rocketpool-go/tokens"
 )
 
-const (
-	RocketPoolABI = `
-     [
+const RocketPoolABI = `
+	[
        {
          "inputs": [],
          "name": "deposit",
@@ -50,9 +49,7 @@ const (
          "stateMutability": "nonpayable",
          "type": "function"
        }
-     ]
-     `
-)
+     ]`
 
 // RocketpoolOperation implements the Protocol interface for Ankr
 type RocketpoolOperation struct {

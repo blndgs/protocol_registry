@@ -127,8 +127,47 @@ func (r *ProtocolRegistryImpl) ListProtocolsByType(chainID *big.Int, protocolTyp
 	return []Protocol{}
 }
 
-// setupProtocolOperations initializes and registers various DeFi protocols.
+// setupProtocolOperations initializes and registers various DeFi protocols for both ETH and BNB.
 func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
+	val, ok := r.chainConfigs[EthChainStr]
+	if !ok {
+		return errors.New("please provide ETH chain config")
+	}
+
+	bscConfig, ok := r.chainConfigs[BscChainStr]
+	if !ok {
+		return errors.New("please provide BSC chain config")
+	}
+
+	// Initialize ETH client
+	client, err := ethclient.Dial(val.RPCURL)
+	if err != nil {
+		return err
+	}
+
+	// Initialize BSC client
+	bscClient, err := ethclient.Dial(bscConfig.RPCURL)
+	if err != nil {
+		return err
+	}
+
+	// Setup protocols for ETH
+	err = r.setupEthProtocols(client)
+	if err != nil {
+		return err
+	}
+
+	// Setup protocols for BNB
+	err = r.setupBnbProtocols(bscClient)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// setupEthProtocols initializes and registers various DeFi protocols on the Ethereum chain.
+func (r *ProtocolRegistryImpl) setupEthProtocols(client *ethclient.Client) error {
 
 	registerProtocol := func(address common.Address, chainID *big.Int,
 		createFunc func(ChainConfig) (Protocol, error)) error {
@@ -145,7 +184,7 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 			return fmt.Errorf("failed to create protocol at address %s: %v", address.Hex(), err)
 		}
 
-		err = r.RegisterProtocol(ethChainID, address, protocol)
+		err = r.RegisterProtocol(chainID, address, protocol)
 		if err != nil {
 			return fmt.Errorf("failed to register protocol at address %s: %v", address.Hex(), err)
 		}
@@ -153,90 +192,99 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 		return nil
 	}
 
-	val, ok := r.chainConfigs[ethChainStr]
-	if !ok {
-		return errors.New("please provide ETH chain config")
-	}
-
-	bscConfig, ok := r.chainConfigs[bscChainStr]
-	if !ok {
-		return errors.New("please provide BSC chain config")
-	}
-
-	client, err := ethclient.Dial(val.RPCURL)
-	if err != nil {
-		return err
-	}
-
-	bscClient, err := ethclient.Dial(bscConfig.RPCURL)
-	if err != nil {
-		return err
-	}
-
-	// Register Lido protocol
-	err = registerProtocol(LidoContractAddress, ethChainID, func(config ChainConfig) (Protocol, error) {
-		return NewLidoOperation(client, ethChainID)
+	// Register Lido protocol on Ethereum
+	err := registerProtocol(LidoContractAddress, EthChainID, func(config ChainConfig) (Protocol, error) {
+		return NewLidoOperation(client, EthChainID)
 	})
 	if err != nil {
 		return err
 	}
 
-	// Register Aave protocol
-	err = registerProtocol(AaveV3ContractAddress, ethChainID, func(config ChainConfig) (Protocol, error) {
-		return NewAaveOperation(client, ethChainID, AaveProtocolForkAave)
+	// Register Aave protocol on Ethereum
+	err = registerProtocol(AaveV3ContractAddress, EthChainID, func(config ChainConfig) (Protocol, error) {
+		return NewAaveOperation(client, EthChainID, AaveProtocolForkAave)
 	})
 	if err != nil {
 		return err
 	}
 
-	// Aave on BNB
-	err = registerProtocol(AaveBnbV3ContractAddress, bscChainID, func(config ChainConfig) (Protocol, error) {
-		return NewAaveOperation(bscClient, bscChainID, AaveProtocolForkAave)
+	// Register Sparklend protocol on Ethereum
+	err = registerProtocol(SparkLendContractAddress, EthChainID, func(config ChainConfig) (Protocol, error) {
+		return NewAaveOperation(client, EthChainID, AaveProtocolForkSpark)
 	})
 	if err != nil {
 		return err
 	}
 
-	// Avalon finance on BNB
-	err = registerProtocol(AvalonFinanceContractAddress, bscChainID, func(config ChainConfig) (Protocol, error) {
-		return NewAaveOperation(bscClient, bscChainID, AaveProtocolForkAvalonFinance)
+	// Register Ankr protocol on Ethereum
+	err = registerProtocol(AnkrContractAddress, EthChainID, func(config ChainConfig) (Protocol, error) {
+		return NewAnkrOperation(client, EthChainID)
 	})
 	if err != nil {
 		return err
 	}
 
-	// lista dao on BNB
-	err = registerProtocol(ListaDaoContractAddress, bscChainID, func(config ChainConfig) (Protocol, error) {
-		return NewListaStakingOperation(bscClient, bscChainID)
+	// Register Rocketpool protocol on Ethereum
+	err = registerProtocol(RocketPoolStorageAddress, EthChainID, func(config ChainConfig) (Protocol, error) {
+		return NewRocketpoolOperation(client, EthChainID)
 	})
 	if err != nil {
 		return err
 	}
 
-	// Sparklend
-	err = registerProtocol(SparkLendContractAddress, ethChainID, func(config ChainConfig) (Protocol, error) {
-		return NewAaveOperation(client, ethChainID, AaveProtocolForkSpark)
-	})
-	if err != nil {
-		return err
-	}
-
-	// ankr
-	err = registerProtocol(AnkrContractAddress, ethChainID, func(config ChainConfig) (Protocol, error) {
-		return NewAnkrOperation(client, ethChainID)
-	})
-	if err != nil {
-		return err
-	}
-
-	// rocketpool
-	err = registerProtocol(RocketPoolStorageAddress, ethChainID, func(config ChainConfig) (Protocol, error) {
-		return NewRocketpoolOperation(client, ethChainID)
-	})
-	if err != nil {
-		return err
-	}
-
-	// compound
+	// Register Compound protocol on Ethereum
 	return registerCompoundRegistry(r, client)
+}
+
+// setupBnbProtocols initializes and registers various DeFi protocols on the Binance Smart Chain.
+func (r *ProtocolRegistryImpl) setupBnbProtocols(client *ethclient.Client) error {
+
+	registerProtocol := func(address common.Address, chainID *big.Int,
+		createFunc func(ChainConfig) (Protocol, error)) error {
+
+		chainIDStr := chainID.String()
+		config, exists := r.chainConfigs[chainIDStr]
+
+		if !exists {
+			return fmt.Errorf("chain configuration not found for chainID: %s", chainIDStr)
+		}
+
+		protocol, err := createFunc(config)
+		if err != nil {
+			return fmt.Errorf("failed to create protocol at address %s: %v", address.Hex(), err)
+		}
+
+		err = r.RegisterProtocol(chainID, address, protocol)
+		if err != nil {
+			return fmt.Errorf("failed to register protocol at address %s: %v", address.Hex(), err)
+		}
+
+		return nil
+	}
+
+	// Register Aave protocol on BNB
+	err := registerProtocol(AaveBnbV3ContractAddress, BscChainID, func(config ChainConfig) (Protocol, error) {
+		return NewAaveOperation(client, BscChainID, AaveProtocolForkAave)
+	})
+	if err != nil {
+		return err
+	}
+
+	// Register Avalon Finance protocol on BNB
+	err = registerProtocol(AvalonFinanceContractAddress, BscChainID, func(config ChainConfig) (Protocol, error) {
+		return NewAaveOperation(client, BscChainID, AaveProtocolForkAvalonFinance)
+	})
+	if err != nil {
+		return err
+	}
+
+	// Register Lista Dao protocol on BNB
+	err = registerProtocol(ListaDaoContractAddress, BscChainID, func(config ChainConfig) (Protocol, error) {
+		return NewListaStakingOperation(client, BscChainID)
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -32,8 +32,7 @@ const ankrABI = `
        }
      ]
    }
- ]
- 	`
+ ]`
 
 var ankrEthER20Account = common.HexToAddress("0xE95A203B1a91a908F9B9CE46459d101078c2c3cb")
 

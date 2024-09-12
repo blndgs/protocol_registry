@@ -12,7 +12,7 @@ const zeroAddress = "0x0000000000000000000000000000000000000000"
 const nativeDenomAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
 
 var tokenSupportedMap = map[int64]map[ProtocolName][]string{
-	ethChainID.Int64(): {
+	EthChainID.Int64(): {
 		AaveV3: {
 			"0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0", // Wrapped Liquid Staked Ether
 			"0x2260fac5e5542a773aa44fbcfedf7c193bc2c599", // Wrapped BTC
@@ -41,7 +41,7 @@ var tokenSupportedMap = map[int64]map[ProtocolName][]string{
 		},
 		Lido: {},
 	},
-	bscChainID.Int64(): {
+	BscChainID.Int64(): {
 		AaveV3: {
 			"0x2170ed0880ac9a755fd29b2688956bd959f933f8", // ETH ( Binance pegged ETH )
 			"0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c", // BTC ( Binance pegged BTC )

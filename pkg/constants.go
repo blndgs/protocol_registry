@@ -193,3 +193,4 @@ func IsBnb(chainID *big.Int) bool { return chainID.Cmp(big.NewInt(56)) == 0 }
 
 // IsEth checks if the provided chain matches the ethereum chain id
 func IsEth(chainID *big.Int) bool { return chainID.Cmp(big.NewInt(1)) == 0 }
+

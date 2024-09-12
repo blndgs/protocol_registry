@@ -212,3 +212,4 @@ func (l *ListaStakingOperation) GetName() string { return ListaDao }
 
 // GetVersion returns the version of the protocol
 func (l *ListaStakingOperation) GetVersion() string { return "1" }
+

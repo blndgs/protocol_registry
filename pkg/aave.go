@@ -115,7 +115,7 @@ func isAaveChainSupported(chainID *big.Int, fork AaveProtocolFork) error {
 	}
 
 	if IsBnb(chainID) && fork == AaveProtocolForkSpark {
-		return errors.New("Spark finance is not supported on Bnb chain. Only Ethereum")
+		return errors.New("spark finance is not supported on Bnb chain. Only Ethereum")
 	}
 
 	return nil
@@ -141,7 +141,7 @@ func NewAaveOperation(
 	}
 
 	if networkID.Cmp(chainID) != 0 {
-		return nil, fmt.Errorf("network id of client(%d) does not match chainID provided (%d).",
+		return nil, fmt.Errorf("network id of client(%d) does not match chainID provided (%d)",
 			networkID.Int64(), chainID.Int64())
 	}
 
@@ -165,7 +165,7 @@ func NewAaveOperation(
 	switch fork {
 	case AaveProtocolForkAave:
 		contract = AaveV3ContractAddress
-		if chainID.Cmp(bscChainID) == 0 {
+		if chainID.Cmp(BscChainID) == 0 {
 			contract = AaveBnbV3ContractAddress
 		}
 	case AaveProtocolForkAvalonFinance:
