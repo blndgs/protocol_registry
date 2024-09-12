@@ -200,13 +200,20 @@ func getCTokens(client *ethclient.Client) (map[string]string, error) {
 	}
 
 	for _, marketAddress := range markets {
+
+		// Get the underlying token for this market
+		// All tokens have an underlying token except cETH
+		//
+		// There is an edge case here where we check for an invalid opcode.
+		// This is because of Tenderly (and maybe other custom RPCs?).
+		// We have to skip this error because we still need to verify if the market we
+		// are in is cETH or not
 		msg := ethereum.CallMsg{
 			To:   &marketAddress,
 			Data: underlyingCalldata,
 		}
-
 		result, err := client.CallContract(context.Background(), msg, nil)
-		if err != nil {
+		if err != nil && !strings.Contains(err.Error(), "invalid opcode") {
 			return nil, err
 		}
 
@@ -407,4 +414,3 @@ func (l *CompoundOperation) GetName() string { return Compound }
 
 // GetVersion returns the version of the protocol
 func (l *CompoundOperation) GetVersion() string { return l.version }
-
