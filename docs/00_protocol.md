@@ -15,7 +15,7 @@ type Protocol interface {
     Validate(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) error
 
     // GetBalance retrieves the balance for a specified account and asset.
-    GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (*big.Int, error)
+    GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (common.Address,*big.Int, error)
 
     // GetSupportedAssets returns a list of assets supported by the protocol on the specified chain.
     GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error)
