@@ -136,7 +136,7 @@ func (l *ListaStakingOperation) Validate(ctx context.Context,
 
 // GetBalance retrieves the balance for a specified account and asset
 func (l *ListaStakingOperation) GetBalance(ctx context.Context, chainID *big.Int,
-	account common.Address) (common.Address, *big.Int, error) {
+	account, _ common.Address) (common.Address, *big.Int, error) {
 
 	var address common.Address
 

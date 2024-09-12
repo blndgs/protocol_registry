@@ -6,11 +6,8 @@ package pkg
 import (
 	"context"
 	"math/big"
-	"strings"
 	"testing"
 
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/require"
@@ -102,32 +99,20 @@ func TestLido_Validate(t *testing.T) {
 
 func TestLido_GetBalance(t *testing.T) {
 
-	lido, err := NewLidoOperation(getTestClient(t, ChainETH), big.NewInt(1))
+	client := getTestClient(t, ChainETH)
+
+	lido, err := NewLidoOperation(client, big.NewInt(1))
 	require.NoError(t, err)
 
 	account := common.HexToAddress("0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6")
 
-	token, bal, err := lido.GetBalance(context.Background(), big.NewInt(1), account)
+	token, bal, err := lido.GetBalance(context.Background(), big.NewInt(1),
+		account, common.HexToAddress(""))
 
 	require.NoError(t, err)
 	require.NotNil(t, bal)
 
-	parsedABI, err := abi.JSON(strings.NewReader(abiString))
-	require.NoError(t, err)
-
-	callData, err := parsedABI.Pack("symbol")
-	require.NoError(t, err)
-
-	result, err := lido.client.CallContract(context.Background(), ethereum.CallMsg{
-		To:   &token,
-		Data: callData,
-	}, nil)
-	require.NoError(t, err)
-
-	name := ""
-	err = parsedABI.UnpackIntoInterface(&name, "symbol", result)
-
-	require.Equal(t, "stETH", name)
+	validateSymbolFromToken(t, client, token, "stETH")
 }
 
 func TestLido_GenerateCalldata(t *testing.T) {

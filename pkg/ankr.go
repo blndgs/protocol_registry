@@ -125,7 +125,7 @@ func (l *AnkrOperation) Validate(ctx context.Context,
 			return errors.New("amount to unstake must be greater than zero")
 		}
 
-		_, balance, err = l.GetBalance(ctx, l.chainID, params.Sender)
+		_, balance, err = l.GetBalance(ctx, l.chainID, params.Sender, params.Asset)
 
 	case NativeStake:
 
@@ -149,7 +149,7 @@ func (l *AnkrOperation) Validate(ctx context.Context,
 
 // GetBalance retrieves the balance for a specified account and asset
 func (l *AnkrOperation) GetBalance(ctx context.Context, chainID *big.Int,
-	account common.Address) (common.Address, *big.Int, error) {
+	account, _ common.Address) (common.Address, *big.Int, error) {
 
 	var address common.Address
 

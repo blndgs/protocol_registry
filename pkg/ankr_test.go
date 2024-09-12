@@ -6,11 +6,8 @@ package pkg
 import (
 	"context"
 	"math/big"
-	"strings"
 	"testing"
 
-	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
 )
@@ -133,28 +130,16 @@ func TestAnkr_IsSupportedAsset(t *testing.T) {
 
 func TestAnkr_GetBalance(t *testing.T) {
 
-	ankr, err := NewAnkrOperation(getTestClient(t, ChainETH), big.NewInt(1))
+	client := getTestClient(t, ChainETH)
+
+	ankr, err := NewAnkrOperation(client, big.NewInt(1))
 	require.NoError(t, err)
 
-	token, bal, err := ankr.GetBalance(context.Background(), big.NewInt(1), emptyTestWallet)
+	token, bal, err := ankr.GetBalance(context.Background(), big.NewInt(1),
+		emptyTestWallet, common.HexToAddress(""))
 
 	require.NoError(t, err)
 	require.NotNil(t, bal)
 
-	parsedABI, err := abi.JSON(strings.NewReader(abiString))
-	require.NoError(t, err)
-
-	callData, err := parsedABI.Pack("symbol")
-	require.NoError(t, err)
-
-	result, err := ankr.client.CallContract(context.Background(), ethereum.CallMsg{
-		To:   &token,
-		Data: callData,
-	}, nil)
-	require.NoError(t, err)
-
-	name := ""
-	err = parsedABI.UnpackIntoInterface(&name, "symbol", result)
-
-	require.Equal(t, "ankrETH", name)
+	validateSymbolFromToken(t, client, token, "ankrETH")
 }

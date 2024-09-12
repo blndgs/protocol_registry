@@ -56,7 +56,7 @@ func TestRocketPoolOperation_GetBalance(t *testing.T) {
 	rp, err := NewRocketpoolOperation(client, big.NewInt(1))
 	require.NoError(t, err)
 
-	token, got, err := rp.GetBalance(context.Background(), big.NewInt(1), emptyTestWallet)
+	token, got, err := rp.GetBalance(context.Background(), big.NewInt(1), emptyTestWallet, common.HexToAddress(""))
 	require.NoError(t, err)
 	require.Empty(t, got.Int64())
 

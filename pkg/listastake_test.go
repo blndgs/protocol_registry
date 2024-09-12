@@ -80,7 +80,7 @@ func TestListaStaking_GetBalance(t *testing.T) {
 	wallet := common.HexToAddress("0x6F28FeC449dbd2056b76ac666350Af8773E03873")
 
 	token, bal, err := listaStaking.GetBalance(context.Background(),
-		big.NewInt(56), wallet)
+		big.NewInt(56), wallet, common.HexToAddress(""))
 
 	require.NoError(t, err)
 	require.NotNil(t, bal)

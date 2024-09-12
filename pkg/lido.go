@@ -137,7 +137,7 @@ func (l *LidoOperation) Validate(ctx context.Context,
 
 // GetBalance retrieves the balance for a specified account and asset
 func (l *LidoOperation) GetBalance(ctx context.Context,
-	chainID *big.Int, account common.Address) (common.Address, *big.Int, error) {
+	chainID *big.Int, account, _ common.Address) (common.Address, *big.Int, error) {
 
 	var address common.Address
 	if chainID.Int64() != 1 {
