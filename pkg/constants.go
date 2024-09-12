@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"context"
 	"errors"
 	"math/big"
 
@@ -39,17 +40,17 @@ type ProtocolType string
 
 type Protocol interface {
 	// Initialize(ctx context.Context, config ProtocolConfig) error
-	// GenerateCalldata(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) (string, error)
-	// Validate(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) error
-	// GetBalance(ctx context.Context, chainID *big.Int, account common.Address) (common.Address, *big.Int, error)
-	// GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error)
-	// IsSupportedAsset(ctx context.Context, chainID *big.Int, asset common.Address) bool
-	// GetProtocolConfig(chainID *big.Int) ProtocolConfig
-	// GetABI(chainID *big.Int) abi.ABI
-	// GetType() ProtocolType
-	// GetName() string
-	// GetVersion() string
-	// GetContractAddress(chainID *big.Int) common.Address
+	GenerateCalldata(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) (string, error)
+	Validate(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) error
+	GetBalance(ctx context.Context, chainID *big.Int, account, asset common.Address) (common.Address, *big.Int, error)
+	GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error)
+	IsSupportedAsset(ctx context.Context, chainID *big.Int, asset common.Address) bool
+	GetProtocolConfig(chainID *big.Int) ProtocolConfig
+	GetABI(chainID *big.Int) abi.ABI
+	GetType() ProtocolType
+	GetName() string
+	GetVersion() string
+	GetContractAddress(chainID *big.Int) common.Address
 }
 
 const (
