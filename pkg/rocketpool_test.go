@@ -6,11 +6,39 @@ package pkg
 import (
 	"context"
 	"math/big"
+	"strings"
 	"testing"
 
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/require"
 )
+
+func validateSymbolFromToken(t *testing.T,
+	client *ethclient.Client,
+	tokenContract common.Address,
+	expectedName string) {
+	t.Helper()
+
+	parsedABI, err := abi.JSON(strings.NewReader(abiString))
+	require.NoError(t, err)
+
+	callData, err := parsedABI.Pack("symbol")
+	require.NoError(t, err)
+
+	result, err := client.CallContract(context.Background(), ethereum.CallMsg{
+		To:   &tokenContract,
+		Data: callData,
+	}, nil)
+	require.NoError(t, err)
+
+	name := ""
+	err = parsedABI.UnpackIntoInterface(&name, "symbol", result)
+
+	require.Equal(t, expectedName, name)
+}
 
 func TestRocketPoolOperation_GenerateCallData_UnsupportedAction(t *testing.T) {
 
@@ -23,20 +51,16 @@ func TestRocketPoolOperation_GenerateCallData_UnsupportedAction(t *testing.T) {
 
 func TestRocketPoolOperation_GetBalance(t *testing.T) {
 
-	rp, err := NewRocketpoolOperation(getTestClient(t, ChainETH), big.NewInt(1))
+	client := getTestClient(t, ChainETH)
+
+	rp, err := NewRocketpoolOperation(client, big.NewInt(1))
 	require.NoError(t, err)
 
-	t.Run("native token", func(t *testing.T) {
-		got, err := rp.GetBalance(context.Background(), big.NewInt(1), emptyTestWallet, common.HexToAddress(nativeDenomAddress))
-		require.NoError(t, err)
-		require.Empty(t, got.Int64())
-	})
+	token, got, err := rp.GetBalance(context.Background(), big.NewInt(1), emptyTestWallet)
+	require.NoError(t, err)
+	require.Empty(t, got.Int64())
 
-	t.Run("rEth token", func(t *testing.T) {
-		got, err := rp.GetBalance(context.Background(), big.NewInt(1), emptyTestWallet, common.Address{})
-		require.NoError(t, err)
-		require.Empty(t, got.Int64())
-	})
+	validateSymbolFromToken(t, client, token, "rETH")
 }
 
 func TestRocketPoolOperation_Validate(t *testing.T) {
@@ -64,7 +88,6 @@ func TestRocketPoolOperation_Validate(t *testing.T) {
 			Amount: big.NewInt(1),
 			Asset:  common.HexToAddress(nativeDenomAddress),
 		})
-		t.Log(err)
 		require.Error(t, err)
 	})
 }

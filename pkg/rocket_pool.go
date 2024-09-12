@@ -185,42 +185,48 @@ func (l *RocketpoolOperation) Validate(ctx context.Context,
 		return fmt.Errorf("asset not supported %s", params.Asset)
 	}
 
-	if action != NativeStake && action != NativeUnStake {
-		return errors.New("action not supported")
-	}
+	var balance = new(big.Int)
+	var err error
 
-	amount := big.NewInt(0)
+	switch action {
+	case NativeStake:
 
-	if err := l.contract.Call(&bind.CallOpts{}, &amount, "getMaximumDepositAmount"); err != nil {
-		return err
-	}
+		amount := big.NewInt(0)
 
-	if val := amount.Cmp(params.Amount); val == -1 {
-		return errors.New("rocketpool not accepting this much eth deposit at this time")
-	}
+		if err := l.contract.Call(&bind.CallOpts{}, &amount, "getMaximumDepositAmount"); err != nil {
+			return err
+		}
 
-	amount = big.NewInt(0)
+		if val := amount.Cmp(params.Amount); val == -1 {
+			return errors.New("rocketpool not accepting this much eth deposit at this time")
+		}
 
-	if err := l.depositSettingsContract.Call(&bind.CallOpts{}, &amount, "getMinimumDeposit"); err != nil {
-		return err
-	}
+		amount = big.NewInt(0)
 
-	if val := amount.Cmp(params.Amount); val == 1 {
-		return errors.New("eth value too low to deposit to Rocketpool at this time")
-	}
+		if err := l.depositSettingsContract.Call(&bind.CallOpts{}, &amount, "getMinimumDeposit"); err != nil {
+			return err
+		}
 
-	asset := nativeDenomAddress
-	if action == NativeUnStake {
-		// will default to fetching RETH balance
-		asset = ""
+		if val := amount.Cmp(params.Amount); val == 1 {
+			return errors.New("eth value too low to deposit to Rocketpool at this time")
+		}
+
+		balance, err = l.client.BalanceAt(ctx, params.Sender, nil)
+
+	case NativeUnStake:
 
 		// validate amount only during unstaking
 		if params.Amount.Cmp(big.NewInt(0)) <= 0 {
 			return errors.New("amount must be greater than zero")
 		}
+
+		_, balance, err = l.GetBalance(ctx, l.chainID, params.Sender)
+
+	default:
+
+		return errors.New("action not supported")
 	}
 
-	balance, err := l.GetBalance(ctx, l.chainID, params.Sender, common.HexToAddress(asset))
 	if err != nil {
 		return err
 	}
@@ -233,18 +239,17 @@ func (l *RocketpoolOperation) Validate(ctx context.Context,
 }
 
 // GetBalance retrieves the balance for a specified account and asset
-func (l *RocketpoolOperation) GetBalance(ctx context.Context, chainID *big.Int, account,
-	asset common.Address) (*big.Int, error) {
+func (l *RocketpoolOperation) GetBalance(ctx context.Context,
+	chainID *big.Int, account common.Address) (common.Address, *big.Int, error) {
+
+	var address common.Address
 
 	if chainID.Int64() != 1 {
-		return nil, ErrChainUnsupported
+		return address, nil, ErrChainUnsupported
 	}
 
-	if strings.ToLower(asset.Hex()) == nativeDenomAddress {
-		return l.client.BalanceAt(ctx, account, nil)
-	}
-
-	return tokens.GetRETHBalance(l.rp, account, nil)
+	bal, err := tokens.GetRETHBalance(l.rp, account, nil)
+	return *l.rethContract.Address, bal, err
 }
 
 // GetSupportedAssets returns a list of assets supported by the protocol on the specified chain
