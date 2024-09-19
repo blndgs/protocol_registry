@@ -103,7 +103,7 @@ func TestGetCTokens(t *testing.T) {
 
 	client := getTestClient(t, ChainETH)
 
-	tokens, err := getCTokens(client)
+	tokens, err := getCTokens(client, common.HexToAddress(""))
 	require.NoError(t, err)
 
 	tt := []struct {
