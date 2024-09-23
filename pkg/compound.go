@@ -14,39 +14,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-const cTokenABI = `
-[
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "underlying",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-	{
-    "constant": true,
-    "inputs": [],
-    "name": "symbol",
-    "outputs": [
-      {
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "pure",
-    "type": "function"
-  }
-]
-	`
-
 const compoundPoolABI = `
 [
   {

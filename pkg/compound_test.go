@@ -99,6 +99,21 @@ func TestCompound_IsSupportedAsset(t *testing.T) {
 	})
 }
 
+func TestCompound_GetSupportedAssets(t *testing.T) {
+
+	client := getTestClient(t, ChainETH)
+
+	assets, err := getSupportedAssets(client, common.HexToAddress(CompoundV3ETHPool))
+	require.NoError(t, err)
+
+	require.NotEmpty(t, assets)
+
+	assets, err = getSupportedAssets(client, common.HexToAddress(CompoundV3USDCPool))
+	require.NoError(t, err)
+
+	require.NotEmpty(t, assets)
+}
+
 func TestCompound_GetBalance(t *testing.T) {
 
 	client := getTestClient(t, ChainETH)
