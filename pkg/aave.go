@@ -411,7 +411,6 @@ func (l *AaveOperation) IsSupportedAsset(ctx context.Context, chainID *big.Int, 
 		return false
 	}
 
-	fmt.Println(addrs, protocol)
 	if len(addrs) == 0 {
 		return false
 	}

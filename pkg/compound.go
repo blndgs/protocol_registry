@@ -14,94 +14,93 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-// Comptroller ABI
-// This also contains the cToken underlying ABI
-const comptrollerABI = `
+const compoundPoolABI = `
 [
   {
-    "constant": true,
     "inputs": [],
-    "name": "getAllMarkets",
+    "name": "numAssets",
     "outputs": [
       {
-        "internalType": "contract CToken[]",
+        "internalType": "uint8",
         "name": "",
-        "type": "address[]"
+        "type": "uint8"
       }
     ],
-    "payable": false,
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "underlying",
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "name": "getAssetInfo",
     "outputs": [
       {
-        "name": "",
+        "internalType": "uint8",
+        "name": "offset",
+        "type": "uint8"
+      },
+      {
+        "internalType": "address",
+        "name": "asset",
         "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-	{
-    "constant": true,
-    "inputs": [],
-    "name": "symbol",
-    "outputs": [
+      },
       {
-        "name": "",
-        "type": "string"
+        "internalType": "address",
+        "name": "priceFeed",
+        "type": "address"
+      },
+      {
+        "internalType": "uint64",
+        "name": "scale",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "borrowCollateralFactor",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "liquidateCollateralFactor",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "liquidationFactor",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint128",
+        "name": "supplyCap",
+        "type": "uint128"
       }
     ],
-    "payable": false,
-    "stateMutability": "pure",
+    "stateMutability": "view",
     "type": "function"
   }
 ]
 	`
 
-var ethComptrollerAddress = common.HexToAddress("0x3d9819210A31b4961b30EF54bE2aeD79B9c9Cd3B")
-
-// chainID -> Contract address -> ERC20s that can be used as collateral
-// Compound has different markets and each market only supports a
-// few assets as collateral
-var compoundSupportedAssets = map[int64]map[string][]string{
-	// Ethereum
-	1: {
-		// USDC pool
-		"0xc3d688b66703497daa19211eedff47f25384cdc3": []string{
-			nativeDenomAddress,                           // ETH
-			"0x514910771AF9Ca656af840dff83E8264EcF986CA", // LINK
-			"0xc00e94Cb662C3520282E6f5717214004A7f26888", // COMP
-			"0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984", // UNI
-			"0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", // WBTC
-		},
-		// ETH pool
-		"0xa17581a9e3356d9a858b789d68b4d866e593ae94": []string{
-			"0xBe9895146f7AF43049ca1c1AE358B0541Ea49704", // cbETH
-			"0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0", // wsETH (Lido)
-			"0xae78736Cd615f374D3085123A210448E74Fc6393", // RocketPool ETH
-			"0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", // WETH
-		},
-	},
-}
+const (
+	CompoundV3USDCPool = "0xc3d688b66703497daa19211eedff47f25384cdc3"
+	CompoundV3ETHPool  = "0xa17581a9e3356d9a858b789d68b4d866e593ae94"
+)
 
 // dynamically registers all supported pools
 func registerCompoundRegistry(registry ProtocolRegistry, client *ethclient.Client) error {
-	for chainID, v := range compoundSupportedAssets {
-		for poolAddr := range v {
-			c, err := NewCompoundOperation(client, big.NewInt(chainID), common.HexToAddress(poolAddr))
-			if err != nil {
-				return err
-			}
+	for _, poolAddr := range []string{CompoundV3USDCPool, CompoundV3ETHPool} {
+		c, err := NewCompoundOperation(client, big.NewInt(1), common.HexToAddress(poolAddr))
+		if err != nil {
+			return err
+		}
 
-			if err := registry.RegisterProtocol(big.NewInt(chainID), common.HexToAddress(poolAddr), c); err != nil {
-				return err
-			}
+		if err := registry.RegisterProtocol(big.NewInt(1), common.HexToAddress(poolAddr), c); err != nil {
+			return err
 		}
 	}
 
@@ -116,12 +115,9 @@ type CompoundOperation struct {
 	version   string
 	erc20ABI  abi.ABI
 	// assets that are supported in this pool
-	supportedAssets []string
+	supportedAssets []common.Address
 
 	client *ethclient.Client
-
-	// no mutex since there are no writes ever
-	cTokenMap map[string]string
 }
 
 func NewCompoundOperation(client *ethclient.Client, chainID *big.Int,
@@ -137,19 +133,13 @@ func NewCompoundOperation(client *ethclient.Client, chainID *big.Int,
 		return nil, err
 	}
 
-	supportedChain, ok := compoundSupportedAssets[chainID.Int64()]
-	if !ok {
-		return nil, errors.New("unsupported chain for Compound in Protocol registry")
-	}
-
-	supportedAssets, ok := supportedChain[strings.ToLower(marketPool.Hex())]
-	if !ok {
-		return nil, errors.New("unsupported Compound pool address")
-	}
-
-	cachedCTokens, err := getCTokens(client)
+	supportedAssets, err := getSupportedAssets(client, marketPool)
 	if err != nil {
 		return nil, err
+	}
+
+	if chainID.Int64() != 1 {
+		return nil, errors.New("unsupported chain id")
 	}
 
 	return &CompoundOperation{
@@ -160,25 +150,25 @@ func NewCompoundOperation(client *ethclient.Client, chainID *big.Int,
 		version:         "3",
 		client:          client,
 		erc20ABI:        erc20ABI,
-		cTokenMap:       cachedCTokens,
 	}, nil
 }
 
-func getCTokens(client *ethclient.Client) (map[string]string, error) {
+func getSupportedAssets(client *ethclient.Client, marketPool common.Address) (
+	[]common.Address, error) {
 
-	parsedComptrollerABI, err := abi.JSON(strings.NewReader(comptrollerABI))
+	parsedPoolABI, err := abi.JSON(strings.NewReader(compoundPoolABI))
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := parsedComptrollerABI.Pack("getAllMarkets")
+	numAssetsCallData, err := parsedPoolABI.Pack("numAssets")
 	if err != nil {
 		return nil, err
 	}
 
 	msg := ethereum.CallMsg{
-		To:   &ethComptrollerAddress,
-		Data: data,
+		To:   &marketPool,
+		Data: numAssetsCallData,
 	}
 
 	result, err := client.CallContract(context.Background(), msg, nil)
@@ -186,76 +176,52 @@ func getCTokens(client *ethclient.Client) (map[string]string, error) {
 		return nil, err
 	}
 
-	var markets []common.Address
-	err = parsedComptrollerABI.UnpackIntoInterface(&markets, "getAllMarkets", result)
+	var numAssets uint8
+
+	err = parsedPoolABI.UnpackIntoInterface(&numAssets, "numAssets", result)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to unpack output: %v", err)
 	}
 
-	var cachedCTokens = make(map[string]string)
+	var supportedTokens = make([]common.Address, 0, numAssets)
 
-	underlyingCalldata, err := parsedComptrollerABI.Pack("underlying")
-	if err != nil {
-		return nil, err
-	}
-
-	for _, marketAddress := range markets {
-
-		// Get the underlying token for this market
-		// All tokens have an underlying token except cETH
-		//
-		// There is an edge case here where we check for an invalid opcode.
-		// This is because of Tenderly (and maybe other custom RPCs?).
-		// We have to skip this error because we still need to verify if the market we
-		// are in is cETH or not
-		msg := ethereum.CallMsg{
-			To:   &marketAddress,
-			Data: underlyingCalldata,
+	// Fetch info for each collateral asset
+	for i := uint8(0); i < numAssets; i++ {
+		var assetInfo struct {
+			Offset                    uint8
+			Asset                     common.Address
+			PriceFeed                 common.Address
+			Scale                     uint64
+			BorrowCollateralFactor    uint64
+			LiquidateCollateralFactor uint64
+			LiquidationFactor         uint64
+			SupplyCap                 *big.Int
 		}
-		result, err := client.CallContract(context.Background(), msg, nil)
-		if err != nil && !strings.Contains(err.Error(), "invalid opcode") {
+
+		assetInfoCalldata, err := parsedPoolABI.Pack("getAssetInfo", i)
+		if err != nil {
 			return nil, err
 		}
 
-		var underlying common.Address
-		err = parsedComptrollerABI.UnpackIntoInterface(&underlying, "underlying", result)
-		if err != nil {
-
-			// cETH does not have an underlying token
-			// so check if it is a token with the cETH symbol.
-			// If it is one, we have to add the nativeDenomAddress here too
-			symbolCalldata, err := parsedComptrollerABI.Pack("symbol")
-			if err != nil {
-				return nil, fmt.Errorf("could not pack symbol to check if cETH")
-			}
-
-			msg := ethereum.CallMsg{
-				To:   &marketAddress,
-				Data: symbolCalldata,
-			}
-
-			result, err := client.CallContract(context.Background(), msg, nil)
-			if err != nil {
-				return nil, err
-			}
-
-			var symbol string
-			err = parsedComptrollerABI.UnpackIntoInterface(&symbol, "symbol", result)
-			if err != nil {
-				return nil, err
-			}
-
-			if symbol == "cETH" {
-				cachedCTokens[common.HexToAddress(nativeDenomAddress).Hex()] = marketAddress.Hex()
-			}
-
-			continue
+		msg := ethereum.CallMsg{
+			To:   &marketPool,
+			Data: assetInfoCalldata,
 		}
 
-		cachedCTokens[underlying.Hex()] = marketAddress.Hex()
+		result, err := client.CallContract(context.Background(), msg, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		err = parsedPoolABI.UnpackIntoInterface(&assetInfo, "getAssetInfo", result)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unpack output: %v", err)
+		}
+
+		supportedTokens = append(supportedTokens, assetInfo.Asset)
 	}
 
-	return cachedCTokens, err
+	return supportedTokens, nil
 }
 
 // GenerateCalldata creates the necessary blockchain transaction data
@@ -331,8 +297,9 @@ func (l *CompoundOperation) Validate(ctx context.Context,
 }
 
 // GetBalance retrieves the balance for a specified account and asset
-func (l *CompoundOperation) GetBalance(ctx context.Context, chainID *big.Int,
-	account, asset common.Address) (common.Address, *big.Int, error) {
+func (l *CompoundOperation) GetBalance(ctx context.Context,
+	chainID *big.Int,
+	account, _ common.Address) (common.Address, *big.Int, error) {
 
 	var address common.Address
 
@@ -340,19 +307,13 @@ func (l *CompoundOperation) GetBalance(ctx context.Context, chainID *big.Int,
 		return address, nil, ErrChainUnsupported
 	}
 
-	cToken, ok := l.cTokenMap[asset.Hex()]
-	if !ok {
-		return address, nil, errors.New("token does not have an equivalent cToken")
-	}
-
 	callData, err := l.erc20ABI.Pack("balanceOf", account)
 	if err != nil {
 		return address, nil, err
 	}
 
-	var assetHex = common.HexToAddress(cToken)
 	result, err := l.client.CallContract(context.Background(), ethereum.CallMsg{
-		To:   &assetHex,
+		To:   &l.contract,
 		Data: callData,
 	}, nil)
 	if err != nil {
@@ -361,18 +322,13 @@ func (l *CompoundOperation) GetBalance(ctx context.Context, chainID *big.Int,
 
 	balance := new(big.Int)
 	err = l.erc20ABI.UnpackIntoInterface(&balance, "balanceOf", result)
-	return assetHex, balance, err
+	return l.contract, balance, err
 }
 
 // GetSupportedAssets returns a list of assets supported by the protocol on the specified chain
-func (c *CompoundOperation) GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error) {
-	var addrs = make([]common.Address, 0, len(c.supportedAssets))
-
-	for _, v := range c.supportedAssets {
-		addrs = append(addrs, common.HexToAddress(v))
-	}
-
-	return addrs, nil
+func (c *CompoundOperation) GetSupportedAssets(ctx context.Context,
+	chainID *big.Int) ([]common.Address, error) {
+	return c.supportedAssets, nil
 }
 
 // IsSupportedAsset checks if the specified asset is supported on the given chain
@@ -382,7 +338,7 @@ func (c *CompoundOperation) IsSupportedAsset(ctx context.Context, chainID *big.I
 	}
 
 	for _, addr := range c.supportedAssets {
-		if strings.EqualFold(strings.ToLower(asset.Hex()), strings.ToLower(addr)) {
+		if addr.Hex() == asset.Hex() {
 			return true
 		}
 	}

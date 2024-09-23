@@ -99,57 +99,19 @@ func TestCompound_IsSupportedAsset(t *testing.T) {
 	})
 }
 
-func TestGetCTokens(t *testing.T) {
+func TestCompound_GetSupportedAssets(t *testing.T) {
 
 	client := getTestClient(t, ChainETH)
 
-	tokens, err := getCTokens(client)
+	assets, err := getSupportedAssets(client, common.HexToAddress(CompoundV3ETHPool))
 	require.NoError(t, err)
 
-	tt := []struct {
-		name            string
-		expectedCToken  string
-		underlyingToken string
-		hasError        bool
-	}{
-		{
-			name:            "Uniswap",
-			expectedCToken:  "0x35A18000230DA775CAc24873d00Ff85BccdeD550",
-			underlyingToken: "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
-			hasError:        false,
-		},
-		{
-			name:            "BAT",
-			expectedCToken:  "0x6C8c6b02E7b2BE14d4fA6022Dfd6d75921D90E4E",
-			underlyingToken: "0x0D8775F648430679A709E98d2b0Cb6250d2887EF",
-			hasError:        false,
-		},
-		{
-			name:            "ETH",
-			expectedCToken:  "0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5",
-			underlyingToken: common.HexToAddress(nativeDenomAddress).Hex(),
-			hasError:        false,
-		},
-		{
-			name:            "Shiba INU",
-			expectedCToken:  "",
-			underlyingToken: "0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE",
-			hasError:        true,
-		},
-	}
+	require.NotEmpty(t, assets)
 
-	for _, v := range tt {
-		t.Run(v.name, func(t *testing.T) {
-			cToken, ok := tokens[v.underlyingToken]
-			require.Equal(t, !v.hasError, ok)
+	assets, err = getSupportedAssets(client, common.HexToAddress(CompoundV3USDCPool))
+	require.NoError(t, err)
 
-			if !v.hasError {
-				return
-			}
-
-			require.Equal(t, v.expectedCToken, cToken)
-		})
-	}
+	require.NotEmpty(t, assets)
 }
 
 func TestCompound_GetBalance(t *testing.T) {
@@ -161,28 +123,13 @@ func TestCompound_GetBalance(t *testing.T) {
 
 	require.NoError(t, err)
 
-	t.Run("fetch uni cToken balance", func(t *testing.T) {
+	_, bal, err := compoundImpl.GetBalance(context.Background(), big.NewInt(1),
+		common.HexToAddress("0x94fa8efDD58e1721ad8Bf5D4001060e0E1C4d58e"),
+		common.HexToAddress(""))
 
-		uniAsset := common.HexToAddress("0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984")
+	require.NoError(t, err)
+	require.NotNil(t, bal)
 
-		token, bal, err := compoundImpl.GetBalance(context.Background(), big.NewInt(1),
-			common.HexToAddress("0x94fa8efDD58e1721ad8Bf5D4001060e0E1C4d58e"), uniAsset)
-
-		require.NoError(t, err)
-		require.NotNil(t, bal)
-
-		validateSymbolFromToken(t, client, token, "cUNI")
-	})
-
-	t.Run("fetch unsupported token balance", func(t *testing.T) {
-
-		rethToken := common.HexToAddress("0xae78736cd615f374d3085123a210448e74fc6393")
-
-		_, _, err := compoundImpl.GetBalance(context.Background(), big.NewInt(1),
-			common.HexToAddress("0x94fa8efDD58e1721ad8Bf5D4001060e0E1C4d58e"), rethToken)
-
-		require.Error(t, err)
-	})
 }
 
 func TestCompoundV3_Validate_ETH_Market(t *testing.T) {
@@ -199,8 +146,14 @@ func TestCompoundV3_Validate_ETH_Market(t *testing.T) {
 		hasError bool
 	}{
 		{
-			name:     "wbtc cannot be supplied",
+			name:     "wbtc can be supplied",
 			address:  "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+			hasError: false,
+		},
+		{
+			// weirdly enough eth market does not take weth
+			name:     "weth cannot be supplied",
+			address:  "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
 			hasError: true,
 		},
 	}
