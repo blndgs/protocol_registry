@@ -139,6 +139,11 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 		return errors.New("please provide BSC chain config")
 	}
 
+	polygonConfig, ok := r.chainConfigs[PolygonChainStr]
+	if !ok {
+		return errors.New("please provide Polygon chain config")
+	}
+
 	// Initialize ETH client
 	client, err := ethclient.Dial(val.RPCURL)
 	if err != nil {
@@ -147,6 +152,12 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 
 	// Initialize BSC client
 	bscClient, err := ethclient.Dial(bscConfig.RPCURL)
+	if err != nil {
+		return err
+	}
+
+	// Initialize Polygon client
+	polygonClient, err := ethclient.Dial(polygonConfig.RPCURL)
 	if err != nil {
 		return err
 	}
@@ -163,7 +174,43 @@ func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 		return err
 	}
 
-	return nil
+	// Setup protocols for Polygon
+	return r.setupPolygonProtocols(polygonClient)
+}
+
+// setupPolygonProtocols initializes and registers various DeFi protocols on the Polygon chain.
+func (r *ProtocolRegistryImpl) setupPolygonProtocols(client *ethclient.Client) error {
+
+	registerProtocol := func(address common.Address, chainID *big.Int,
+		createFunc func(ChainConfig) (Protocol, error)) error {
+
+		chainIDStr := chainID.String()
+		config, exists := r.chainConfigs[chainIDStr]
+
+		if !exists {
+			return fmt.Errorf("chain configuration not found for chainID: %s", chainIDStr)
+		}
+
+		protocol, err := createFunc(config)
+		if err != nil {
+			return fmt.Errorf("failed to create protocol at address %s: %v", address.Hex(), err)
+		}
+
+		err = r.RegisterProtocol(chainID, address, protocol)
+		if err != nil {
+			return fmt.Errorf("failed to register protocol at address %s: %v", address.Hex(), err)
+		}
+
+		return nil
+	}
+
+	// Register Aave protocol on Polygon
+	return registerProtocol(
+		AavePolygonV3ContractAddress,
+		PolygonChainID,
+		func(config ChainConfig) (Protocol, error) {
+			return NewAaveOperation(client, PolygonChainID, AaveProtocolDeploymentPolygon)
+		})
 }
 
 // setupEthProtocols initializes and registers various DeFi protocols on the Ethereum chain.
@@ -201,7 +248,7 @@ func (r *ProtocolRegistryImpl) setupEthProtocols(client *ethclient.Client) error
 	}
 
 	// Register Aave protocol on Ethereum
-	err = registerProtocol(AaveV3ContractAddress, EthChainID, func(config ChainConfig) (Protocol, error) {
+	err = registerProtocol(AaveEthereumV3ContractAddress, EthChainID, func(config ChainConfig) (Protocol, error) {
 		return NewAaveOperation(client, EthChainID, AaveProtocolDeploymentEthereum)
 	})
 	if err != nil {

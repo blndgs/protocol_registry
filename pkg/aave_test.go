@@ -23,6 +23,14 @@ func TestAave_New(t *testing.T) {
 		require.Contains(t, err.Error(), "only eth and bnb chains are supported")
 	})
 
+	t.Run("polygon chain is supported", func(t *testing.T) {
+		_, err := NewAaveOperation(
+			getTestClient(t, ChainPOLYGON),
+			PolygonChainID,
+			AaveProtocolDeploymentPolygon)
+		require.NoError(t, err)
+	})
+
 	t.Run("spark finance is not supported on bnb chain", func(t *testing.T) {
 		_, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(56), AaveProtocolDeploymentSpark)
 		require.Error(t, err)

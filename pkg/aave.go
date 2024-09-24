@@ -117,7 +117,7 @@ type AaveOperation struct {
 
 func isAaveChainSupported(chainID *big.Int, fork AaveProtocolDeployment) error {
 
-	if !IsBnb(chainID) && !IsEth(chainID) {
+	if !IsBnb(chainID) && !IsEth(chainID) && !IsPolygon(chainID) {
 		return errors.New("only eth and bnb chains are supported")
 	}
 
@@ -175,7 +175,7 @@ func NewAaveOperation(
 
 	switch fork {
 	case AaveProtocolDeploymentEthereum:
-		contract = AaveV3ContractAddress
+		contract = AaveEthereumV3ContractAddress
 		if chainID.Cmp(BscChainID) == 0 {
 			contract = AaveBnbV3ContractAddress
 		}

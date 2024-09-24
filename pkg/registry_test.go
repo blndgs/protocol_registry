@@ -27,6 +27,8 @@ func getTestRPCURL(t *testing.T, c Chain) string {
 			u = "https://eth.public-rpc.com"
 		case ChainBSC:
 			u = "https://bsc-dataseed1.binance.org/"
+		case ChainPOLYGON:
+			u = "https://1rpc.io/matic"
 		}
 	}
 
@@ -70,7 +72,7 @@ func TestProtocolRegistry_Validate(t *testing.T) {
 	})
 
 	t.Run("ValidateAave_NativeAsset", func(t *testing.T) {
-		operation, err := registry.GetProtocol(big.NewInt(1), AaveV3ContractAddress)
+		operation, err := registry.GetProtocol(big.NewInt(1), AaveEthereumV3ContractAddress)
 		require.NoError(t, err)
 
 		// native token not supported
@@ -97,19 +99,19 @@ func TestProtocolRegistry(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("GetProtocolOperation_Exists", func(t *testing.T) {
-		operation, err := registry.GetProtocol(big.NewInt(1), AaveV3ContractAddress)
+		operation, err := registry.GetProtocol(big.NewInt(1), AaveEthereumV3ContractAddress)
 		require.NoError(t, err)
 		require.NotNil(t, operation)
 	})
 
 	t.Run("GetProtocolOperation_NotExists wrong chain", func(t *testing.T) {
-		operation, err := registry.GetProtocol(big.NewInt(100), AaveV3ContractAddress)
+		operation, err := registry.GetProtocol(big.NewInt(100), AaveEthereumV3ContractAddress)
 		require.Error(t, err)
 		require.Nil(t, operation)
 	})
 
 	t.Run("RegisterProtocolOperation_InvalidChainID", func(t *testing.T) {
-		err := registry.RegisterProtocol(big.NewInt(11), AaveV3ContractAddress, nil)
+		err := registry.RegisterProtocol(big.NewInt(11), AaveEthereumV3ContractAddress, nil)
 		require.Error(t, err)
 	})
 }
@@ -139,7 +141,7 @@ func TestProtocolOperations(t *testing.T) {
 	}{
 		{
 			name:     "AaveV3 Supply",
-			protocol: AaveV3ContractAddress,
+			protocol: AaveEthereumV3ContractAddress,
 			action:   LoanSupply,
 			args: TransactionParams{
 				Asset:  common.HexToAddress("0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"),
