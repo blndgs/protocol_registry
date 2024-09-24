@@ -118,7 +118,7 @@ type AaveOperation struct {
 func isAaveChainSupported(chainID *big.Int, fork AaveProtocolDeployment) error {
 
 	if !IsBnb(chainID) && !IsEth(chainID) && !IsPolygon(chainID) {
-		return errors.New("only eth and bnb chains are supported")
+		return errors.New("only Ethereum, BNB, and Polygon chains are supported")
 	}
 
 	if IsBnb(chainID) && fork == AaveProtocolDeploymentSpark {
@@ -388,6 +388,8 @@ func (l *AaveOperation) GetSupportedAssets(ctx context.Context, chainID *big.Int
 		protocol = AvalonFinance
 	case AaveProtocolDeploymentSpark:
 		protocol = SparkLend
+	case AaveProtocolDeploymentPolygon:
+		protocol = AaveV3
 	default:
 		protocol = AaveV3
 	}
