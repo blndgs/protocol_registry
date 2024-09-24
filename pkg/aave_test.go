@@ -20,7 +20,7 @@ func TestAave_New(t *testing.T) {
 	t.Run("unsupported chain", func(t *testing.T) {
 		_, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(100), AaveProtocolDeploymentEthereum)
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "only eth and bnb chains are supported")
+		require.Contains(t, err.Error(), "only Ethereum, BNB, and Polygon chains are supported")
 	})
 
 	t.Run("polygon chain is supported", func(t *testing.T) {
