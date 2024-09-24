@@ -96,7 +96,7 @@ const aaveDataProviderABI = `
 
 var (
 	ethAaveDataProviderContract       = common.HexToAddress("0x7B4EB56E7CD4b454BA8ff71E4518426369a138a3")
-	polygonAaveDataProviderContract   = common.HexToAddress("0x5598BbFA2f4fE8151f45bBA0a3edE1b54B51a0a9")
+	polygonAaveDataProviderContract   = common.HexToAddress("0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654")
 	ethSparklendProviderContract      = common.HexToAddress("0xFc21d6d146E6086B8359705C8b28512a983db0cb")
 	bnbAaveDataProviderContract       = common.HexToAddress("0x41585C50524fb8c3899B43D7D797d9486AAc94DB")
 	avalonFinanceDataProviderContract = common.HexToAddress("0x672b19DdA450120C505214D149Ee7F7B6DEd8C39")
@@ -268,6 +268,8 @@ func (l *AaveOperation) getAToken(ctx context.Context, asset common.Address) (co
 		if l.fork == AaveProtocolDeploymentAvalonFinance {
 			toContract = avalonFinanceDataProviderContract
 		}
+	case IsPolygon(l.chainID):
+		toContract = polygonAaveDataProviderContract
 	default:
 		return common.HexToAddress(""), errors.New("unsupported chain")
 	}
@@ -377,7 +379,7 @@ func (l *AaveOperation) GetSupportedAssets(ctx context.Context, chainID *big.Int
 		return []common.Address{}, err
 	}
 
-	var protocol = AaveV3
+	var protocol string
 
 	switch l.fork {
 	case AaveProtocolDeploymentEthereum:
@@ -386,6 +388,8 @@ func (l *AaveOperation) GetSupportedAssets(ctx context.Context, chainID *big.Int
 		protocol = AvalonFinance
 	case AaveProtocolDeploymentSpark:
 		protocol = SparkLend
+	default:
+		protocol = AaveV3
 	}
 
 	assets := make([]common.Address, 0, len(tokenSupportedMap[l.chainID.Int64()][protocol]))
@@ -408,7 +412,7 @@ func (l *AaveOperation) IsSupportedAsset(ctx context.Context, chainID *big.Int, 
 		return false
 	}
 
-	var protocol = AaveV3
+	var protocol string
 
 	switch l.fork {
 	case AaveProtocolDeploymentEthereum:
@@ -417,6 +421,8 @@ func (l *AaveOperation) IsSupportedAsset(ctx context.Context, chainID *big.Int, 
 		protocol = AvalonFinance
 	case AaveProtocolDeploymentSpark:
 		protocol = SparkLend
+	default:
+		protocol = AaveV3
 	}
 
 	addrs, ok := protocols[protocol]
@@ -459,11 +465,15 @@ func (l *AaveOperation) GetContractAddress(chainID *big.Int) common.Address { re
 // Name returns the human readable name for the protocol
 func (l *AaveOperation) GetName() string {
 
-	if l.fork == AaveProtocolDeploymentEthereum {
+	switch l.fork {
+	case AaveProtocolDeploymentSpark:
+		return SparkLend
+	case AaveProtocolDeploymentAvalonFinance:
+		return AvalonFinance
+
+	default:
 		return AaveV3
 	}
-
-	return SparkLend
 }
 
 // GetVersion returns the version of the protocol

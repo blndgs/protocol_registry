@@ -170,6 +170,13 @@ func TestAave_GetAToken(t *testing.T) {
 			fork:           AaveProtocolDeploymentAvalonFinance,
 			client:         getTestClient(t, ChainBSC),
 		},
+		{
+			name:           "WETH on Polygon",
+			asset:          common.HexToAddress("0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"),
+			expectedAToken: common.HexToAddress("0xe50fA9b3c56FfB159cB0FCA61F5c9D750e8128c8"),
+			fork:           AaveProtocolDeploymentPolygon,
+			client:         getTestClient(t, ChainPOLYGON),
+		},
 	}
 
 	for _, v := range tt {
