@@ -18,25 +18,33 @@ var hotWallet = common.HexToAddress("0xee5b5b923ffce93a870b3104b7ca09c3db80047a"
 func TestAave_New(t *testing.T) {
 
 	t.Run("unsupported chain", func(t *testing.T) {
-		_, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(100), AaveProtocolForkAave)
+		_, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(100), AaveProtocolDeploymentEthereum)
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "only eth and bnb chains are supported")
+		require.Contains(t, err.Error(), "only Ethereum, BNB, and Polygon chains are supported")
+	})
+
+	t.Run("polygon chain is supported", func(t *testing.T) {
+		_, err := NewAaveOperation(
+			getTestClient(t, ChainPOLYGON),
+			PolygonChainID,
+			AaveProtocolDeploymentPolygon)
+		require.NoError(t, err)
 	})
 
 	t.Run("spark finance is not supported on bnb chain", func(t *testing.T) {
-		_, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(56), AaveProtocolForkSpark)
+		_, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(56), AaveProtocolDeploymentSpark)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "spark finance is not supported on Bnb chain")
 	})
 
 	t.Run("network id check fails", func(t *testing.T) {
-		_, err := NewAaveOperation(getTestClient(t, ChainBSC), big.NewInt(1), AaveProtocolForkAave)
+		_, err := NewAaveOperation(getTestClient(t, ChainBSC), big.NewInt(1), AaveProtocolDeploymentEthereum)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "network id of client")
 	})
 
 	t.Run("network id of bsc network client does not match eth chain", func(t *testing.T) {
-		_, err := NewAaveOperation(getTestClient(t, ChainBSC), big.NewInt(1), AaveProtocolForkAave)
+		_, err := NewAaveOperation(getTestClient(t, ChainBSC), big.NewInt(1), AaveProtocolDeploymentEthereum)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "network id of client")
 	})
@@ -44,10 +52,10 @@ func TestAave_New(t *testing.T) {
 
 func TestAave_GetSupportedAsset(t *testing.T) {
 
-	aave, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolForkAave)
+	aave, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolDeploymentEthereum)
 	require.NoError(t, err)
 
-	sparklend, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolForkSpark)
+	sparklend, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolDeploymentSpark)
 	require.NoError(t, err)
 
 	t.Run("aave on eth", func(t *testing.T) {
@@ -67,7 +75,7 @@ func TestAave_GetSupportedAsset(t *testing.T) {
 
 	t.Run("aave on bsc", func(t *testing.T) {
 
-		aave, err := NewAaveOperation(getTestClient(t, ChainBSC), big.NewInt(56), AaveProtocolForkAave)
+		aave, err := NewAaveOperation(getTestClient(t, ChainBSC), big.NewInt(56), AaveProtocolDeploymentEthereum)
 		require.NoError(t, err)
 
 		assets, err := aave.GetSupportedAssets(context.Background(), big.NewInt(56))
@@ -79,7 +87,7 @@ func TestAave_GetSupportedAsset(t *testing.T) {
 
 	t.Run("avalon finance on bsc", func(t *testing.T) {
 
-		avalonFinance, err := NewAaveOperation(getTestClient(t, ChainBSC), big.NewInt(56), AaveProtocolForkAvalonFinance)
+		avalonFinance, err := NewAaveOperation(getTestClient(t, ChainBSC), big.NewInt(56), AaveProtocolDeploymentAvalonFinance)
 		require.NoError(t, err)
 
 		assets, err := avalonFinance.GetSupportedAssets(context.Background(), big.NewInt(56))
@@ -92,10 +100,10 @@ func TestAave_GetSupportedAsset(t *testing.T) {
 
 func TestAave_IsSupportedAsset(t *testing.T) {
 
-	aave, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolForkAave)
+	aave, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolDeploymentEthereum)
 	require.NoError(t, err)
 
-	sparklend, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolForkSpark)
+	sparklend, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolDeploymentSpark)
 	require.NoError(t, err)
 
 	t.Run("(aave) Lido stETH not supported", func(t *testing.T) {
@@ -124,43 +132,50 @@ func TestAave_GetAToken(t *testing.T) {
 	tt := []struct {
 		name                  string
 		asset, expectedAToken common.Address
-		fork                  AaveProtocolFork
+		fork                  AaveProtocolDeployment
 		client                *ethclient.Client
 	}{
 		{
 			asset:          common.HexToAddress("0xae78736cd615f374d3085123a210448e74fc6393"),
 			name:           "Rocketpool ETH on Aave",
 			expectedAToken: common.HexToAddress("0xCc9EE9483f662091a1de4795249E24aC0aC2630f"),
-			fork:           AaveProtocolForkAave,
+			fork:           AaveProtocolDeploymentEthereum,
 			client:         getTestClient(t, ChainETH),
 		},
 		{
 			asset:          common.HexToAddress("0x55d398326f99059fF775485246999027B3197955"),
 			name:           "USDT on Aave (BSC)",
 			expectedAToken: common.HexToAddress("0xa9251ca9DE909CB71783723713B21E4233fbf1B1"),
-			fork:           AaveProtocolForkAave,
+			fork:           AaveProtocolDeploymentEthereum,
 			client:         getTestClient(t, ChainBSC),
 		},
 		{
 			name:           "USDC on Aave",
 			asset:          common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
 			expectedAToken: common.HexToAddress("0x98C23E9d8f34FEFb1B7BD6a91B7FF122F4e16F5c"),
-			fork:           AaveProtocolForkAave,
+			fork:           AaveProtocolDeploymentEthereum,
 			client:         getTestClient(t, ChainETH),
 		},
 		{
 			name:           "USDC on sparklend",
 			asset:          common.HexToAddress("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
 			expectedAToken: common.HexToAddress("0x377C3bd93f2a2984E1E7bE6A5C22c525eD4A4815"),
-			fork:           AaveProtocolForkSpark,
+			fork:           AaveProtocolDeploymentSpark,
 			client:         getTestClient(t, ChainETH),
 		},
 		{
 			name:           "USDC on AvalonFinance",
 			asset:          common.HexToAddress("0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d"),
 			expectedAToken: common.HexToAddress("0xfcefbD84BA5d64cd530Afb2e8DDEa7b399A9fC53"),
-			fork:           AaveProtocolForkAvalonFinance,
+			fork:           AaveProtocolDeploymentAvalonFinance,
 			client:         getTestClient(t, ChainBSC),
+		},
+		{
+			name:           "WETH on Polygon",
+			asset:          common.HexToAddress("0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"),
+			expectedAToken: common.HexToAddress("0xe50fA9b3c56FfB159cB0FCA61F5c9D750e8128c8"),
+			fork:           AaveProtocolDeploymentPolygon,
+			client:         getTestClient(t, ChainPOLYGON),
 		},
 	}
 
@@ -183,7 +198,7 @@ func TestAave_GetAToken(t *testing.T) {
 
 func TestAave_Validate(t *testing.T) {
 
-	aave, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolForkAave)
+	aave, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolDeploymentEthereum)
 	require.NoError(t, err)
 
 	t.Run("zero value supplied", func(t *testing.T) {
@@ -254,7 +269,7 @@ func TestAave_Validate(t *testing.T) {
 
 	t.Run("(sparklend) user with usdt balance can supply", func(t *testing.T) {
 
-		aave, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolForkSpark)
+		aave, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolDeploymentSpark)
 		require.NoError(t, err)
 
 		err = aave.Validate(context.Background(), big.NewInt(1), LoanSupply, TransactionParams{
@@ -271,7 +286,7 @@ func TestAave_GetBalance(t *testing.T) {
 
 	client := getTestClient(t, ChainETH)
 
-	aave, err := NewAaveOperation(client, big.NewInt(1), AaveProtocolForkAave)
+	aave, err := NewAaveOperation(client, big.NewInt(1), AaveProtocolDeploymentEthereum)
 	require.NoError(t, err)
 
 	token, bal, err := aave.GetBalance(context.Background(), big.NewInt(1), hotWallet,
@@ -291,7 +306,7 @@ func TestAave_GenerateCalldata_Withdraw(t *testing.T) {
 
 	t.Run("bsc chain for aave", func(t *testing.T) {
 
-		aave, err := NewAaveOperation(getTestClient(t, ChainBSC), big.NewInt(56), AaveProtocolForkAave)
+		aave, err := NewAaveOperation(getTestClient(t, ChainBSC), big.NewInt(56), AaveProtocolDeploymentEthereum)
 		require.NoError(t, err)
 
 		calldata, err := aave.GenerateCalldata(context.Background(), big.NewInt(1), LoanWithdraw, TransactionParams{
@@ -309,7 +324,7 @@ func TestAave_GenerateCalldata_Withdraw(t *testing.T) {
 
 	t.Run("ethereum chain for aave", func(t *testing.T) {
 
-		aave, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolForkAave)
+		aave, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolDeploymentEthereum)
 		require.NoError(t, err)
 
 		calldata, err := aave.GenerateCalldata(context.Background(), big.NewInt(1), LoanWithdraw, TransactionParams{
@@ -327,7 +342,7 @@ func TestAave_GenerateCalldata_Withdraw(t *testing.T) {
 
 	t.Run("bsc chain for avalon finance", func(t *testing.T) {
 
-		avalonFinance, err := NewAaveOperation(getTestClient(t, ChainBSC), big.NewInt(56), AaveProtocolForkAvalonFinance)
+		avalonFinance, err := NewAaveOperation(getTestClient(t, ChainBSC), big.NewInt(56), AaveProtocolDeploymentAvalonFinance)
 		require.NoError(t, err)
 
 		calldata, err := avalonFinance.GenerateCalldata(context.Background(), big.NewInt(56), LoanWithdraw, TransactionParams{
@@ -350,7 +365,7 @@ func TestAave_GenerateCalldata_Supply(t *testing.T) {
 
 	expectedCalldata := "0x617ba0370000000000000000000000001f9840a85d5af5bf1d1762f925bdaddc4201f9840000000000000000000000000000000000000000000000000de0b6b3a76400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000a"
 
-	aave, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolForkAave)
+	aave, err := NewAaveOperation(getTestClient(t, ChainETH), big.NewInt(1), AaveProtocolDeploymentEthereum)
 	require.NoError(t, err)
 
 	calldata, err := aave.GenerateCalldata(context.Background(), big.NewInt(1), LoanSupply, TransactionParams{

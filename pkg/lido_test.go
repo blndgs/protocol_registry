@@ -30,7 +30,7 @@ const abiString = `
   }]
 		`
 
-// ENUM(ETH,BSC)
+// ENUM(ETH,BSC,POLYGON)
 type Chain string
 
 func getTestClient(t *testing.T, c Chain) *ethclient.Client {
