@@ -12,49 +12,53 @@ import (
 )
 
 const (
-	// AaveProtocolForkAave is a AaveProtocolFork of type Aave.
-	AaveProtocolForkAave AaveProtocolFork = iota
-	// AaveProtocolForkSpark is a AaveProtocolFork of type Spark.
-	AaveProtocolForkSpark
-	// AaveProtocolForkAvalonFinance is a AaveProtocolFork of type Avalon_finance.
-	AaveProtocolForkAvalonFinance
+	// AaveProtocolDeploymentEthereum is a AaveProtocolDeployment of type Ethereum.
+	AaveProtocolDeploymentEthereum AaveProtocolDeployment = iota
+	// AaveProtocolDeploymentSpark is a AaveProtocolDeployment of type Spark.
+	AaveProtocolDeploymentSpark
+	// AaveProtocolDeploymentAvalonFinance is a AaveProtocolDeployment of type Avalon_finance.
+	AaveProtocolDeploymentAvalonFinance
+	// AaveProtocolDeploymentPolygon is a AaveProtocolDeployment of type Polygon.
+	AaveProtocolDeploymentPolygon
 )
 
-var ErrInvalidAaveProtocolFork = errors.New("not a valid AaveProtocolFork")
+var ErrInvalidAaveProtocolDeployment = errors.New("not a valid AaveProtocolDeployment")
 
-const _AaveProtocolForkName = "aavesparkavalon_finance"
+const _AaveProtocolDeploymentName = "ethereumsparkavalon_financepolygon"
 
-var _AaveProtocolForkMap = map[AaveProtocolFork]string{
-	AaveProtocolForkAave:          _AaveProtocolForkName[0:4],
-	AaveProtocolForkSpark:         _AaveProtocolForkName[4:9],
-	AaveProtocolForkAvalonFinance: _AaveProtocolForkName[9:23],
+var _AaveProtocolDeploymentMap = map[AaveProtocolDeployment]string{
+	AaveProtocolDeploymentEthereum:      _AaveProtocolDeploymentName[0:8],
+	AaveProtocolDeploymentSpark:         _AaveProtocolDeploymentName[8:13],
+	AaveProtocolDeploymentAvalonFinance: _AaveProtocolDeploymentName[13:27],
+	AaveProtocolDeploymentPolygon:       _AaveProtocolDeploymentName[27:34],
 }
 
 // String implements the Stringer interface.
-func (x AaveProtocolFork) String() string {
-	if str, ok := _AaveProtocolForkMap[x]; ok {
+func (x AaveProtocolDeployment) String() string {
+	if str, ok := _AaveProtocolDeploymentMap[x]; ok {
 		return str
 	}
-	return fmt.Sprintf("AaveProtocolFork(%d)", x)
+	return fmt.Sprintf("AaveProtocolDeployment(%d)", x)
 }
 
 // IsValid provides a quick way to determine if the typed value is
 // part of the allowed enumerated values
-func (x AaveProtocolFork) IsValid() bool {
-	_, ok := _AaveProtocolForkMap[x]
+func (x AaveProtocolDeployment) IsValid() bool {
+	_, ok := _AaveProtocolDeploymentMap[x]
 	return ok
 }
 
-var _AaveProtocolForkValue = map[string]AaveProtocolFork{
-	_AaveProtocolForkName[0:4]:  AaveProtocolForkAave,
-	_AaveProtocolForkName[4:9]:  AaveProtocolForkSpark,
-	_AaveProtocolForkName[9:23]: AaveProtocolForkAvalonFinance,
+var _AaveProtocolDeploymentValue = map[string]AaveProtocolDeployment{
+	_AaveProtocolDeploymentName[0:8]:   AaveProtocolDeploymentEthereum,
+	_AaveProtocolDeploymentName[8:13]:  AaveProtocolDeploymentSpark,
+	_AaveProtocolDeploymentName[13:27]: AaveProtocolDeploymentAvalonFinance,
+	_AaveProtocolDeploymentName[27:34]: AaveProtocolDeploymentPolygon,
 }
 
-// ParseAaveProtocolFork attempts to convert a string to a AaveProtocolFork.
-func ParseAaveProtocolFork(name string) (AaveProtocolFork, error) {
-	if x, ok := _AaveProtocolForkValue[name]; ok {
+// ParseAaveProtocolDeployment attempts to convert a string to a AaveProtocolDeployment.
+func ParseAaveProtocolDeployment(name string) (AaveProtocolDeployment, error) {
+	if x, ok := _AaveProtocolDeploymentValue[name]; ok {
 		return x, nil
 	}
-	return AaveProtocolFork(0), fmt.Errorf("%s is %w", name, ErrInvalidAaveProtocolFork)
+	return AaveProtocolDeployment(0), fmt.Errorf("%s is %w", name, ErrInvalidAaveProtocolDeployment)
 }

@@ -14,8 +14,14 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-// ENUM(aave,spark,avalon_finance)
-type AaveProtocolFork uint8
+// ENUM(ethereum,spark,avalon_finance,polygon)
+//
+// AaveProtocolDeployment matches the numerous deployments of Aave.
+// The naming convention here is:
+// - If the Aave team themself deploy on a chain, name it the chain,
+// - Else if it is a fork deployed by another team, name it that specific protocol
+// name
+type AaveProtocolDeployment uint8
 
 const aaveV3ABI = `
  [
@@ -90,6 +96,7 @@ const aaveDataProviderABI = `
 
 var (
 	ethAaveDataProviderContract       = common.HexToAddress("0x7B4EB56E7CD4b454BA8ff71E4518426369a138a3")
+	polygonAaveDataProviderContract   = common.HexToAddress("0x5598BbFA2f4fE8151f45bBA0a3edE1b54B51a0a9")
 	ethSparklendProviderContract      = common.HexToAddress("0xFc21d6d146E6086B8359705C8b28512a983db0cb")
 	bnbAaveDataProviderContract       = common.HexToAddress("0x41585C50524fb8c3899B43D7D797d9486AAc94DB")
 	avalonFinanceDataProviderContract = common.HexToAddress("0x672b19DdA450120C505214D149Ee7F7B6DEd8C39")
@@ -102,20 +109,24 @@ type AaveOperation struct {
 	contract        common.Address
 	chainID         *big.Int
 	version         string
-	fork            AaveProtocolFork
+	fork            AaveProtocolDeployment
 	erc20ABI        abi.ABI
 
 	client *ethclient.Client
 }
 
-func isAaveChainSupported(chainID *big.Int, fork AaveProtocolFork) error {
+func isAaveChainSupported(chainID *big.Int, fork AaveProtocolDeployment) error {
 
 	if !IsBnb(chainID) && !IsEth(chainID) {
 		return errors.New("only eth and bnb chains are supported")
 	}
 
-	if IsBnb(chainID) && fork == AaveProtocolForkSpark {
+	if IsBnb(chainID) && fork == AaveProtocolDeploymentSpark {
 		return errors.New("spark finance is not supported on Bnb chain. Only Ethereum")
+	}
+
+	if IsPolygon(chainID) && fork != AaveProtocolDeploymentPolygon {
+		return errors.New("only the official aave deployment on Polygon is supported at the moment")
 	}
 
 	return nil
@@ -124,7 +135,7 @@ func isAaveChainSupported(chainID *big.Int, fork AaveProtocolFork) error {
 func NewAaveOperation(
 	client *ethclient.Client,
 	chainID *big.Int,
-	fork AaveProtocolFork,
+	fork AaveProtocolDeployment,
 ) (*AaveOperation, error) {
 
 	if err := isAaveChainSupported(chainID, fork); err != nil {
@@ -163,19 +174,19 @@ func NewAaveOperation(
 	var contract common.Address
 
 	switch fork {
-	case AaveProtocolForkAave:
+	case AaveProtocolDeploymentEthereum:
 		contract = AaveV3ContractAddress
 		if chainID.Cmp(BscChainID) == 0 {
 			contract = AaveBnbV3ContractAddress
 		}
-	case AaveProtocolForkAvalonFinance:
+	case AaveProtocolDeploymentAvalonFinance:
 		contract = AvalonFinanceContractAddress
-	case AaveProtocolForkSpark:
+	case AaveProtocolDeploymentSpark:
 		contract = SparkLendContractAddress
 	}
 
 	var version string = "3"
-	if fork == AaveProtocolForkAvalonFinance {
+	if fork == AaveProtocolDeploymentAvalonFinance {
 		version = "2"
 	}
 
@@ -242,17 +253,17 @@ func (l *AaveOperation) getAToken(ctx context.Context, asset common.Address) (co
 	switch {
 	case IsEth(l.chainID):
 		toContract = ethAaveDataProviderContract
-		if l.fork == AaveProtocolForkSpark {
+		if l.fork == AaveProtocolDeploymentSpark {
 			toContract = ethSparklendProviderContract
 		}
 
 	case IsBnb(l.chainID):
-		if l.fork == AaveProtocolForkSpark {
+		if l.fork == AaveProtocolDeploymentSpark {
 			return common.HexToAddress(""), errors.New("BSC: spark finance is not supported on Aave")
 		}
 
 		toContract = bnbAaveDataProviderContract
-		if l.fork == AaveProtocolForkAvalonFinance {
+		if l.fork == AaveProtocolDeploymentAvalonFinance {
 			toContract = avalonFinanceDataProviderContract
 		}
 	default:
@@ -367,11 +378,11 @@ func (l *AaveOperation) GetSupportedAssets(ctx context.Context, chainID *big.Int
 	var protocol = AaveV3
 
 	switch l.fork {
-	case AaveProtocolForkAave:
+	case AaveProtocolDeploymentEthereum:
 		protocol = AaveV3
-	case AaveProtocolForkAvalonFinance:
+	case AaveProtocolDeploymentAvalonFinance:
 		protocol = AvalonFinance
-	case AaveProtocolForkSpark:
+	case AaveProtocolDeploymentSpark:
 		protocol = SparkLend
 	}
 
@@ -398,11 +409,11 @@ func (l *AaveOperation) IsSupportedAsset(ctx context.Context, chainID *big.Int, 
 	var protocol = AaveV3
 
 	switch l.fork {
-	case AaveProtocolForkAave:
+	case AaveProtocolDeploymentEthereum:
 		protocol = AaveV3
-	case AaveProtocolForkAvalonFinance:
+	case AaveProtocolDeploymentAvalonFinance:
 		protocol = AvalonFinance
-	case AaveProtocolForkSpark:
+	case AaveProtocolDeploymentSpark:
 		protocol = SparkLend
 	}
 
@@ -446,7 +457,7 @@ func (l *AaveOperation) GetContractAddress(chainID *big.Int) common.Address { re
 // Name returns the human readable name for the protocol
 func (l *AaveOperation) GetName() string {
 
-	if l.fork == AaveProtocolForkAave {
+	if l.fork == AaveProtocolDeploymentEthereum {
 		return AaveV3
 	}
 

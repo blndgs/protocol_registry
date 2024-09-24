@@ -202,7 +202,7 @@ func (r *ProtocolRegistryImpl) setupEthProtocols(client *ethclient.Client) error
 
 	// Register Aave protocol on Ethereum
 	err = registerProtocol(AaveV3ContractAddress, EthChainID, func(config ChainConfig) (Protocol, error) {
-		return NewAaveOperation(client, EthChainID, AaveProtocolForkAave)
+		return NewAaveOperation(client, EthChainID, AaveProtocolDeploymentEthereum)
 	})
 	if err != nil {
 		return err
@@ -210,7 +210,7 @@ func (r *ProtocolRegistryImpl) setupEthProtocols(client *ethclient.Client) error
 
 	// Register Sparklend protocol on Ethereum
 	err = registerProtocol(SparkLendContractAddress, EthChainID, func(config ChainConfig) (Protocol, error) {
-		return NewAaveOperation(client, EthChainID, AaveProtocolForkSpark)
+		return NewAaveOperation(client, EthChainID, AaveProtocolDeploymentSpark)
 	})
 	if err != nil {
 		return err
@@ -264,7 +264,7 @@ func (r *ProtocolRegistryImpl) setupBnbProtocols(client *ethclient.Client) error
 
 	// Register Aave protocol on BNB
 	err := registerProtocol(AaveBnbV3ContractAddress, BscChainID, func(config ChainConfig) (Protocol, error) {
-		return NewAaveOperation(client, BscChainID, AaveProtocolForkAave)
+		return NewAaveOperation(client, BscChainID, AaveProtocolDeploymentEthereum)
 	})
 	if err != nil {
 		return err
@@ -272,7 +272,7 @@ func (r *ProtocolRegistryImpl) setupBnbProtocols(client *ethclient.Client) error
 
 	// Register Avalon Finance protocol on BNB
 	err = registerProtocol(AvalonFinanceContractAddress, BscChainID, func(config ChainConfig) (Protocol, error) {
-		return NewAaveOperation(client, BscChainID, AaveProtocolForkAvalonFinance)
+		return NewAaveOperation(client, BscChainID, AaveProtocolDeploymentAvalonFinance)
 	})
 	if err != nil {
 		return err
