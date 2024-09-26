@@ -17,8 +17,8 @@ func NewJSONTokenRegistry() (*JSONTokenRegistry, error) {
 	registry := &JSONTokenRegistry{
 		data: make(map[string]*Data),
 	}
-
-	chainIDs := []*big.Int{pkg.EthChainID, pkg.BscChainID}
+	// supported chain ids.
+	chainIDs := []*big.Int{pkg.EthChainID, pkg.BscChainID, pkg.PolygonChainID}
 	for _, chainID := range chainIDs {
 		fileName := fmt.Sprintf("%d.json", chainID)
 		data, err := loadJSONFile(fileName)

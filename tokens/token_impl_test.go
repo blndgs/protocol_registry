@@ -33,11 +33,21 @@ const sampleBscData = `{
 	]
 }`
 
+const samplePolygonData = `{
+	"tokens": [
+		{"token_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", "name": "USD Coin", "symbol": "USDC", "decimals": 6}
+	],
+	"protocols": [
+		{"address": "0x794a61358D6845594F94dc1DB02A252b5b4814aD", "name": "AaveV3", "source": true, "destination": true, "tokens": ["0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063"]}
+	]
+}`
+
 func TestNewJSONTokenRegistry(t *testing.T) {
 	// Setup: Create temporary JSON files for testing
 	tmpDir := t.TempDir()
 	createTempJSONFile(t, tmpDir, "1.json", sampleEthData)
 	createTempJSONFile(t, tmpDir, "56.json", sampleBscData)
+	createTempJSONFile(t, tmpDir, "137.json", samplePolygonData)
 
 	// Change working directory to temp directory
 	oldWd, _ := os.Getwd()
@@ -49,7 +59,7 @@ func TestNewJSONTokenRegistry(t *testing.T) {
 	registry, err := NewJSONTokenRegistry()
 	require.NoError(t, err)
 	assert.NotNil(t, registry)
-	assert.Len(t, registry.data, 2)
+	assert.Len(t, registry.data, 3)
 }
 
 func TestGetTokens(t *testing.T) {
@@ -63,6 +73,7 @@ func TestGetTokens(t *testing.T) {
 	}{
 		{"Ethereum chain", pkg.EthChainID, 21, false},
 		{"BSC chain", pkg.BscChainID, 9, false},
+		{"Polyhon chain", pkg.PolygonChainID, 12, false},
 		{"Unknown chain", big.NewInt(999), 0, true},
 	}
 
@@ -91,6 +102,7 @@ func TestGetProtocols(t *testing.T) {
 	}{
 		{"Ethereum chain", pkg.EthChainID, 7, false},
 		{"BSC chain", pkg.BscChainID, 3, false},
+		{"Polygon chain", pkg.PolygonChainID, 1, false},
 		{"Unknown chain", big.NewInt(999), 0, true},
 	}
 
@@ -120,6 +132,7 @@ func TestGetTokenByAddress(t *testing.T) {
 	}{
 		{"Ethereum USDC", pkg.EthChainID, "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "USDC", false},
 		{"BSC USDC", pkg.BscChainID, "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d", "USDC", false},
+		{"Polygon USDC", pkg.PolygonChainID, "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359", "USDC", false},
 		{"Unknown token", pkg.EthChainID, "0x1234567890123456789012345678901234567890", "", true},
 		{"Unknown chain", big.NewInt(999), "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48", "", true},
 	}
@@ -150,6 +163,7 @@ func TestGetProtocolByAddress(t *testing.T) {
 	}{
 		{"Ethereum AaveV3", pkg.EthChainID, "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2", "AaveV3", false},
 		{"BSC AaveV3", pkg.BscChainID, "0x6807dc923806fE8Fd134338EABCA509979a7e0cB", "AaveV3", false},
+		{"Polygon AaveV3", pkg.PolygonChainID, "0x794a61358D6845594F94dc1DB02A252b5b4814aD", "AaveV3", false},
 		{"Unknown protocol", pkg.EthChainID, "0x1234567890123456789012345678901234567890", "", true},
 		{"Unknown chain", big.NewInt(999), "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2", "", true},
 	}
