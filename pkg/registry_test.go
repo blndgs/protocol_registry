@@ -225,3 +225,79 @@ func TestProtocolOperations(t *testing.T) {
 		})
 	}
 }
+
+func TestProtocolOperationIntegration(t *testing.T) {
+
+	registry, err := NewProtocolRegistry([]ChainConfig{
+		{
+			ChainID: big.NewInt(1),
+			RPCURL:  getTestRPCURL(t, ChainETH),
+		},
+		{
+			ChainID: big.NewInt(56),
+			RPCURL:  getTestRPCURL(t, ChainBSC),
+		},
+		{
+			ChainID: big.NewInt(137),
+			RPCURL:  getTestRPCURL(t, ChainPOLYGON),
+		},
+	})
+
+	require.NoError(t, err)
+
+	protocol, err := registry.GetProtocol(big.NewInt(1), AaveEthereumV3ContractAddress)
+	require.NoError(t, err)
+
+	params := TransactionParams{
+		Amount: big.NewInt(10 * 1e6),
+		// top 10 holder of token onchain
+		Sender: common.HexToAddress("0x70f1196Ce323B7B1A741C1E0f4FB84Ac3385FC02"),
+		Asset:  common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"),
+		ExtraData: map[string]interface{}{
+			"referral_code": uint16(0),
+		},
+	}
+
+	isSupported := protocol.IsSupportedAsset(context.Background(), big.NewInt(1),
+		common.HexToAddress("0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"))
+
+	require.True(t, isSupported)
+
+	t.Run("test loan withdraw", func(t *testing.T) {
+
+		err = protocol.Validate(context.Background(), big.NewInt(1), LoanWithdraw, params)
+		require.NoError(t, err)
+
+		_, err = protocol.GenerateCalldata(context.Background(), big.NewInt(1), LoanWithdraw, params)
+		require.NoError(t, err)
+	})
+
+	t.Run("test loan supply", func(t *testing.T) {
+
+		err = protocol.Validate(context.Background(), big.NewInt(1), LoanSupply, params)
+		require.NoError(t, err)
+
+		_, err = protocol.GenerateCalldata(context.Background(), big.NewInt(1), LoanSupply, params)
+		require.NoError(t, err)
+	})
+}
+
+func TestProtocolOperation_NoChainConfig(t *testing.T) {
+
+	registry, err := NewProtocolRegistry([]ChainConfig{})
+	require.NoError(t, err)
+
+	_, err = registry.GetProtocol(big.NewInt(1), AaveEthereumV3ContractAddress)
+	require.Error(t, err, "GetProtocol should return an error when no chains are configured")
+}
+
+func TestProtocolOperation_OnceChainConfig(t *testing.T) {
+
+	_, err := NewProtocolRegistry([]ChainConfig{
+		{
+			ChainID: big.NewInt(137),
+			RPCURL:  getTestRPCURL(t, ChainPOLYGON),
+		},
+	})
+	require.NoError(t, err)
+}
