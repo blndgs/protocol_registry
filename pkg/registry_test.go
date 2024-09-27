@@ -283,3 +283,20 @@ func TestProtocolOperationIntegration(t *testing.T) {
 		require.NoError(t, err)
 	})
 }
+
+func TestProtocolOperation_NoChainConfig(t *testing.T) {
+
+	_, err := NewProtocolRegistry([]ChainConfig{})
+	require.NoError(t, err)
+}
+
+func TestProtocolOperation_OnceChainConfig(t *testing.T) {
+
+	_, err := NewProtocolRegistry([]ChainConfig{
+		{
+			ChainID: big.NewInt(137),
+			RPCURL:  getTestRPCURL(t, ChainPOLYGON),
+		},
+	})
+	require.NoError(t, err)
+}

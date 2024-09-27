@@ -1,7 +1,6 @@
 package pkg
 
 import (
-	"errors"
 	"fmt"
 	"math/big"
 	"sync"
@@ -130,51 +129,42 @@ func (r *ProtocolRegistryImpl) ListProtocolsByType(chainID *big.Int, protocolTyp
 // setupProtocolOperations initializes and registers various DeFi protocols for both ETH and BNB.
 func (r *ProtocolRegistryImpl) setupProtocolOperations() error {
 	val, ok := r.chainConfigs[EthChainStr]
-	if !ok {
-		return errors.New("please provide ETH chain config")
+	if ok {
+		client, err := ethclient.Dial(val.RPCURL)
+		if err != nil {
+			return err
+		}
+
+		err = r.setupEthProtocols(client)
+		if err != nil {
+			return err
+		}
 	}
 
 	bscConfig, ok := r.chainConfigs[BscChainStr]
-	if !ok {
-		return errors.New("please provide BSC chain config")
+	if ok {
+
+		bscClient, err := ethclient.Dial(bscConfig.RPCURL)
+		if err != nil {
+			return err
+		}
+
+		err = r.setupBnbProtocols(bscClient)
+		if err != nil {
+			return err
+		}
 	}
 
 	polygonConfig, ok := r.chainConfigs[PolygonChainStr]
 	if !ok {
-		return errors.New("please provide Polygon chain config")
+		return nil
 	}
 
-	// Initialize ETH client
-	client, err := ethclient.Dial(val.RPCURL)
-	if err != nil {
-		return err
-	}
-
-	// Initialize BSC client
-	bscClient, err := ethclient.Dial(bscConfig.RPCURL)
-	if err != nil {
-		return err
-	}
-
-	// Initialize Polygon client
 	polygonClient, err := ethclient.Dial(polygonConfig.RPCURL)
 	if err != nil {
 		return err
 	}
 
-	// Setup protocols for ETH
-	err = r.setupEthProtocols(client)
-	if err != nil {
-		return err
-	}
-
-	// Setup protocols for BNB
-	err = r.setupBnbProtocols(bscClient)
-	if err != nil {
-		return err
-	}
-
-	// Setup protocols for Polygon
 	return r.setupPolygonProtocols(polygonClient)
 }
 
