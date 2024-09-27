@@ -246,9 +246,7 @@ func TestProtocolOperationIntegration(t *testing.T) {
 	require.NoError(t, err)
 
 	protocol, err := registry.GetProtocol(big.NewInt(1), AaveEthereumV3ContractAddress)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 
 	params := TransactionParams{
 		Amount: big.NewInt(10 * 1e6),
@@ -286,8 +284,11 @@ func TestProtocolOperationIntegration(t *testing.T) {
 
 func TestProtocolOperation_NoChainConfig(t *testing.T) {
 
-	_, err := NewProtocolRegistry([]ChainConfig{})
+	registry, err := NewProtocolRegistry([]ChainConfig{})
 	require.NoError(t, err)
+
+	_, err = registry.GetProtocol(big.NewInt(1), AaveEthereumV3ContractAddress)
+	require.Error(t, err, "GetProtocol should return an error when no chains are configured")
 }
 
 func TestProtocolOperation_OnceChainConfig(t *testing.T) {
