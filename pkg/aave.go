@@ -321,12 +321,7 @@ func (l *AaveOperation) Validate(ctx context.Context,
 		return nil
 	}
 
-	asset, err := l.getAToken(ctx, params.Asset)
-	if err != nil {
-		return err
-	}
-
-	_, balance, err := l.GetBalance(ctx, l.chainID, params.Sender, asset)
+	_, balance, err := l.GetBalance(ctx, l.chainID, params.Sender, params.Asset)
 	if err != nil {
 		return err
 	}
