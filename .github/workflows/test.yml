@@ -2,6 +2,8 @@ name: PR-Test
 
 on:
   pull_request:
+    types: [opened, reopened, synchronize]
+  push:
     branches: [main]
 
 jobs:
@@ -25,13 +27,14 @@ jobs:
         env:
           TEST_ETH_RPC_URL: ${{ secrets.TEST_ETH_RPC_URL }}
           TEST_BSC_RPC_URL: ${{ secrets.TEST_BSC_RPC_URL }}
+          TEST_POLYGON_RPC_URL: ${{ secrets.TEST_POLYGON_RPC_URL }}
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
+        if: github.ref == 'refs/heads/main'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.txt
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: true
-          verbose: true

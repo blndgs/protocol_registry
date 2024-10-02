@@ -2,10 +2,7 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
-      - test
-      - live
+    branches: [main]
 
 jobs:
   build-test-and-release:
