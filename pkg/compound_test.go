@@ -6,8 +6,10 @@ package pkg
 import (
 	"context"
 	"math/big"
+	"strings"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
 )
@@ -103,12 +105,15 @@ func TestCompound_GetSupportedAssets(t *testing.T) {
 
 	client := getTestClient(t, ChainETH)
 
-	assets, err := getSupportedAssets(client, common.HexToAddress(CompoundV3ETHPool))
+	parsedABI, err := abi.JSON(strings.NewReader(compoundv3ABI))
+	require.NoError(t, err)
+
+	assets, err := getSupportedAssets(parsedABI, client, common.HexToAddress(CompoundV3ETHPool))
 	require.NoError(t, err)
 
 	require.NotEmpty(t, assets)
 
-	assets, err = getSupportedAssets(client, common.HexToAddress(CompoundV3USDCPool))
+	assets, err = getSupportedAssets(parsedABI, client, common.HexToAddress(CompoundV3USDCPool))
 	require.NoError(t, err)
 
 	require.NotEmpty(t, assets)
