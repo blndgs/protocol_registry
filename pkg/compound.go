@@ -345,6 +345,10 @@ func (l *CompoundOperation) GetBalance(ctx context.Context,
 
 	var address common.Address
 
+	if !l.IsSupportedAsset(ctx, chainID, asset) {
+		return address, nil, errors.New("unsupported asset. cannot fetch it's balance")
+	}
+
 	if chainID.Int64() != 1 {
 		return address, nil, ErrChainUnsupported
 	}
@@ -363,7 +367,8 @@ func (l *CompoundOperation) GetBalance(ctx context.Context,
 	}
 
 	balance := new(big.Int)
-	err = l.parsedABI.UnpackIntoInterface(&balance, "userCollateral", result)
+	res := new(big.Int)
+	err = l.parsedABI.UnpackIntoInterface(&[]interface{}{&balance, &res}, "userCollateral", result)
 	return l.contract, balance, err
 }
 

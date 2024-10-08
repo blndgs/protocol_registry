@@ -128,13 +128,24 @@ func TestCompound_GetBalance(t *testing.T) {
 
 	require.NoError(t, err)
 
-	_, bal, err := compoundImpl.GetBalance(context.Background(), big.NewInt(1),
-		common.HexToAddress("0x94fa8efDD58e1721ad8Bf5D4001060e0E1C4d58e"),
-		common.HexToAddress(""))
+	t.Run("unsupported asset", func(t *testing.T) {
 
-	require.NoError(t, err)
-	require.NotNil(t, bal)
+		_, _, err := compoundImpl.GetBalance(context.Background(), big.NewInt(1),
+			common.HexToAddress("0x94fa8efDD58e1721ad8Bf5D4001060e0E1C4d58e"),
+			common.HexToAddress(""))
 
+		require.Error(t, err)
+	})
+
+	t.Run("supported WETH asset", func(t *testing.T) {
+
+		_, bal, err := compoundImpl.GetBalance(context.Background(), big.NewInt(1),
+			common.HexToAddress("0x94fa8efDD58e1721ad8Bf5D4001060e0E1C4d58e"),
+			common.HexToAddress("0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599"))
+
+		require.NoError(t, err)
+		require.NotNil(t, bal)
+	})
 }
 
 func TestCompoundV3_Validate_ETH_Market(t *testing.T) {
