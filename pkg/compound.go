@@ -15,36 +15,60 @@ import (
 )
 
 const compoundv3ABI = `
- [
-   {
-     "name": "withdraw",
-     "type": "function",
-     "inputs": [
-       {
-         "type": "address"
-       },
-       {
-         "type": "uint256"
-       }
-     ]
-   },
-   {
-     "name": "supply",
-     "type": "function",
-     "inputs": [
-       {
-         "type": "address"
-       },
-       {
-         "type": "uint256"
-       }
-     ]
-   }
- ]
- 	`
-
-const compoundPoolABI = `
 [
+  {
+    "name": "withdraw",
+    "type": "function",
+    "inputs": [
+      {
+        "type": "address"
+      },
+      {
+        "type": "uint256"
+      }
+    ]
+  },
+  {
+    "name": "supply",
+    "type": "function",
+    "inputs": [
+      {
+        "type": "address"
+      },
+      {
+        "type": "uint256"
+      }
+    ]
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "userCollateral",
+    "outputs": [
+      {
+        "internalType": "uint128",
+        "name": "balance",
+        "type": "uint128"
+      },
+      {
+        "internalType": "uint128",
+        "name": "_reserved",
+        "type": "uint128"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
   {
     "inputs": [],
     "name": "numAssets",
@@ -113,7 +137,7 @@ const compoundPoolABI = `
     "type": "function"
   }
 ]
-	`
+`
 
 const (
 	CompoundV3USDCPool = "0xc3d688b66703497daa19211eedff47f25384cdc3"
@@ -142,7 +166,7 @@ type CompoundOperation struct {
 	contract  common.Address
 	chainID   *big.Int
 	version   string
-	erc20ABI  abi.ABI
+
 	// assets that are supported in this pool
 	supportedAssets []common.Address
 
@@ -157,12 +181,7 @@ func NewCompoundOperation(client *ethclient.Client, chainID *big.Int,
 		return nil, err
 	}
 
-	erc20ABI, err := abi.JSON(strings.NewReader(erc20BalanceOfABI))
-	if err != nil {
-		return nil, err
-	}
-
-	supportedAssets, err := getSupportedAssets(client, marketPool)
+	supportedAssets, err := getSupportedAssets(parsedABI, client, marketPool)
 	if err != nil {
 		return nil, err
 	}
@@ -178,17 +197,11 @@ func NewCompoundOperation(client *ethclient.Client, chainID *big.Int,
 		chainID:         chainID,
 		version:         "3",
 		client:          client,
-		erc20ABI:        erc20ABI,
 	}, nil
 }
 
-func getSupportedAssets(client *ethclient.Client, marketPool common.Address) (
-	[]common.Address, error) {
-
-	parsedPoolABI, err := abi.JSON(strings.NewReader(compoundPoolABI))
-	if err != nil {
-		return nil, err
-	}
+func getSupportedAssets(parsedPoolABI abi.ABI,
+	client *ethclient.Client, marketPool common.Address) ([]common.Address, error) {
 
 	numAssetsCallData, err := parsedPoolABI.Pack("numAssets")
 	if err != nil {
@@ -328,15 +341,19 @@ func (l *CompoundOperation) Validate(ctx context.Context,
 // GetBalance retrieves the balance for a specified account and asset
 func (l *CompoundOperation) GetBalance(ctx context.Context,
 	chainID *big.Int,
-	account, _ common.Address) (common.Address, *big.Int, error) {
+	account, asset common.Address) (common.Address, *big.Int, error) {
 
 	var address common.Address
+
+	if !l.IsSupportedAsset(ctx, chainID, asset) {
+		return address, nil, errors.New("unsupported asset. cannot fetch it's balance")
+	}
 
 	if chainID.Int64() != 1 {
 		return address, nil, ErrChainUnsupported
 	}
 
-	callData, err := l.erc20ABI.Pack("balanceOf", account)
+	callData, err := l.parsedABI.Pack("userCollateral", account, asset)
 	if err != nil {
 		return address, nil, err
 	}
@@ -350,7 +367,8 @@ func (l *CompoundOperation) GetBalance(ctx context.Context,
 	}
 
 	balance := new(big.Int)
-	err = l.erc20ABI.UnpackIntoInterface(&balance, "balanceOf", result)
+	res := new(big.Int)
+	err = l.parsedABI.UnpackIntoInterface(&[]interface{}{&balance, &res}, "userCollateral", result)
 	return l.contract, balance, err
 }
 

@@ -6,8 +6,10 @@ package pkg
 import (
 	"context"
 	"math/big"
+	"strings"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/require"
 )
@@ -103,12 +105,15 @@ func TestCompound_GetSupportedAssets(t *testing.T) {
 
 	client := getTestClient(t, ChainETH)
 
-	assets, err := getSupportedAssets(client, common.HexToAddress(CompoundV3ETHPool))
+	parsedABI, err := abi.JSON(strings.NewReader(compoundv3ABI))
+	require.NoError(t, err)
+
+	assets, err := getSupportedAssets(parsedABI, client, common.HexToAddress(CompoundV3ETHPool))
 	require.NoError(t, err)
 
 	require.NotEmpty(t, assets)
 
-	assets, err = getSupportedAssets(client, common.HexToAddress(CompoundV3USDCPool))
+	assets, err = getSupportedAssets(parsedABI, client, common.HexToAddress(CompoundV3USDCPool))
 	require.NoError(t, err)
 
 	require.NotEmpty(t, assets)
@@ -123,13 +128,24 @@ func TestCompound_GetBalance(t *testing.T) {
 
 	require.NoError(t, err)
 
-	_, bal, err := compoundImpl.GetBalance(context.Background(), big.NewInt(1),
-		common.HexToAddress("0x94fa8efDD58e1721ad8Bf5D4001060e0E1C4d58e"),
-		common.HexToAddress(""))
+	t.Run("unsupported asset", func(t *testing.T) {
 
-	require.NoError(t, err)
-	require.NotNil(t, bal)
+		_, _, err := compoundImpl.GetBalance(context.Background(), big.NewInt(1),
+			common.HexToAddress("0x94fa8efDD58e1721ad8Bf5D4001060e0E1C4d58e"),
+			common.HexToAddress(""))
 
+		require.Error(t, err)
+	})
+
+	t.Run("supported WETH asset", func(t *testing.T) {
+
+		_, bal, err := compoundImpl.GetBalance(context.Background(), big.NewInt(1),
+			common.HexToAddress("0x94fa8efDD58e1721ad8Bf5D4001060e0E1C4d58e"),
+			common.HexToAddress("0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599"))
+
+		require.NoError(t, err)
+		require.NotNil(t, bal)
+	})
 }
 
 func TestCompoundV3_Validate_ETH_Market(t *testing.T) {
