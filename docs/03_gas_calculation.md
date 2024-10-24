@@ -27,7 +27,7 @@ func (p *MyProtocol) EstimateGas(ctx context.Context, chainID *big.Int, action C
     // Generate calldata based on the action
     calldata, err := p.GenerateCalldata(ctx, chainID, action, params)
     if err != nil {
-        return nil, err
+        return nil, "", err
     }
 
     // Create the message for gas estimation
@@ -41,7 +41,7 @@ func (p *MyProtocol) EstimateGas(ctx context.Context, chainID *big.Int, action C
     // Use the Ethereum client to estimate gas
     gasEstimate, err := p.rpcClient.EstimateGas(ctx, msg)
     if err != nil {
-        return nil, err
+        return nil, "", err
     }
 
     return gasEstimate, calldata, nil
@@ -72,7 +72,7 @@ The `ProtocolRegistry` implementation will call the `EstimateGas` method of the 
 
 ```go
 // EstimateGas estimates the gas required for a transaction across any registered protocol.
-func (r *ProtocolRegistry) EstimateGas(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) (*big.Int, string error) {
+func (r *ProtocolRegistry) EstimateGas(ctx context.Context, chainID *big.Int, action ContractAction, params TransactionParams) (*big.Int, string, error) {
     protocol, err := r.GetProtocol(chainID, params.ToAddress)
     if err != nil {
         return nil, err
@@ -98,7 +98,14 @@ params := protocols.TransactionParams{
 gasEstimate, calldata, err := registry.EstimateGas(context.Background(), big.NewInt(1), protocols.NativeStake, params)
 if err != nil {
     fmt.Errorf("Error estimating gas: %v", err)
+    return err
 }
+
+// Validate gas estimate
+if gasEstimate.Cmp(big.NewInt(0)) <= 0 {
+    return fmt.Errorf("invalid gas estimate: %s", gasEstimate)
+}
+
 fmt.Printf("Estimated Gas: %s", gasEstimate.String())
 fmt.Printf("Calldata: %s", calldata)
 ```
