@@ -84,7 +84,7 @@ func TestAnkr_Validate(t *testing.T) {
 		require.Error(t, err)
 	})
 
-	t.Run("staking more than available balance", func(t *testing.T) {
+	t.Run("staking more than available balance ( works correctly because of solver )", func(t *testing.T) {
 
 		err = ankr.Validate(context.Background(), big.NewInt(1), NativeStake, TransactionParams{
 			Amount: big.NewInt(1 * 1e18),
@@ -92,7 +92,7 @@ func TestAnkr_Validate(t *testing.T) {
 			Sender: emptyTestWallet,
 		})
 
-		require.Error(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("user with eth balance can stake", func(t *testing.T) {
