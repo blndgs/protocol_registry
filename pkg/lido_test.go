@@ -68,7 +68,7 @@ func TestLido_Validate(t *testing.T) {
 		require.Error(t, err)
 	})
 
-	t.Run("user without eth balance cannot stake", func(t *testing.T) {
+	t.Run("user without eth balance can stake", func(t *testing.T) {
 
 		lido, err := NewLidoOperation(getTestClient(t, ChainETH), big.NewInt(1))
 		require.NoError(t, err)
@@ -79,7 +79,7 @@ func TestLido_Validate(t *testing.T) {
 			Asset:  common.HexToAddress(nativeDenomAddress),
 		})
 
-		require.Error(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("user with eth balance can stake", func(t *testing.T) {

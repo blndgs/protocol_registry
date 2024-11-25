@@ -122,15 +122,6 @@ func (l *LidoOperation) Validate(ctx context.Context,
 		return errors.New("action not supported")
 	}
 
-	balance, err := l.client.BalanceAt(ctx, params.Sender, nil)
-	if err != nil {
-		return fmt.Errorf("could not fetch ETH balance.. %s", err)
-	}
-
-	if balance.Cmp(params.Amount) == -1 {
-		return errors.New("balance not enough")
-	}
-
 	return nil
 }
 

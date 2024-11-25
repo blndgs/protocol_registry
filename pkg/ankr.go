@@ -113,28 +113,16 @@ func (l *AnkrOperation) Validate(ctx context.Context,
 		return fmt.Errorf("asset not supported %s", params.Asset)
 	}
 
-	var balance = new(big.Int)
-	var err error
-
-	switch action {
-	case NativeUnStake:
-
-		// only validate amount during withdrawal
-		if params.Amount.Cmp(big.NewInt(0)) <= 0 {
-			return errors.New("amount to unstake must be greater than zero")
-		}
-
-		_, balance, err = l.GetBalance(ctx, l.chainID, params.Sender, params.Asset)
-
-	case NativeStake:
-
-		balance, err = l.client.BalanceAt(ctx, params.Sender, nil)
-
-	default:
-
-		return errors.New("action not supported")
-
+	if action == NativeStake {
+		return nil
 	}
+
+	// only validate amount during withdrawal
+	if params.Amount.Cmp(big.NewInt(0)) <= 0 {
+		return errors.New("amount to unstake must be greater than zero")
+	}
+
+	_, balance, err := l.GetBalance(ctx, l.chainID, params.Sender, params.Asset)
 	if err != nil {
 		return err
 	}

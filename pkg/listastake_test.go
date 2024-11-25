@@ -48,14 +48,18 @@ func TestListaStaking_Validate(t *testing.T) {
 		require.Error(t, err)
 	})
 
-	t.Run("user without balance cannot stake", func(t *testing.T) {
+	// This is because the solver can have multiple dynamic steps
+	// User can have USDT but wants to stake in Lista.
+	// Solver goes from USDT-> BNB -> Lista
+	// Being strict here fails the validation and halts the solver
+	t.Run("user without balance can stake", func(t *testing.T) {
 
 		err = listaStaking.Validate(context.Background(), big.NewInt(56), NativeStake, TransactionParams{
 			Amount: big.NewInt(1),
 			Sender: common.HexToAddress("0xFc21d6d146E6086B8359705C8b28512a983db0cb"),
 		})
 
-		require.Error(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("user with balance can stake", func(t *testing.T) {
