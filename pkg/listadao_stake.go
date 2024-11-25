@@ -122,15 +122,6 @@ func (l *ListaStakingOperation) Validate(ctx context.Context,
 		return errors.New("unsupported action")
 	}
 
-	balance, err := l.client.BalanceAt(ctx, params.Sender, nil)
-	if err != nil {
-		return err
-	}
-
-	if balance.Cmp(big.NewInt(0)) == 0 {
-		return errors.New("you cannot stake with a zero BNB balance")
-	}
-
 	return nil
 }
 
@@ -212,4 +203,3 @@ func (l *ListaStakingOperation) GetName() string { return ListaDao }
 
 // GetVersion returns the version of the protocol
 func (l *ListaStakingOperation) GetVersion() string { return "1" }
-

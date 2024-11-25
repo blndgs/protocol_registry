@@ -326,15 +326,6 @@ func (l *CompoundOperation) Validate(ctx context.Context,
 		return errors.New("amount must be greater than zero")
 	}
 
-	_, balance, err := l.GetBalance(ctx, l.chainID, params.Sender, params.Asset)
-	if err != nil {
-		return err
-	}
-
-	if balance.Cmp(params.Amount) == -1 {
-		return errors.New("your balance not enough")
-	}
-
 	return nil
 }
 

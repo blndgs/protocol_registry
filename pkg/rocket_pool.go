@@ -208,8 +208,7 @@ func (l *RocketpoolOperation) Validate(ctx context.Context,
 			return errors.New("eth value too low to deposit to Rocketpool at this time")
 		}
 
-		balance, err = l.client.BalanceAt(ctx, params.Sender, nil)
-
+		return nil
 	case NativeUnStake:
 
 		// validate amount only during unstaking
@@ -218,18 +217,17 @@ func (l *RocketpoolOperation) Validate(ctx context.Context,
 		}
 
 		_, balance, err = l.GetBalance(ctx, l.chainID, params.Sender, params.Asset)
+		if err != nil {
+			return err
+		}
+
+		if balance.Cmp(params.Amount) == -1 {
+			return errors.New("balance not enough")
+		}
 
 	default:
 
 		return errors.New("action not supported")
-	}
-
-	if err != nil {
-		return err
-	}
-
-	if balance.Cmp(params.Amount) == -1 {
-		return errors.New("balance not enough")
 	}
 
 	return nil
