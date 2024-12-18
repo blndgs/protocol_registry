@@ -71,7 +71,7 @@ func TestGetTokens(t *testing.T) {
 		want    int
 		wantErr bool
 	}{
-		{"Ethereum chain", pkg.EthChainID, 21, false},
+		{"Ethereum chain", pkg.EthChainID, 17, false},
 		{"BSC chain", pkg.BscChainID, 9, false},
 		{"Polyhon chain", pkg.PolygonChainID, 12, false},
 		{"Unknown chain", big.NewInt(999), 0, true},
