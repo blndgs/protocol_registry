@@ -140,19 +140,31 @@ const compoundv3ABI = `
 `
 
 const (
-	CompoundV3USDCPool = "0xc3d688b66703497daa19211eedff47f25384cdc3"
-	CompoundV3ETHPool  = "0xa17581a9e3356d9a858b789d68b4d866e593ae94"
+	CompoundV3USDCPool        = "0xc3d688b66703497daa19211eedff47f25384cdc3"
+	CompoundV3ETHPool         = "0xa17581a9e3356d9a858b789d68b4d866e593ae94"
+	CompoundV3PolygonUSDCPool = "0xF25212E676D1F7F89Cd72fFEe66158f541246445"
+	CompoundV3PolygonUSDTPool = "0xaeB318360f27748Acb200CE616E389A6C9409a07"
 )
 
+var poolMaps = map[int64][]string{
+	1:   {CompoundV3ETHPool, CompoundV3USDCPool},
+	137: {CompoundV3PolygonUSDCPool, CompoundV3PolygonUSDTPool},
+}
+
 // dynamically registers all supported pools
-func registerCompoundRegistry(registry ProtocolRegistry, client *ethclient.Client) error {
-	for _, poolAddr := range []string{CompoundV3USDCPool, CompoundV3ETHPool} {
-		c, err := NewCompoundOperation(client, big.NewInt(1), common.HexToAddress(poolAddr))
+func registerCompoundRegistry(registry ProtocolRegistry, client *ethclient.Client, chainID int64) error {
+	protocols, ok := poolMaps[chainID]
+	if !ok {
+		return nil
+	}
+
+	for _, poolAddr := range protocols {
+		c, err := NewCompoundOperation(client, big.NewInt(chainID), common.HexToAddress(poolAddr))
 		if err != nil {
 			return err
 		}
 
-		if err := registry.RegisterProtocol(big.NewInt(1), common.HexToAddress(poolAddr), c); err != nil {
+		if err := registry.RegisterProtocol(big.NewInt(chainID), common.HexToAddress(poolAddr), c); err != nil {
 			return err
 		}
 	}
@@ -186,7 +198,7 @@ func NewCompoundOperation(client *ethclient.Client, chainID *big.Int,
 		return nil, err
 	}
 
-	if chainID.Int64() != 1 {
+	if chainID.Int64() != 1 && chainID.Int64() != 137 {
 		return nil, errors.New("unsupported chain id")
 	}
 
