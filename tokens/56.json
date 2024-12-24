@@ -59,6 +59,7 @@
     {
       "address": "0x6807dc923806fE8Fd134338EABCA509979a7e0cB",
       "name": "AaveV3",
+      "type": "lending",
       "source": true,
       "destination": true,
       "tokens": [
@@ -72,6 +73,7 @@
     {
       "address": "0xf9278C7c4AEfAC4dDfd0D496f7a1C39cA6BCA6d4",
       "name": "AvalonFinance",
+      "type": "lending",
       "source": true,
       "destination": true,
       "tokens": [
@@ -83,6 +85,7 @@
     {
       "address": "0x1adB950d8bB3dA4bE104211D5AB038628e477fE6",
       "name": "ListaDAO",
+      "type": "staking",
       "source": false,
       "destination": true,
       "tokens": [

@@ -106,6 +106,7 @@
   "protocols": [
     {
       "address": "0x84db6ee82b7cf3b47e8f19270abde5718b936670",
+      "type": "staking",
       "name": "Ankr",
       "source": true,
       "destination": true,
@@ -116,6 +117,7 @@
     {
       "address": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
       "name": "Lido",
+      "type": "staking",
       "source": false,
       "destination": true,
       "tokens": [
@@ -125,6 +127,7 @@
     {
       "address": "0x1d8f8f00cfa6758d7bE78336684788Fb0ee0Fa46",
       "name": "Rocketpool",
+      "type": "staking",
       "source": true,
       "destination": true,
       "tokens": [
@@ -135,6 +138,7 @@
     {
       "address": "0xC13e21B648A5Ee794902342038FF3aDAB66BE987",
       "name": "SparkLend",
+      "type": "lending",
       "source": true,
       "destination": true,
       "tokens": [
@@ -150,6 +154,7 @@
     {
       "address": "0xa17581a9e3356d9a858b789d68b4d866e593ae94",
       "name": "Compound ETH Pool",
+      "type": "lending",
       "source": true,
       "destination": true,
       "tokens": [
@@ -164,6 +169,7 @@
     {
       "address": "0xc3d688b66703497daa19211eedff47f25384cdc3",
       "name": "Compound USDC Pool",
+      "type": "lending",
       "source": true,
       "destination": true,
       "tokens": [
@@ -178,6 +184,7 @@
     {
       "address": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
       "name": "AaveV3",
+      "type": "lending",
       "source": true,
       "destination": true,
       "tokens": [
