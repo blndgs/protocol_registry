@@ -15,11 +15,12 @@ type Token struct {
 
 // Protocol represents a protocol with its properties
 type Protocol struct {
-	Address     string   `json:"address"`
-	Name        string   `json:"name"`
-	Source      bool     `json:"source"`
-	Destination bool     `json:"destination"`
-	Tokens      []string `json:"tokens"`
+	Address     string   `json:"address,omitempty"`
+	Name        string   `json:"name,omitempty"`
+	Source      bool     `json:"source,omitempty"`
+	Destination bool     `json:"destination,omitempty"`
+	Tokens      []string `json:"tokens,omitempty"`
+	Type        string   `json:"type,omitempty"`
 }
 
 // Data represents the entire structure of the JSON file
