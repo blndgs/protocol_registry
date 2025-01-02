@@ -195,12 +195,17 @@ func (r *ProtocolRegistryImpl) setupPolygonProtocols(client *ethclient.Client) e
 	}
 
 	// Register Aave protocol on Polygon
-	return registerProtocol(
+	err := registerProtocol(
 		AavePolygonV3ContractAddress,
 		PolygonChainID,
 		func(config ChainConfig) (Protocol, error) {
 			return NewAaveOperation(client, PolygonChainID, AaveProtocolDeploymentPolygon)
 		})
+	if err != nil {
+		return err
+	}
+
+	return registerCompoundRegistry(r, client, PolygonChainID.Int64())
 }
 
 // setupEthProtocols initializes and registers various DeFi protocols on the Ethereum chain.
@@ -270,7 +275,7 @@ func (r *ProtocolRegistryImpl) setupEthProtocols(client *ethclient.Client) error
 	}
 
 	// Register Compound protocol on Ethereum
-	return registerCompoundRegistry(r, client)
+	return registerCompoundRegistry(r, client, EthChainID.Int64())
 }
 
 // setupBnbProtocols initializes and registers various DeFi protocols on the Binance Smart Chain.

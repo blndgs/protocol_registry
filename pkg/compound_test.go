@@ -38,6 +38,12 @@ func TestCompoundV3_New(t *testing.T) {
 			common.HexToAddress("0xc3d688b66703497daa19211eedff47f25384cdc3"))
 		require.NoError(t, err)
 	})
+
+	t.Run("compund correctly setup for polygon", func(t *testing.T) {
+		_, err := NewCompoundOperation(getTestClient(t, ChainPOLYGON), big.NewInt(137),
+			common.HexToAddress("0xF25212E676D1F7F89Cd72fFEe66158f541246445"))
+		require.NoError(t, err)
+	})
 }
 
 func TestCompound_GenerateCalldata_Supply(t *testing.T) {
