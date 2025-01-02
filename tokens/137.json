@@ -77,6 +77,7 @@
     {
       "address": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
       "name": "AaveV3",
+      "type": "lending",
       "source": true,
       "destination": true,
       "tokens": [
@@ -88,9 +89,7 @@
         "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
         "0xD6DF932A45C0f255f85145f286eA0b292B21C90B",
         "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
-        "0x172370d5Cd63279eFa6d502DAB29171933a610AF",
         "0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a",
-        "0x385Eeac5cB85A38A9a07A70c73e0a3271CfB54A7",
         "0x03b54A6e9a984069379fae1a4fC4dBAE93B3bCCD",
         "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359"
       ]
