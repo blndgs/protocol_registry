@@ -16,7 +16,7 @@ type Token struct {
 type Protocol struct {
  Address     string   `json:"address"`
  Name        string   `json:"name"`
- Type        string   `json:"type`"
+ Type        string   `json:"type"`
  Source      bool     `json:"source"`
  Destination bool     `json:"destination"`
  Tokens      []string `json:"tokens"`
