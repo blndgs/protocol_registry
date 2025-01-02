@@ -198,7 +198,7 @@ func NewCompoundOperation(client *ethclient.Client, chainID *big.Int,
 		return nil, err
 	}
 
-	if chainID.Int64() != 1 && chainID.Int64() != 137 {
+	if chainID.Int64() != EthChainID.Int64() && chainID.Int64() != PolygonChainID.Int64() {
 		return nil, errors.New("unsupported chain id")
 	}
 
