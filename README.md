@@ -104,6 +104,7 @@ if err != nil {
 - Lido ( ETH )
 - ListaDao ( BSC )
 - Ankr ( ETH )
+- Binance Staking ( BNB )
 
 ## Protocol Interface
 
