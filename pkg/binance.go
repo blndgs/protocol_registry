@@ -173,9 +173,7 @@ func (l *BinanceWrappedEthOperation) GetBalance(ctx context.Context,
 
 // GetSupportedAssets returns a list of assets supported by the protocol on the specified chain
 func (l *BinanceWrappedEthOperation) GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error) {
-	return []common.Address{
-		common.HexToAddress(nativeDenomAddress),
-	}, nil
+	return []common.Address{bnbBinanceWrappedETHOperation}, nil
 }
 
 // IsSupportedAsset checks if the specified asset is supported on the given chain
