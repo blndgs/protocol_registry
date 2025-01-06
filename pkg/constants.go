@@ -28,7 +28,10 @@ var (
 // Hex prefix
 const HexPrefix = "0x"
 
-var ErrChainUnsupported = errors.New("chain not supported")
+var (
+	ErrChainUnsupported  = errors.New("chain not supported")
+	ErrActionUnsupported = errors.New("action not supported")
+)
 
 type (
 	ProtocolName    = string
@@ -56,28 +59,31 @@ type Protocol interface {
 }
 
 const (
-	AaveV3        ProtocolName = "aave_v3"
-	SparkLend     ProtocolName = "spark_lend"
-	Lido          ProtocolName = "lido"
-	RocketPool    ProtocolName = "rocket_pool"
-	Ankr          ProtocolName = "ankr"
-	Renzo         ProtocolName = "renzo"
-	Compound      ProtocolName = "compound"
-	ListaDao      ProtocolName = "lista_dao"
-	AvalonFinance ProtocolName = "avalon_finance"
+	AaveV3           ProtocolName = "aave_v3"
+	SparkLend        ProtocolName = "spark_lend"
+	Lido             ProtocolName = "lido"
+	RocketPool       ProtocolName = "rocket_pool"
+	Ankr             ProtocolName = "ankr"
+	Renzo            ProtocolName = "renzo"
+	Compound         ProtocolName = "compound"
+	ListaDao         ProtocolName = "lista_dao"
+	AvalonFinance    ProtocolName = "avalon_finance"
+	BinanceStakedETH ProtocolName = "binance_staked_eth"
 )
 
 var (
-	AaveEthereumV3ContractAddress ContractAddress = common.HexToAddress("0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2")
-	AaveBnbV3ContractAddress      ContractAddress = common.HexToAddress("0x6807dc923806fE8Fd134338EABCA509979a7e0cB")
-	AavePolygonV3ContractAddress  ContractAddress = common.HexToAddress("0x794a61358D6845594F94dc1DB02A252b5b4814aD")
-	SparkLendContractAddress      ContractAddress = common.HexToAddress("0xC13e21B648A5Ee794902342038FF3aDAB66BE987")
-	LidoContractAddress           ContractAddress = common.HexToAddress("0xae7ab96520de3a18e5e111b5eaab095312d7fe84")
-	RocketPoolStorageAddress      ContractAddress = common.HexToAddress("0x1d8f8f00cfa6758d7bE78336684788Fb0ee0Fa46")
-	AnkrContractAddress           ContractAddress = common.HexToAddress("0x84db6ee82b7cf3b47e8f19270abde5718b936670")
-	RenzoManagerAddress           ContractAddress = common.HexToAddress("0x74a09653A083691711cF8215a6ab074BB4e99ef5")
-	AvalonFinanceContractAddress  ContractAddress = common.HexToAddress("0xf9278C7c4AEfAC4dDfd0D496f7a1C39cA6BCA6d4")
-	ListaDaoContractAddress       ContractAddress = common.HexToAddress("0x1adB950d8bB3dA4bE104211D5AB038628e477fE6")
+	AaveEthereumV3ContractAddress      ContractAddress = common.HexToAddress("0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2")
+	AaveBnbV3ContractAddress           ContractAddress = common.HexToAddress("0x6807dc923806fE8Fd134338EABCA509979a7e0cB")
+	AavePolygonV3ContractAddress       ContractAddress = common.HexToAddress("0x794a61358D6845594F94dc1DB02A252b5b4814aD")
+	SparkLendContractAddress           ContractAddress = common.HexToAddress("0xC13e21B648A5Ee794902342038FF3aDAB66BE987")
+	LidoContractAddress                ContractAddress = common.HexToAddress("0xae7ab96520de3a18e5e111b5eaab095312d7fe84")
+	RocketPoolStorageAddress           ContractAddress = common.HexToAddress("0x1d8f8f00cfa6758d7bE78336684788Fb0ee0Fa46")
+	AnkrContractAddress                ContractAddress = common.HexToAddress("0x84db6ee82b7cf3b47e8f19270abde5718b936670")
+	RenzoManagerAddress                ContractAddress = common.HexToAddress("0x74a09653A083691711cF8215a6ab074BB4e99ef5")
+	AvalonFinanceContractAddress       ContractAddress = common.HexToAddress("0xf9278C7c4AEfAC4dDfd0D496f7a1C39cA6BCA6d4")
+	ListaDaoContractAddress            ContractAddress = common.HexToAddress("0x1adB950d8bB3dA4bE104211D5AB038628e477fE6")
+	BinanceStakedETHBNBContractAddress ContractAddress = common.HexToAddress("0xa2E3356610840701BDf5611a53974510Ae27E2e1")
+	BinanceStakedETHContractAddress    ContractAddress = common.HexToAddress("0xa2E3356610840701BDf5611a53974510Ae27E2e1")
 )
 
 const (
