@@ -17,22 +17,21 @@ import (
 const binanceStakedETHABI = `
 [
   {
-    "constant": false,
     "inputs": [
       {
-        "name": "_referral",
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "referral",
         "type": "address"
       }
     ],
-    "name": "submit",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": true,
-    "stateMutability": "payable",
+    "name": "deposit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -54,7 +53,8 @@ const binanceStakedETHABI = `
     "stateMutability": "view",
     "type": "function"
   }
-]`
+]
+	`
 
 var bnbBinanceWrappedETHOperation = common.HexToAddress("0x2170Ed0880ac9A755fd29B2688956BD959F933F8")
 
@@ -109,13 +109,12 @@ func (l *BinanceWrappedEthOperation) GenerateCalldata(ctx context.Context, chain
 
 	switch action {
 	case NativeStake:
-		// TODO: change this to Borsa's referral
-		referalCode, ok := params.ExtraData["referral_code"].(uint16)
+		referralAddress, ok := params.ExtraData["referral_address"].(common.Address)
 		if !ok {
-			return "", errors.New("referal code is not a uint16")
+			return "", errors.New("referral code is not a valid address")
 		}
 
-		calldata, err = l.parsedABI.Pack("deposit", params.Amount, referalCode)
+		calldata, err = l.parsedABI.Pack("deposit", params.Amount, referralAddress)
 		if err != nil {
 			return "", err
 		}
@@ -160,7 +159,7 @@ func (l *BinanceWrappedEthOperation) GetBalance(ctx context.Context,
 	}
 
 	result, err := l.client.CallContract(context.Background(), ethereum.CallMsg{
-		To:   &LidoContractAddress,
+		To:   &BinanceStakedETHBNBContractAddress,
 		Data: callData,
 	}, nil)
 	if err != nil {
