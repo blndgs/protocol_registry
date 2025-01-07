@@ -328,5 +328,13 @@ func (r *ProtocolRegistryImpl) setupBnbProtocols(client *ethclient.Client) error
 		return err
 	}
 
+	// Register Binance staking on BNB
+	err = registerProtocol(BinanceStakedETHBNBContractAddress, BscChainID, func(config ChainConfig) (Protocol, error) {
+		return NewBinanceWrappedEthOperation(client, BscChainID)
+	})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
