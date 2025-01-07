@@ -56,7 +56,7 @@ const binanceStakedETHABI = `
 ]
 	`
 
-var bnbBinanceWrappedETHOperation = common.HexToAddress("0x2170Ed0880ac9A755fd29B2688956BD959F933F8")
+var bnbBinanceWrappedETHOperationContract = common.HexToAddress("0x2170Ed0880ac9A755fd29B2688956BD959F933F8")
 
 // BinanceWrappedEthOperation implements the Protocol interface for Lido
 type BinanceWrappedEthOperation struct {
@@ -73,13 +73,8 @@ func NewBinanceWrappedEthOperation(client *ethclient.Client, chainID *big.Int) (
 		return nil, fmt.Errorf("unsupported chain ID (%d)", chainID.Int64())
 	}
 
-	chainIDfromClient, err := client.ChainID(context.Background())
-	if err != nil {
-		return nil, err
-	}
-
-	if !IsBnb(chainIDfromClient) {
-		return nil, fmt.Errorf("unsupported chain ID (%d)", chainIDfromClient.Int64())
+	if client == nil {
+		return nil, errors.New("ethclient cannot be nil")
 	}
 
 	parsedABI, err := abi.JSON(strings.NewReader(binanceStakedETHABI))
@@ -158,7 +153,7 @@ func (l *BinanceWrappedEthOperation) GetBalance(ctx context.Context,
 		return address, nil, err
 	}
 
-	result, err := l.client.CallContract(context.Background(), ethereum.CallMsg{
+	result, err := l.client.CallContract(ctx, ethereum.CallMsg{
 		To:   &BinanceStakedETHBNBContractAddress,
 		Data: callData,
 	}, nil)
@@ -173,7 +168,7 @@ func (l *BinanceWrappedEthOperation) GetBalance(ctx context.Context,
 
 // GetSupportedAssets returns a list of assets supported by the protocol on the specified chain
 func (l *BinanceWrappedEthOperation) GetSupportedAssets(ctx context.Context, chainID *big.Int) ([]common.Address, error) {
-	return []common.Address{bnbBinanceWrappedETHOperation}, nil
+	return []common.Address{bnbBinanceWrappedETHOperationContract}, nil
 }
 
 // IsSupportedAsset checks if the specified asset is supported on the given chain
@@ -182,7 +177,7 @@ func (l *BinanceWrappedEthOperation) IsSupportedAsset(ctx context.Context, chain
 		return false
 	}
 
-	return asset.Hex() == bnbBinanceWrappedETHOperation.Hex()
+	return asset.Hex() == bnbBinanceWrappedETHOperationContract.Hex()
 }
 
 // GetProtocolConfig returns the protocol config for a specific chain

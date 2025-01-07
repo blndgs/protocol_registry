@@ -19,12 +19,6 @@ func TestBinanceWrappedEthOperation_New(t *testing.T) {
 		require.Nil(t, binance)
 	})
 
-	t.Run("network id check fails", func(t *testing.T) {
-		binance, err := NewBinanceWrappedEthOperation(getTestClient(t, ChainETH), big.NewInt(56))
-		require.Error(t, err)
-		require.Nil(t, binance)
-	})
-
 	t.Run("binance correctly setup", func(t *testing.T) {
 		binance, err := NewBinanceWrappedEthOperation(getTestClient(t, ChainBSC), big.NewInt(56))
 		require.NoError(t, err)
@@ -131,5 +125,14 @@ func TestBinanceWrappedEthOperation_IsSupportedAsset(t *testing.T) {
 	t.Run("unsupported token", func(t *testing.T) {
 		isSupported := binance.IsSupportedAsset(context.Background(), big.NewInt(56), common.HexToAddress("0x1234567890123456789012345678901234567890"))
 		require.False(t, isSupported)
+	})
+
+	t.Run("supported token", func(t *testing.T) {
+		isSupported := binance.IsSupportedAsset(
+			context.Background(),
+			big.NewInt(56),
+			bnbBinanceWrappedETHOperationContract,
+		)
+		require.True(t, isSupported)
 	})
 }

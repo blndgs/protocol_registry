@@ -101,7 +101,7 @@ func TestGetProtocols(t *testing.T) {
 		wantErr bool
 	}{
 		{"Ethereum chain", pkg.EthChainID, 7, false},
-		{"BSC chain", pkg.BscChainID, 3, false},
+		{"BSC chain", pkg.BscChainID, 4, false},
 		{"Polygon chain", pkg.PolygonChainID, 1, false},
 		{"Unknown chain", big.NewInt(999), 0, true},
 	}
