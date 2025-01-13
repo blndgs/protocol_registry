@@ -8,6 +8,10 @@ import (
 
 const zeroAddress = "0x0000000000000000000000000000000000000000"
 
+func IsZeroAddress(addr common.Address) bool {
+	return common.HexToAddress(zeroAddress).Hex() == addr.Hex()
+}
+
 // nativeDenomAddress native denom token address.
 const nativeDenomAddress = "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
 

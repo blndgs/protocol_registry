@@ -336,5 +336,5 @@ func (r *ProtocolRegistryImpl) setupBnbProtocols(client *ethclient.Client) error
 		return err
 	}
 
-	return nil
+	return registerVenusPools(r, client, BscChainID.Int64())
 }
