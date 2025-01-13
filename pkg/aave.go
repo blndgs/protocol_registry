@@ -475,3 +475,6 @@ func (l *AaveOperation) GetName() string {
 
 // GetVersion returns the version of the protocol
 func (l *AaveOperation) GetVersion() string { return l.version }
+
+func (l *AaveOperation) IsSource() bool      { return true }
+func (l *AaveOperation) IsDestination() bool { return true }

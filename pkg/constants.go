@@ -56,6 +56,8 @@ type Protocol interface {
 	GetName() string
 	GetVersion() string
 	GetContractAddress(chainID *big.Int) common.Address
+	IsSource() bool
+	IsDestination() bool
 }
 
 const (

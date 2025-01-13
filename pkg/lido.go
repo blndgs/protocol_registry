@@ -192,3 +192,6 @@ func (l *LidoOperation) GetName() string { return Lido }
 
 // GetVersion returns the version of the protocol
 func (l *LidoOperation) GetVersion() string { return l.version }
+
+func (l *LidoOperation) IsSource() bool      { return false }
+func (l *LidoOperation) IsDestination() bool { return true }

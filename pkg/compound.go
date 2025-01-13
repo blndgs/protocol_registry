@@ -420,3 +420,6 @@ func (l *CompoundOperation) GetName() string { return Compound }
 
 // GetVersion returns the version of the protocol
 func (l *CompoundOperation) GetVersion() string { return l.version }
+
+func (l *CompoundOperation) IsSource() bool      { return true }
+func (l *CompoundOperation) IsDestination() bool { return true }

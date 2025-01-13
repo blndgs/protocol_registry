@@ -202,3 +202,6 @@ func (l *AnkrOperation) GetName() string { return Ankr }
 
 // GetVersion returns the version of the protocol
 func (l *AnkrOperation) GetVersion() string { return l.version }
+
+func (l *AnkrOperation) IsSource() bool      { return true }
+func (l *AnkrOperation) IsDestination() bool { return true }
