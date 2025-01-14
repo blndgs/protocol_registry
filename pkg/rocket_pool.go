@@ -290,3 +290,6 @@ func (l *RocketpoolOperation) GetName() string { return RocketPool }
 
 // GetVersion returns the version of the protocol
 func (l *RocketpoolOperation) GetVersion() string { return l.version }
+
+func (l *RocketpoolOperation) IsSource() bool      { return true }
+func (l *RocketpoolOperation) IsDestination() bool { return true }

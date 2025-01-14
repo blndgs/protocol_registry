@@ -416,7 +416,24 @@ func (l *CompoundOperation) GetType() ProtocolType { return TypeLoan }
 func (l *CompoundOperation) GetContractAddress(chainID *big.Int) common.Address { return l.contract }
 
 // Name returns the human readable name for the protocol
-func (l *CompoundOperation) GetName() string { return Compound }
+func (l *CompoundOperation) GetName() string {
+
+	switch strings.ToLower(l.contract.Hex()) {
+	case strings.ToLower(CompoundV3ETHPool):
+		return "Compound ETH pool"
+	case strings.ToLower(CompoundV3PolygonUSDCPool),
+		strings.ToLower(CompoundV3USDCPool):
+		return "Compound USDC Pool"
+	case strings.ToLower(CompoundV3PolygonUSDTPool):
+		return "Compound USDT pool"
+
+	default:
+		return Compound
+	}
+}
 
 // GetVersion returns the version of the protocol
 func (l *CompoundOperation) GetVersion() string { return l.version }
+
+func (l *CompoundOperation) IsSource() bool      { return true }
+func (l *CompoundOperation) IsDestination() bool { return true }

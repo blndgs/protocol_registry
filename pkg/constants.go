@@ -56,19 +56,23 @@ type Protocol interface {
 	GetName() string
 	GetVersion() string
 	GetContractAddress(chainID *big.Int) common.Address
+	IsSource() bool
+	IsDestination() bool
 }
 
 const (
-	AaveV3           ProtocolName = "aave_v3"
-	SparkLend        ProtocolName = "spark_lend"
-	Lido             ProtocolName = "lido"
-	RocketPool       ProtocolName = "rocket_pool"
-	Ankr             ProtocolName = "ankr"
-	Renzo            ProtocolName = "renzo"
-	Compound         ProtocolName = "compound"
-	ListaDao         ProtocolName = "lista_dao"
-	AvalonFinance    ProtocolName = "avalon_finance"
-	BinanceStakedETH ProtocolName = "binance_staked_eth"
+	AaveV3                    ProtocolName = "aave_v3"
+	SparkLend                 ProtocolName = "spark_lend"
+	Lido                      ProtocolName = "lido"
+	RocketPool                ProtocolName = "rocket_pool"
+	Ankr                      ProtocolName = "ankr"
+	Renzo                     ProtocolName = "renzo"
+	Compound                  ProtocolName = "compound"
+	ListaDao                  ProtocolName = "lista_dao"
+	AvalonFinance             ProtocolName = "avalon_finance"
+	BinanceStakedETH          ProtocolName = "binance_staked_eth"
+	VenusProtocolIsolatedPool ProtocolName = "venus_isolated_pool"
+	VenusProtocolCorePool     ProtocolName = "venus_core_pool"
 )
 
 var (

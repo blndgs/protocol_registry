@@ -71,9 +71,9 @@ func TestGetTokens(t *testing.T) {
 		want    int
 		wantErr bool
 	}{
-		{"Ethereum chain", pkg.EthChainID, 17, false},
-		{"BSC chain", pkg.BscChainID, 9, false},
-		{"Polyhon chain", pkg.PolygonChainID, 12, false},
+		{"Ethereum chain", pkg.EthChainID, 22, false},
+		{"BSC chain", pkg.BscChainID, 25, false},
+		{"Polygon chain", pkg.PolygonChainID, 14, false},
 		{"Unknown chain", big.NewInt(999), 0, true},
 	}
 
@@ -101,8 +101,8 @@ func TestGetProtocols(t *testing.T) {
 		wantErr bool
 	}{
 		{"Ethereum chain", pkg.EthChainID, 7, false},
-		{"BSC chain", pkg.BscChainID, 4, false},
-		{"Polygon chain", pkg.PolygonChainID, 1, false},
+		{"BSC chain", pkg.BscChainID, 12, false},
+		{"Polygon chain", pkg.PolygonChainID, 3, false},
 		{"Unknown chain", big.NewInt(999), 0, true},
 	}
 
@@ -161,9 +161,9 @@ func TestGetProtocolByAddress(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		{"Ethereum AaveV3", pkg.EthChainID, "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2", "AaveV3", false},
-		{"BSC AaveV3", pkg.BscChainID, "0x6807dc923806fE8Fd134338EABCA509979a7e0cB", "AaveV3", false},
-		{"Polygon AaveV3", pkg.PolygonChainID, "0x794a61358D6845594F94dc1DB02A252b5b4814aD", "AaveV3", false},
+		{"Ethereum AaveV3", pkg.EthChainID, "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2", "aave_v3", false},
+		{"BSC AaveV3", pkg.BscChainID, "0x6807dc923806fE8Fd134338EABCA509979a7e0cB", "aave_v3", false},
+		{"Polygon AaveV3", pkg.PolygonChainID, "0x794a61358D6845594F94dc1DB02A252b5b4814aD", "aave_v3", false},
 		{"Unknown protocol", pkg.EthChainID, "0x1234567890123456789012345678901234567890", "", true},
 		{"Unknown chain", big.NewInt(999), "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2", "", true},
 	}

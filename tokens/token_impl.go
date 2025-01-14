@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	"github.com/blndgs/protocol_registry/pkg"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 //go:embed *.json
@@ -80,8 +81,9 @@ func (r *JSONTokenRegistry) GetTokenByAddress(chainID *big.Int, address string) 
 		return nil, fmt.Errorf("no data available for chain ID %d", chainID)
 	}
 
+	addr := common.HexToAddress(address).Hex()
 	for _, token := range data.Tokens {
-		if token.TokenAddress == address {
+		if token.TokenAddress == addr {
 			return &token, nil
 		}
 	}
@@ -98,8 +100,10 @@ func (r *JSONTokenRegistry) GetProtocolByAddress(chainID *big.Int, address strin
 		return nil, fmt.Errorf("no data available for chain ID %d", chainID)
 	}
 
+	addr := common.HexToAddress(address).Hex()
+
 	for _, protocol := range data.Protocols {
-		if protocol.Address == address {
+		if protocol.Address == addr {
 			return &protocol, nil
 		}
 	}

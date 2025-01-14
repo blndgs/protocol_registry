@@ -1,9 +1,81 @@
 {
   "tokens": [
     {
-      "token_address": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
-      "name": "Polygon ( MATIC )",
-      "symbol": "POL",
+      "token_address": "0xD6DF932A45C0f255f85145f286eA0b292B21C90B",
+      "name": "Aave (PoS)",
+      "symbol": "AAVE",
+      "decimals": 18
+    },
+    {
+      "token_address": "0x172370d5Cd63279eFa6d502DAB29171933a610AF",
+      "name": "CRV (PoS)",
+      "symbol": "CRV",
+      "decimals": 18
+    },
+    {
+      "token_address": "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063",
+      "name": "(PoS) Dai Stablecoin",
+      "symbol": "DAI",
+      "decimals": 18
+    },
+    {
+      "token_address": "0x385Eeac5cB85A38A9a07A70c73e0a3271CfB54A7",
+      "name": "Aavegotchi GHST Token (PoS)",
+      "symbol": "GHST",
+      "decimals": 18
+    },
+    {
+      "token_address": "0x53E0bca35eC356BD5ddDFebbD1Fc0fD03FaBad39",
+      "name": "ChainLink Token",
+      "symbol": "LINK",
+      "decimals": 18
+    },
+    {
+      "token_address": "0xfa68FB4628DFF1028CFEc22b4162FCcd0d45efb6",
+      "name": "Liquid Staking Matic (PoS)",
+      "symbol": "MaticX",
+      "decimals": 18
+    },
+    {
+      "token_address": "0x3A58a54C066FdC0f2D55FC9C89F0415C92eBf3C4",
+      "name": "Staked MATIC (PoS)",
+      "symbol": "stMATIC",
+      "decimals": 18
+    },
+    {
+      "token_address": "0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a",
+      "name": "SushiToken (PoS)",
+      "symbol": "SUSHI",
+      "decimals": 18
+    },
+    {
+      "token_address": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+      "name": "USD Coin (PoS)",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    {
+      "token_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+      "name": "USD Coin",
+      "symbol": "USDC",
+      "decimals": 6
+    },
+    {
+      "token_address": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+      "name": "(PoS) Tether USD",
+      "symbol": "USDT",
+      "decimals": 6
+    },
+    {
+      "token_address": "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
+      "name": "(PoS) Wrapped BTC",
+      "symbol": "WBTC",
+      "decimals": 8
+    },
+    {
+      "token_address": "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+      "name": "Wrapped Ether",
+      "symbol": "WETH",
       "decimals": 18
     },
     {
@@ -11,88 +83,57 @@
       "name": "Wrapped Matic",
       "symbol": "WMATIC",
       "decimals": 18
-    },
-    {
-      "token_address": "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063",
-      "name": "Dai Token",
-      "symbol": "DAI",
-      "decimals": 18
-    },
-    {
-      "token_address": "0x53E0bca35eC356BD5ddDFebbD1Fc0fD03FaBad39",
-      "name": "Chainlink token",
-      "symbol": "LINK",
-      "decimals": 18
-    },
-    {
-      "token_address": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
-      "name": "USDC.E",
-      "symbol": "USDC.e",
-      "decimals": 6
-    },
-    {
-      "token_address": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
-      "name": "USDC",
-      "symbol": "USDC",
-      "decimals": 6
-    },
-    {
-      "token_address": "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
-      "name": "Wrapped Bitcoin",
-      "symbol": "WBTC",
-      "decimals": 8
-    },
-    {
-      "token_address": "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
-      "name": "Wrapped Ethereum",
-      "symbol": "WETH",
-      "decimals": 18
-    },
-    {
-      "token_address": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
-      "name": "Tether USD",
-      "symbol": "USDT",
-      "decimals": 6
-    },
-    {
-      "token_address": "0xD6DF932A45C0f255f85145f286eA0b292B21C90B",
-      "name": "Aave",
-      "symbol": "AAVE",
-      "decimals": 18
-    },
-    {
-      "token_address": "0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a",
-      "name": "Sushi token",
-      "symbol": "SUSHI",
-      "decimals": 18
-    },
-    {
-      "token_address": "0x03b54A6e9a984069379fae1a4fC4dBAE93B3bCCD",
-      "name": "Wrapped liquid staked Ether 2.0",
-      "symbol": "WsETH",
-      "decimals": 18
     }
   ],
   "protocols": [
     {
       "address": "0x794a61358D6845594F94dc1DB02A252b5b4814aD",
-      "name": "AaveV3",
-      "type": "lending",
+      "name": "aave_v3",
       "source": true,
       "destination": true,
       "tokens": [
-        "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063",
-        "0x53E0bca35eC356BD5ddDFebbD1Fc0fD03FaBad39",
-        "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
-        "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
-        "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
-        "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
-        "0xD6DF932A45C0f255f85145f286eA0b292B21C90B",
-        "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
         "0x0b3F868E0BE5597D5DB7fEB59E1CADBb0fdDa50a",
-        "0x03b54A6e9a984069379fae1a4fC4dBAE93B3bCCD",
-        "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359"
-      ]
+        "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
+        "0x172370d5Cd63279eFa6d502DAB29171933a610AF",
+        "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
+        "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+        "0x385Eeac5cB85A38A9a07A70c73e0a3271CfB54A7",
+        "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+        "0x53E0bca35eC356BD5ddDFebbD1Fc0fD03FaBad39",
+        "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+        "0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063",
+        "0xD6DF932A45C0f255f85145f286eA0b292B21C90B",
+        "0xc2132D05D31c914a87C6611C10748AEb04B58e8F"
+      ],
+      "type": "Loan"
+    },
+    {
+      "address": "0xF25212E676D1F7F89Cd72fFEe66158f541246445",
+      "name": "Compound USDC Pool",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
+        "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
+        "0x3A58a54C066FdC0f2D55FC9C89F0415C92eBf3C4",
+        "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+        "0xfa68FB4628DFF1028CFEc22b4162FCcd0d45efb6"
+      ],
+      "type": "Loan"
+    },
+    {
+      "address": "0xaeB318360f27748Acb200CE616E389A6C9409a07",
+      "name": "Compound USDT pool",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
+        "0x1BFD67037B42Cf73acF2047067bd4F2C47D9BfD6",
+        "0x3A58a54C066FdC0f2D55FC9C89F0415C92eBf3C4",
+        "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+        "0xfa68FB4628DFF1028CFEc22b4162FCcd0d45efb6"
+      ],
+      "type": "Loan"
     }
   ]
 }

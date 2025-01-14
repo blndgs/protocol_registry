@@ -1,27 +1,123 @@
 {
   "tokens": [
     {
-      "token_address": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "token_address": "0x12f31B73D812C6Bb0d735a218c086d44D5fe5f89",
+      "name": "agEUR",
+      "symbol": "agEUR",
+      "decimals": 18
+    },
+    {
+      "token_address": "0x8F0528cE5eF7B51152A59745bEfDD91D97091d2F",
+      "name": "AlpacaToken",
+      "symbol": "ALPACA",
+      "decimals": 18
+    },
+    {
+      "token_address": "0xf307910A4c7bbc79691fD374889b36d8531B08e3",
+      "name": "Ankr",
+      "symbol": "ANKR",
+      "decimals": 18
+    },
+    {
+      "token_address": "0x52F24a5e03aee338Da5fd9Df68D2b6FAe1178827",
+      "name": "Ankr Staked BNB",
+      "symbol": "ankrBNB",
+      "decimals": 18
+    },
+    {
+      "token_address": "0xc748673057861a797275CD8A068AbB95A902e8de",
+      "name": "Baby Doge Coin",
+      "symbol": "BabyDoge",
+      "decimals": 9
+    },
+    {
+      "token_address": "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
       "name": "Binance Coin",
       "symbol": "BNB",
       "decimals": 18
     },
     {
-      "token_address": "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
-      "name": "Ethereum Token",
-      "symbol": "ETH",
+      "token_address": "0x1bdd3Cf7F79cfB8EdbB955f20ad99211551BA275",
+      "name": "Liquid Staking BNB",
+      "symbol": "BNBx",
       "decimals": 18
     },
     {
-      "token_address": "0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c",
+      "token_address": "0x965F527D9159dCe6288a2219DB51fc6Eef120dD1",
+      "name": "Biswap",
+      "symbol": "BSW",
+      "decimals": 18
+    },
+    {
+      "token_address": "0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c",
       "name": "BTCB Token",
       "symbol": "BTCB",
       "decimals": 18
     },
     {
-      "token_address": "0x55d398326f99059fF775485246999027B3197955",
-      "name": "Tether USD",
-      "symbol": "USDT",
+      "token_address": "0x352Cb5E19b12FC216548a2677bD0fce83BaE434B",
+      "name": "BitTorrent",
+      "symbol": "BTT",
+      "decimals": 18
+    },
+    {
+      "token_address": "0x2170Ed0880ac9A755fd29B2688956BD959F933F8",
+      "name": "Ethereum Token",
+      "symbol": "ETH",
+      "decimals": 18
+    },
+    {
+      "token_address": "0xc5f0f7b66764F6ec8C8Dff7BA683102295E16409",
+      "name": "First Digital USD",
+      "symbol": "FDUSD",
+      "decimals": 18
+    },
+    {
+      "token_address": "0xfb5B838b6cfEEdC2873aB27866079AC55363D37E",
+      "name": "FLOKI",
+      "symbol": "FLOKI",
+      "decimals": 9
+    },
+    {
+      "token_address": "0x0782b6d8c4551B9760e74c0545a9bCD90bdc41E5",
+      "name": "Hay Destablecoin",
+      "symbol": "HAY",
+      "decimals": 18
+    },
+    {
+      "token_address": "0xCa6d678e74f553f0E59cccC03ae644a3c2c5EE7d",
+      "name": "PLANET",
+      "symbol": "PLANET",
+      "decimals": 18
+    },
+    {
+      "token_address": "0x12BB890508c125661E03b09EC06E404bc9289040",
+      "name": "Radio Caca V2",
+      "symbol": "RACA",
+      "decimals": 18
+    },
+    {
+      "token_address": "0xB0b84D294e0C75A6abe60171b70edEb2EFd14A1B",
+      "name": "Synclub Staked BNB",
+      "symbol": "SnBNB",
+      "decimals": 18
+    },
+    {
+      "token_address": "0xc2E9d07F66A89c44062459A47a0D2Dc038E4fb16",
+      "name": "Staked BNB",
+      "symbol": "stkBNB",
+      "decimals": 18
+    },
+    {
+      "token_address": "0xCE7de646e7208a4Ef112cb6ed5038FA6cC6b12e3",
+      "name": "TRON",
+      "symbol": "TRX",
+      "decimals": 6
+    },
+    {
+      "token_address": "0x4B0F1812e5Df2A09796481Ff14017e6005508003",
+      "name": "Trust Wallet",
+      "symbol": "TWT",
       "decimals": 18
     },
     {
@@ -31,76 +127,179 @@
       "decimals": 18
     },
     {
+      "token_address": "0x55d398326f99059fF775485246999027B3197955",
+      "name": "Tether USD",
+      "symbol": "USDT",
+      "decimals": 18
+    },
+    {
       "token_address": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
       "name": "Wrapped BNB",
       "symbol": "WBNB",
       "decimals": 18
     },
     {
-      "token_address": "0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3",
-      "name": "Dai Token",
-      "symbol": "DAI",
+      "token_address": "0xaeF0d72a118ce24feE3cD1d43d383897D05B4e99",
+      "name": "WINk",
+      "symbol": "WIN",
       "decimals": 18
     },
     {
-      "token_address": "0x5f0da599bb2cccfcf6fdfd7d81743b6020864350",
-      "name": "Maker",
-      "symbol": "MKR",
-      "decimals": 18
-    },
-    {
-      "token_address": "0x52ce071bd9b1c4b00a0b92d298c512478cad67e8",
-      "name": "Compound Coin",
-      "symbol": "COMP",
+      "token_address": "0x26c5e01524d2E6280A48F2c50fF6De7e52E9611C",
+      "name": "Wrapped liquid staked Ether 2.0",
+      "symbol": "wstETH",
       "decimals": 18
     }
   ],
   "protocols": [
     {
       "address": "0x6807dc923806fE8Fd134338EABCA509979a7e0cB",
-      "name": "AaveV3",
-      "type": "lending",
+      "name": "aave_v3",
       "source": true,
       "destination": true,
       "tokens": [
-        "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
-        "0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c",
+        "0x2170Ed0880ac9A755fd29B2688956BD959F933F8",
         "0x55d398326f99059fF775485246999027B3197955",
+        "0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c",
         "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
-        "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
-      ]
+        "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+        "0xc5f0f7b66764F6ec8C8Dff7BA683102295E16409"
+      ],
+      "type": "Loan"
     },
     {
       "address": "0xf9278C7c4AEfAC4dDfd0D496f7a1C39cA6BCA6d4",
-      "name": "AvalonFinance",
-      "type": "lending",
+      "name": "avalon_finance",
       "source": true,
       "destination": true,
       "tokens": [
+        "0x2170Ed0880ac9A755fd29B2688956BD959F933F8",
+        "0x55d398326f99059fF775485246999027B3197955",
+        "0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c",
         "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
-        "0x2170ed0880ac9a755fd29b2688956bd959f933f8",
         "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
-      ]
-    },
-    {
-      "address": "0x1adB950d8bB3dA4bE104211D5AB038628e477fE6",
-      "name": "ListaDAO",
-      "type": "staking",
-      "source": false,
-      "destination": true,
-      "tokens": [
-        "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
-      ]
+      ],
+      "type": "Loan"
     },
     {
       "address": "0xa2E3356610840701BDf5611a53974510Ae27E2e1",
-      "name": "Binance Ethereum Staking",
-      "type": "staking",
-      "source": false,
+      "name": "binance_staked_eth",
+      "source": true,
       "destination": true,
       "tokens": [
-        "0x2170ed0880ac9a755fd29b2688956bd959f933f8"
-      ]
+        "0x2170Ed0880ac9A755fd29B2688956BD959F933F8"
+      ],
+      "type": "Stake"
+    },
+    {
+      "address": "0x1adB950d8bB3dA4bE104211D5AB038628e477fE6",
+      "name": "lista_dao",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
+      ],
+      "type": "Stake"
+    },
+    {
+      "address": "0x3344417c9360b963ca93A4e8305361AEde340Ab9",
+      "name": "venus_isolated_pool",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        "0x4B0F1812e5Df2A09796481Ff14017e6005508003",
+        "0x52F24a5e03aee338Da5fd9Df68D2b6FAe1178827",
+        "0x55d398326f99059fF775485246999027B3197955",
+        "0x8F0528cE5eF7B51152A59745bEfDD91D97091d2F",
+        "0x965F527D9159dCe6288a2219DB51fc6Eef120dD1",
+        "0xCa6d678e74f553f0E59cccC03ae644a3c2c5EE7d",
+        "0xf307910A4c7bbc79691fD374889b36d8531B08e3"
+      ],
+      "type": "Loan"
+    },
+    {
+      "address": "0x9DF11376Cf28867E2B0741348044780FbB7cb1d6",
+      "name": "venus_isolated_pool",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        "0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c"
+      ],
+      "type": "Loan"
+    },
+    {
+      "address": "0x94c1495cD4c557f1560Cbd68EAB0d197e6291571",
+      "name": "venus_isolated_pool",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        "0x0782b6d8c4551B9760e74c0545a9bCD90bdc41E5",
+        "0x12f31B73D812C6Bb0d735a218c086d44D5fe5f89",
+        "0x55d398326f99059fF775485246999027B3197955"
+      ],
+      "type": "Loan"
+    },
+    {
+      "address": "0x1b43ea8622e76627B81665B1eCeBB4867566B963",
+      "name": "venus_isolated_pool",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        "0x12BB890508c125661E03b09EC06E404bc9289040",
+        "0x55d398326f99059fF775485246999027B3197955",
+        "0xfb5B838b6cfEEdC2873aB27866079AC55363D37E"
+      ],
+      "type": "Loan"
+    },
+    {
+      "address": "0xd933909A4a2b7A4638903028f44D1d38ce27c352",
+      "name": "venus_isolated_pool",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        "0x1bdd3Cf7F79cfB8EdbB955f20ad99211551BA275",
+        "0x52F24a5e03aee338Da5fd9Df68D2b6FAe1178827",
+        "0xB0b84D294e0C75A6abe60171b70edEb2EFd14A1B",
+        "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE",
+        "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+        "0xc2E9d07F66A89c44062459A47a0D2Dc038E4fb16"
+      ],
+      "type": "Loan"
+    },
+    {
+      "address": "0x23b4404E4E5eC5FF5a6FFb70B7d14E3FabF237B0",
+      "name": "venus_isolated_pool",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        "0x352Cb5E19b12FC216548a2677bD0fce83BaE434B",
+        "0x55d398326f99059fF775485246999027B3197955",
+        "0xCE7de646e7208a4Ef112cb6ed5038FA6cC6b12e3",
+        "0xaeF0d72a118ce24feE3cD1d43d383897D05B4e99"
+      ],
+      "type": "Loan"
+    },
+    {
+      "address": "0x33B6fa34cd23e5aeeD1B112d5988B026b8A5567d",
+      "name": "venus_isolated_pool",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        "0x55d398326f99059fF775485246999027B3197955",
+        "0xc748673057861a797275CD8A068AbB95A902e8de"
+      ],
+      "type": "Loan"
+    },
+    {
+      "address": "0xBE609449Eb4D76AD8545f957bBE04b596E8fC529",
+      "name": "venus_isolated_pool",
+      "source": true,
+      "destination": true,
+      "tokens": [
+        "0x2170Ed0880ac9A755fd29B2688956BD959F933F8",
+        "0x26c5e01524d2E6280A48F2c50fF6De7e52E9611C"
+      ],
+      "type": "Loan"
     }
   ]
 }

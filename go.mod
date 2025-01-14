@@ -4,6 +4,7 @@ go 1.22
 
 require (
 	github.com/ethereum/go-ethereum v1.11.5
+	github.com/joho/godotenv v1.5.1
 	github.com/rocket-pool/rocketpool-go v1.8.2
 	github.com/stretchr/testify v1.9.0
 )
@@ -35,4 +36,3 @@ require (
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
