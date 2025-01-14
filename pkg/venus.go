@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"log"
 	"math/big"
 	"strings"
 
@@ -305,7 +304,7 @@ func registerVenusPools(registry ProtocolRegistry, client *ethclient.Client, cha
 
 	data, err := parsedABI.Pack("getAllPools")
 	if err != nil {
-		log.Fatalf("Failed to pack contract call: %v", err)
+		return fmt.Errorf("failed to pack contract call: %w", err)
 	}
 
 	callMsg := ethereum.CallMsg{

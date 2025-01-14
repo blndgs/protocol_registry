@@ -184,7 +184,7 @@ func NewAaveOperation(
 	case AaveProtocolDeploymentSpark:
 		contract = SparkLendContractAddress
 	case AaveProtocolDeploymentPolygon:
-		contract = polygonAaveDataProviderContract
+		contract = AavePolygonV3ContractAddress
 	}
 
 	var version string = "3"
