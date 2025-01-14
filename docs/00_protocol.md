@@ -41,6 +41,11 @@ type Protocol interface {
     // GetContractAddress returns the contract address for a specific chain.
     GetContractAddress(chainID *big.Int) common.Address
 
+    // Can this protocol be withdrawn from or be the source state of an intent?
+    IsSource() bool
+
+    // Can you supply to this protocol?
+    IsDestination() bool
 }
 
 // ProtocolConfig contains configuration data for initializing a protocol.

@@ -663,3 +663,6 @@ func (l *VenusOperation) GetName() string { return VenusProtocolIsolatedPool }
 
 // GetVersion returns the version of the protocol
 func (l *VenusOperation) GetVersion() string { return l.version }
+
+func (l *VenusOperation) IsSource() bool      { return false }
+func (l *VenusOperation) IsDestination() bool { return true }
