@@ -206,3 +206,6 @@ func (l *BinanceWrappedEthOperation) GetName() string { return BinanceStakedETH 
 
 // GetVersion returns the version of the protocol
 func (l *BinanceWrappedEthOperation) GetVersion() string { return l.version }
+
+func (l *BinanceWrappedEthOperation) IsSource() bool      { return true }
+func (l *BinanceWrappedEthOperation) IsDestination() bool { return true }
